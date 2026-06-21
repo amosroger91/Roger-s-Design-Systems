@@ -273,25 +273,30 @@
   .doc-hero .cta { display: flex; gap: var(--s3); flex-wrap: wrap; }
   .doc-hero .art { display: grid; place-items: center; }
 
-  /* stamped field marker (hero signature graphic) */
-  .doc-marker { width: 100%; max-width: 312px; background: linear-gradient(180deg, var(--panel-2), var(--panel));
-    border: 1px solid var(--line-strong); border-radius: var(--r-stamp); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.55); overflow: hidden; }
-  .doc-marker .mh { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line);
-    font-family: var(--font-data); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--biome); transition: color var(--dur-set) var(--ease-firm); }
-  .doc-marker .mh .tagdot { width: 24px; height: 12px; border-radius: 2px; background: var(--blaze); box-shadow: 0 0 12px rgba(255,106,43,0.5); }
-  .doc-marker .place { padding: 16px; border-bottom: 1px solid var(--line); }
-  .doc-marker .place .nm { font-family: var(--font-display); font-weight: 500; font-size: 26px; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1.05; }
-  .doc-marker .place .sub { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); margin-top: 4px; }
-  .doc-marker .grid2 { display: grid; grid-template-columns: 1fr 1fr; }
-  .doc-marker .stat { padding: 12px 16px; border-bottom: 1px solid var(--line); }
-  .doc-marker .stat + .stat { border-left: 1px solid var(--line); }
-  .doc-marker .stat .k { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--canvas-faint); }
-  .doc-marker .stat .v { font-family: var(--font-display); font-weight: 500; font-size: 22px; margin-top: 2px; }
-  .doc-marker .ebar { margin: 14px 16px 6px; height: 6px; border-radius: 3px; background: var(--stone-1); border: 1px solid var(--line); overflow: hidden; }
-  .doc-marker .ebar i { display: block; height: 100%; background: linear-gradient(90deg, var(--blaze-deep), var(--blaze)); transition: width var(--dur-set) var(--ease-settle); }
-  .doc-marker .foot { display: flex; justify-content: space-between; padding: 10px 16px; font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); }
-  .doc-marker .foot b { color: var(--canvas-dim); font-weight: 700; }
+  /* ---- print grain: a screenprint tooth over the whole page ---- */
+  .grain { position: fixed; inset: 0; z-index: 5; pointer-events: none; opacity: 0.05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 140px 140px; }
+
+  /* ---- WPA travel-poster (hero signature graphic) ---- */
+  .wpa-subhead { display: inline-block; margin: 16px 0 2px; background: var(--blaze); color: var(--bark);
+    font-family: var(--font-display); font-weight: 600; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 4px 13px; border-radius: var(--r-stamp); box-shadow: 0 2px 0 var(--blaze-deep); }
+
+  .wpa-poster { position: relative; width: 100%; max-width: 322px; margin: 0 auto; background: #efe6cf; padding: 11px 11px 0;
+    box-shadow: 0 26px 64px rgba(0,0,0,0.55); transform: rotate(-1.1deg); }
+  .wpa-poster::before { content: ""; position: absolute; inset: 6px; border: 1.5px solid rgba(42,36,23,0.5); pointer-events: none; z-index: 4; }
+  @media (prefers-reduced-motion: no-preference){ .wpa-poster { transition: transform var(--dur-set) var(--ease-settle); } .wpa-poster:hover { transform: rotate(0); } }
+  .wpa-scene { position: relative; overflow: hidden; }
+  .wpa-scene svg { display: block; width: 100%; height: auto; }
+  .wpa-scene::after { content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply; opacity: 0.2;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .wpa-stamp { position: absolute; top: 9px; right: 9px; z-index: 5; font-family: var(--font-data); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #efe6cf; background: rgba(20,18,12,0.72); border: 1px solid rgba(239,230,207,0.55); padding: 3px 8px; border-radius: var(--r-pill); }
+  .wpa-band { position: relative; background: #15120c; color: #efe6cf; padding: 13px 15px 15px; border-top: 3px solid var(--blaze); }
+  .wpa-band .kick { display: block; font-family: var(--font-data); font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blaze-lite); margin-bottom: 4px; }
+  .wpa-band b { font-family: var(--font-display); font-weight: 600; font-size: 24px; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1; display: block; color: #efe6cf; }
+  .wpa-band .meta { display: block; font-family: var(--font-data); font-size: 11px; color: rgba(239,230,207,0.62); margin-top: 6px; }
 
   /* example: live demo + code */
   .doc-example { border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; margin: var(--s4) 0 var(--s7); background: var(--soil); }
@@ -605,6 +610,7 @@
 <body>
 
 <a class="doc-skip btn secondary" href="#overview">Skip to content</a>
+<div class="grain" aria-hidden="true"></div>
 
 <!-- shared contour shapes -->
 <svg class="hidden-defs" aria-hidden="true">
@@ -685,6 +691,7 @@
         <div>
           <span class="eyebrow">Rugged wayfinding · weatherproof</span>
           <h1>Cair<b>n</b></h1>
+          <div class="wpa-subhead">Explore · Protect · Return</div>
           <p class="lede">A rugged wayfinding interface language for the field. Topographic contours carry the structure, one <strong style="color:var(--canvas)">blaze</strong> color tells you where you are, and the terrain itself is the map. Built to be read in any weather.</p>
           <p class="lineage">WPA park posters 1933 &rsaquo; USGS topographic survey &rsaquo; Vignelli&rsquo;s Unigrid 1977 &rsaquo; trail blazes &amp; cairns. The functional graphic language of the outdoors, re-tokenized.</p>
           <div class="cta">
@@ -693,20 +700,35 @@
             <button class="btn ghost" id="copyInstall" type="button">Copy tokens</button>
           </div>
         </div>
-        <div class="art" aria-hidden="true">
-          <aside class="doc-marker" aria-label="Waypoint readout">
-            <div class="mh"><span id="m-biome">Conifer Forest</span><span class="tagdot"></span></div>
-            <div class="place">
-              <div class="nm" id="m-name">Pine Trailhead</div>
-              <div class="sub" id="m-sub">waypoint 01 of 04 &middot; bearing 312&deg; NW</div>
+        <div class="art">
+          <figure class="wpa-poster" aria-label="Cairn — a national-park travel poster">
+            <div class="wpa-scene">
+              <svg viewBox="0 0 300 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <defs>
+                  <linearGradient id="wpaSky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#26405c"/>
+                    <stop offset="0.52" stop-color="#8a6f78"/>
+                    <stop offset="1" stop-color="#e7a24c"/>
+                  </linearGradient>
+                </defs>
+                <rect width="300" height="250" fill="url(#wpaSky)"/>
+                <circle cx="208" cy="76" r="34" fill="#ffe7b8"/>
+                <g stroke="#ffe7b8" stroke-width="2" opacity="0.15"><line x1="150" y1="120" x2="300" y2="120"/><line x1="116" y1="135" x2="300" y2="135"/><line x1="172" y1="150" x2="300" y2="150"/></g>
+                <path d="M0,176 L58,150 L108,172 L158,138 L214,170 L268,150 L300,160 L300,250 L0,250 Z" fill="#6f8f9b"/>
+                <path d="M0,204 L70,166 L128,200 L186,160 L244,198 L300,176 L300,250 L0,250 Z" fill="var(--biome)" style="transition:fill var(--dur-set) var(--ease-firm)"/>
+                <path d="M0,230 L54,206 L120,232 L176,206 L240,230 L300,214 L300,250 L0,250 Z" fill="#26352a"/>
+                <path d="M0,250 L6,234 L12,250 L19,240 L26,250 L34,229 L42,250 L49,241 L56,250 L64,232 L72,250 L80,243 L88,250 L97,228 L106,250 L114,240 L122,250 L131,234 L140,250 L149,242 L158,250 L168,230 L178,250 L187,241 L196,250 L206,233 L216,250 L225,243 L234,250 L244,231 L254,250 L263,240 L272,250 L282,233 L292,250 L300,244 L300,250 Z" fill="#15201a"/>
+                <path class="trailpath" d="M150,250 C140,224 178,214 164,194 C156,180 188,170 178,154" fill="none"/>
+                <circle cx="178" cy="154" r="5" fill="var(--blaze)" stroke="#15201a" stroke-width="2"/>
+              </svg>
+              <span class="wpa-stamp">Est. 1933</span>
             </div>
-            <div class="grid2">
-              <div class="stat"><div class="k">Elevation</div><div class="v" id="m-elev">1,240 m</div></div>
-              <div class="stat"><div class="k">Grade</div><div class="v" id="m-grade">+4%</div></div>
-            </div>
-            <div class="ebar"><i id="m-bar" style="width:22%"></i></div>
-            <div class="foot"><span id="m-coord">44.43&deg; N&nbsp;110.59&deg; W</span><span><b id="m-dist">2.1</b> mi</span></div>
-          </aside>
+            <figcaption class="wpa-band">
+              <span class="kick">See the back country</span>
+              <b id="m-name">Pine Trailhead</b>
+              <span class="meta"><span id="m-biome">Conifer Forest</span> &middot; <span id="m-elev">1,240 m</span></span>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>
