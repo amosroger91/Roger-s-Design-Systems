@@ -8,6 +8,7 @@ An anthology of **six design languages**, each a faithful, modern homage to a mo
 |---|---|---|---|
 | **[Gilt](gilt/)** | 1925 | Art Deco / the machine age (Paris Exposition, Chrysler Building) | [↗](https://amosroger91.github.io/Roger-s-Design-Systems/gilt/) |
 | **[Cairn](cairn/)** | 1930s–77 | WPA park posters, USGS topo maps, the NPS Unigrid | [↗](https://amosroger91.github.io/Roger-s-Design-Systems/cairn/) |
+| **[Jazz](jazz/)** | 1991 | The 90s "Jazz" paper cup — pastel squiggle, scattered confetti | [↗](https://amosroger91.github.io/Roger-s-Design-Systems/jazz/) |
 | **[Sonora](sonora/)** | 1995 | The '90s Taco Bell rebrand — neon dusk + Memphis confetti | [↗](https://amosroger91.github.io/Roger-s-Design-Systems/sonora/) |
 | **[Nebula](nebula/)** | 2001 | The original Xbox dashboard (ships CSS + tokens) | [↗](https://amosroger91.github.io/Roger-s-Design-Systems/nebula/) |
 | **[Bliss](bliss/)** | 2001 | Windows XP "Luna" (full component kit + live desktop) | [↗](https://amosroger91.github.io/Roger-s-Design-Systems/bliss/) |
