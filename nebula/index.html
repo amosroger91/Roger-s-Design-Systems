@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEBULA · Design System</title>
+<meta name="description" content="NEBULA — a living-machine design system. Tokens, components, and usage. A respectful homage to the original Xbox dashboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;300;400;600&family=Hanken+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- the system under test: dogfooded by these docs -->
+<link rel="stylesheet" href="nebula.css">
+<style>
+  /* ============ docs-only chrome (NOT part of the library) ============ */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  .doc-skip { position: fixed; left: -999px; top: 8px; z-index: 200; }
+  .doc-skip:focus { left: 8px; }
+
+  /* top bar */
+  .doc-topbar {
+    position: sticky; top: 0; z-index: var(--nb-z-sticky);
+    display: flex; align-items: center; gap: var(--nb-space-4);
+    height: 58px; padding: 0 var(--nb-space-5);
+    background: linear-gradient(180deg, rgba(3,7,10,0.88), rgba(3,7,10,0.62));
+    -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2);
+    border-bottom: 1px solid var(--nb-border);
+  }
+  .doc-brand { display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto; text-decoration: none; }
+  .doc-brand svg { width: 22px; height: 22px; }
+  .doc-brand b { font-family: var(--nb-font-mono); font-weight: 500; font-size: 13px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--nb-text); }
+  .doc-ver { font-family: var(--nb-font-mono); font-size: 11px; color: var(--nb-text-faint); border: 1px solid var(--nb-border); padding: 2px 7px; border-radius: var(--nb-radius-pill); }
+  .doc-topbar .spacer { flex: 1; }
+
+  /* shell: sidebar + content */
+  .doc-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 0; max-width: 1320px; margin: 0 auto; }
+  .doc-side {
+    position: sticky; top: 58px; align-self: start; height: calc(100vh - 58px);
+    overflow-y: auto; padding: var(--nb-space-8) var(--nb-space-4) var(--nb-space-12) var(--nb-space-6);
+    border-right: 1px solid var(--nb-border);
+  }
+  .doc-side h4 { font-family: var(--nb-font-mono); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--nb-text-faint); margin: var(--nb-space-5) 0 var(--nb-space-2); }
+  .doc-side h4:first-child { margin-top: 0; }
+  .doc-side a { display: block; font-size: 13.5px; color: var(--nb-text-dim); text-decoration: none; padding: 5px 10px; border-radius: var(--nb-radius-sm); border-left: 2px solid transparent; }
+  .doc-side a:hover { color: var(--nb-text); background: rgba(var(--nb-accent-rgb),0.07); }
+  .doc-side a.is-active { color: var(--nb-text); border-left-color: var(--nb-accent); background: rgba(var(--nb-accent-rgb),0.08); }
+
+  .doc-main { padding: var(--nb-space-10) clamp(var(--nb-space-5), 4vw, var(--nb-space-16)) var(--nb-space-24); min-width: 0; }
+  @media (max-width: 900px) {
+    .doc-shell { grid-template-columns: 1fr; }
+    .doc-side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--nb-border); display: flex; gap: 4px; flex-wrap: wrap; padding: var(--nb-space-3) var(--nb-space-5); }
+    .doc-side h4 { display: none; }
+    .doc-side a { border-left: 0; }
+  }
+
+  .doc-section { padding-top: var(--nb-space-12); scroll-margin-top: 72px; }
+  .doc-section:first-child { padding-top: var(--nb-space-6); }
+  .doc-section > h2 { font-family: var(--nb-font-display); font-weight: 300; font-size: var(--nb-text-3xl); margin: 0 0 var(--nb-space-2); }
+  .doc-section > .lede { color: var(--nb-text-dim); font-size: var(--nb-text-lg); max-width: 60ch; margin: 0 0 var(--nb-space-8); }
+  .doc-sub { font-family: var(--nb-font-display); font-weight: 400; font-size: var(--nb-text-xl); margin: var(--nb-space-10) 0 var(--nb-space-4); }
+
+  /* hero */
+  .doc-hero { position: relative; padding: var(--nb-space-16) 0 var(--nb-space-12); overflow: hidden; }
+  .doc-hero .glowbg { position: absolute; inset: -40% -10% auto auto; width: 620px; height: 620px; pointer-events: none;
+    background: radial-gradient(circle at 70% 30%, rgba(var(--nb-accent-rgb),0.16), transparent 60%); filter: blur(20px); }
+  .doc-hero .row { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: var(--nb-space-8); align-items: center; }
+  @media (max-width: 760px){ .doc-hero .row { grid-template-columns: 1fr; } .doc-hero .orbwrap { display: none; } }
+  .doc-hero h1 { font-family: var(--nb-font-display); font-weight: 200; font-size: clamp(54px, 9vw, 104px); line-height: 0.92; margin: 14px 0 0; }
+  .doc-hero p { color: var(--nb-text-dim); font-size: var(--nb-text-lg); max-width: 52ch; margin: var(--nb-space-5) 0 var(--nb-space-6); }
+  .doc-hero .cta { display: flex; gap: var(--nb-space-3); flex-wrap: wrap; }
+  .doc-hero .orbwrap { display: grid; place-items: center; }
+  .doc-hero .nb-orb { width: 220px; height: 220px; }
+
+  /* example: live demo + code */
+  .doc-example { border: 1px solid var(--nb-border); border-radius: var(--nb-radius-lg); overflow: hidden; margin: var(--nb-space-4) 0 var(--nb-space-8); background: var(--nb-surface); }
+  .doc-demo { padding: var(--nb-space-8); display: flex; flex-wrap: wrap; gap: var(--nb-space-4); align-items: center;
+    background: radial-gradient(80% 120% at 50% 0%, rgba(var(--nb-accent-rgb),0.06), transparent 70%); }
+  .doc-demo.col { flex-direction: column; align-items: stretch; }
+  .doc-codewrap { position: relative; border-top: 1px solid var(--nb-border); }
+  .doc-code { margin: 0; padding: var(--nb-space-4) var(--nb-space-5); overflow-x: auto; background: rgba(3,7,10,0.5); }
+  .doc-code code { font-family: var(--nb-font-mono); font-size: 12.5px; line-height: 1.7; color: var(--nb-text-dim); white-space: pre; }
+  .doc-copy { position: absolute; top: 8px; right: 8px; }
+
+  /* token grids */
+  .doc-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--nb-space-3); }
+  .doc-swatch { text-align: left; cursor: pointer; border: 1px solid var(--nb-border); border-radius: var(--nb-radius-md); overflow: hidden; background: var(--nb-surface); font: inherit; color: inherit; padding: 0; }
+  .doc-swatch:hover { border-color: rgba(var(--nb-accent-rgb),0.5); }
+  .doc-swatch .cap { display:block; height: 56px; }
+  .doc-swatch .m { display:block; padding: 9px 11px; }
+  .doc-swatch .m .k { display:block; font-size: 12.5px; font-weight: 500; }
+  .doc-swatch .m .v { display:block; font-family: var(--nb-font-mono); font-size: 11px; color: var(--nb-text-faint); margin-top: 2px; }
+
+  .doc-ramp { display: grid; grid-template-columns: repeat(10, 1fr); border: 1px solid var(--nb-border); border-radius: var(--nb-radius-md); overflow: hidden; }
+  @media (max-width: 620px){ .doc-ramp { grid-template-columns: repeat(5,1fr); } }
+  .doc-ramp .s { height: 64px; position: relative; cursor: pointer; border: 0; padding: 0; }
+  .doc-ramp .s span { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--nb-font-mono); font-size: 9px; text-align: center; padding: 2px 0; color: rgba(0,0,0,0.65); background: rgba(255,255,255,0.18); }
+
+  .doc-scale-row { display: flex; align-items: baseline; gap: var(--nb-space-5); padding: 14px 0; border-bottom: 1px solid var(--nb-border); }
+  .doc-scale-row .tk { font-family: var(--nb-font-mono); font-size: 11.5px; color: var(--nb-text-faint); width: 130px; flex: 0 0 auto; }
+
+  .doc-space-row { display: flex; align-items: center; gap: var(--nb-space-4); padding: 9px 0; }
+  .doc-space-row .tk { font-family: var(--nb-font-mono); font-size: 11.5px; color: var(--nb-text-faint); width: 130px; flex: 0 0 auto; }
+  .doc-space-row .bar { height: 14px; background: linear-gradient(90deg, var(--nb-accent), var(--nb-deep)); border-radius: 3px; }
+
+  .doc-grid { display: grid; gap: var(--nb-space-4); }
+  .doc-grid.two { grid-template-columns: 1fr 1fr; }
+  .doc-grid.three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 720px){ .doc-grid.two, .doc-grid.three { grid-template-columns: 1fr; } }
+
+  .doc-radius-demo { height: 90px; border: 1px solid var(--nb-border); background: var(--nb-glass-strong); display: grid; place-items: end center; padding-bottom: 8px; font-family: var(--nb-font-mono); font-size: 11px; color: var(--nb-text-faint); }
+  .doc-elev-demo { height: 90px; border-radius: var(--nb-radius-md); background: var(--nb-surface-raised); display: grid; place-items: center; font-family: var(--nb-font-mono); font-size: 11px; color: var(--nb-text-faint); }
+
+  /* boot pattern (contained, opt-in) */
+  .doc-boot { position: relative; height: 260px; border-radius: var(--nb-radius-lg); border: 1px solid var(--nb-border); overflow: hidden; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 50%, #04130b, var(--nb-bg) 72%); }
+  .doc-boot .stage { position: relative; width: 200px; height: 200px; display: grid; place-items: center; }
+  .doc-boot .bp { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--nb-accent); left: 50%; top: 50%; opacity: 0; filter: blur(.5px); }
+  .doc-boot .bflash { position: absolute; width: 60px; height: 60px; border-radius: 50%; opacity: 0; transform: scale(.2);
+    background: radial-gradient(circle, #f4ffe9, rgba(var(--nb-accent-rgb),0.5) 40%, transparent 70%); }
+  .doc-boot .bx { width: 110px; height: 110px; opacity: 0; transform: scale(.6); filter: drop-shadow(0 0 24px rgba(var(--nb-accent-rgb),0.6)); }
+  .doc-boot.run .bp { animation: docbp 0.9s var(--nb-ease-organic) forwards; }
+  .doc-boot.run .bflash { animation: docflash 0.7s ease-out 1.35s forwards; }
+  .doc-boot.run .bx { animation: docbx 0.9s var(--nb-ease-glass) 1.55s forwards; }
+  @keyframes docbp { 0%{ transform: translate(var(--dx),var(--dy)) scale(1); opacity:0;} 25%{opacity:.9;} 100%{ transform: translate(-50%,-50%) scale(.2); opacity:0; } }
+  @keyframes docflash { 0%{opacity:0;transform:scale(.2);} 40%{opacity:1;transform:scale(2.4);} 100%{opacity:0;transform:scale(3.6);} }
+  @keyframes docbx { 0%{opacity:0;transform:scale(.6) rotate(-6deg);} 55%{opacity:1;transform:scale(1.06) rotate(2deg);} 100%{opacity:1;transform:scale(1) rotate(0);} }
+  @media (prefers-reduced-motion: reduce){ .doc-boot.run .bp, .doc-boot.run .bflash, .doc-boot.run .bx { animation: none; } .doc-boot .bx { opacity: 1; transform: none; } }
+
+  /* heritage timeline */
+  .doc-timeline { display: grid; grid-template-columns: repeat(4,1fr); }
+  @media (max-width: 760px){ .doc-timeline { grid-template-columns: 1fr 1fr; gap: 26px 0; } }
+  .doc-node { position: relative; padding: 26px 20px 0 0; }
+  .doc-node::before { content:""; position:absolute; top:9px; left:0; right:0; height:1px; background: var(--nb-border); }
+  .doc-node::after { content:""; position:absolute; top:4px; left:0; width:11px; height:11px; border-radius:50%; background: var(--nb-accent); box-shadow: 0 0 14px rgba(var(--nb-accent-rgb),0.6); }
+  .doc-node .y { font-family: var(--nb-font-mono); font-size: 12px; color: var(--nb-text-faint); }
+  .doc-node .n { font-weight: 500; font-size: 15px; margin: 6px 0 7px; }
+  .doc-node .d { font-size: 13px; color: var(--nb-text-dim); }
+
+  .doc-foot { margin-top: var(--nb-space-16); padding-top: var(--nb-space-8); border-top: 1px solid var(--nb-border); font-family: var(--nb-font-mono); font-size: 12px; color: var(--nb-text-faint); line-height: 1.9; }
+  .doc-foot a { color: var(--nb-text-dim); }
+
+  /* toast */
+  .doc-toasts { position: fixed; left: 0; right: 0; bottom: 24px; z-index: var(--nb-z-toast); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .doc-toast { pointer-events: auto; background: var(--nb-surface-overlay); border: 1px solid rgba(var(--nb-accent-rgb),0.4); border-radius: var(--nb-radius-md); padding: 10px 16px; font-size: 13px; box-shadow: var(--nb-shadow-2); opacity: 0; transform: translateY(10px); transition: opacity .26s, transform .26s; }
+  .doc-toast.show { opacity: 1; transform: none; }
+  .doc-toast b { color: var(--nb-accent); }
+</style>
+</head>
+<body class="nb-root">
+
+<a class="doc-skip nb-btn nb-btn--secondary nb-btn--sm" href="#overview">Skip to content</a>
+
+<!-- shared nexus mark -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <radialGradient id="nexFill" cx="38%" cy="34%" r="72%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="34%" stop-color="var(--nb-core)"/>
+      <stop offset="70%" stop-color="var(--nb-accent)"/>
+      <stop offset="100%" stop-color="var(--nb-deep)"/>
+    </radialGradient>
+    <g id="nexusGlyph">
+      <path fill="url(#nexFill)" d="M50 6 C54 26 60 40 78 46 C60 52 54 66 50 90 C46 66 40 52 22 46 C40 40 46 26 50 6 Z"/>
+      <circle cx="50" cy="46" r="9" fill="#ffffff" opacity="0.9"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- top bar -->
+<header class="doc-topbar">
+  <a class="doc-brand" href="#overview">
+    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#nexusGlyph"/></svg>
+    <b>Nebula</b>
+  </a>
+  <span class="doc-ver">v1.0.0</span>
+  <span class="spacer"></span>
+  <div class="nb-tabs" role="group" aria-label="Theme">
+    <button class="nb-tab is-active" id="themeNow" type="button">now</button>
+    <button class="nb-tab" id="theme2001" type="button">2001</button>
+  </div>
+</header>
+
+<div class="doc-shell">
+  <!-- sidebar -->
+  <nav class="doc-side" aria-label="Sections">
+    <h4>Start</h4>
+    <a href="#overview" class="is-active">Overview</a>
+    <a href="#install">Getting started</a>
+    <h4>Foundations</h4>
+    <a href="#color">Color</a>
+    <a href="#type">Typography</a>
+    <a href="#space">Spacing &amp; radius</a>
+    <a href="#elevation">Elevation &amp; motion</a>
+    <h4>Components</h4>
+    <a href="#buttons">Buttons</a>
+    <a href="#surfaces">Surfaces &amp; cards</a>
+    <a href="#forms">Forms</a>
+    <a href="#status">Badges &amp; meters</a>
+    <a href="#navigation">Lists &amp; tabs</a>
+    <a href="#identity">Identity &amp; controls</a>
+    <h4>Guidance</h4>
+    <a href="#theming">Theming</a>
+    <a href="#patterns">Motion patterns</a>
+    <a href="#a11y">Accessibility</a>
+    <a href="#heritage">Heritage</a>
+  </nav>
+
+  <main class="doc-main">
+
+    <!-- OVERVIEW / HERO -->
+    <section class="doc-section doc-hero" id="overview">
+      <div class="glowbg" aria-hidden="true"></div>
+      <div class="row">
+        <div>
+          <span class="nb-eyebrow">Living-machine design system</span>
+          <h1 class="nb-accent-text">Nebula</h1>
+          <p>Translucent glass, bioluminescent green, and one beating core in the dark. A small, importable system of <strong style="color:var(--nb-text)">tokens and components</strong> — a respectful, modern homage to the original Xbox dashboard.</p>
+          <div class="cta">
+            <a class="nb-btn nb-btn--primary" href="#install">Get started</a>
+            <a class="nb-btn nb-btn--secondary" href="#buttons">Components</a>
+            <button class="nb-btn nb-btn--ghost" id="copyInstall" type="button">Copy &lt;link&gt;</button>
+          </div>
+        </div>
+        <div class="orbwrap" aria-hidden="true">
+          <div class="nb-orb nb-orb--breathing">
+            <svg class="nb-orb__x" viewBox="0 0 100 100"><use href="#nexusGlyph"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GETTING STARTED -->
+    <section class="doc-section" id="install">
+      <h2>Getting started</h2>
+      <p class="lede">Three lines to adopt the system. It's namespaced (<code class="nb-mono">--nb-*</code> / <code class="nb-mono">.nb-*</code>), ships no global reset, and styles no bare elements — so it drops into an existing project without collisions.</p>
+
+      <div class="doc-example" data-static>
+        <div class="doc-demo col">
+          <p class="nb-small" style="margin:0">1 · Link the stylesheet and fonts. &nbsp; 2 · Add <code class="nb-mono">.nb-root</code> to opt a region into the theme. &nbsp; 3 · Use tokens and components.</p>
+        </div>
+        <div class="doc-codewrap">
+          <pre class="doc-code"><code></code></pre>
+          <script type="text/plain" class="doc-snippet">
+&lt;link rel="stylesheet" href="nebula.css"&gt;
+&lt;link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;300;400;600&amp;family=Hanken+Grotesk:wght@300;400;500;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"&gt;
+
+&lt;body class="nb-root"&gt;
+  &lt;button class="nb-btn nb-btn--primary"&gt;Launch&lt;/button&gt;
+&lt;/body&gt;
+          </script>
+        </div>
+      </div>
+
+      <p class="nb-small">Want only the design tokens for your own components? You don't even need <code class="nb-mono">.nb-root</code> — the <code class="nb-mono">--nb-*</code> custom properties live on <code class="nb-mono">:root</code> and are available everywhere. Tooling consumers can read <a href="nebula.tokens.json" style="color:var(--nb-accent)">nebula.tokens.json</a>.</p>
+    </section>
+
+    <!-- COLOR -->
+    <section class="doc-section" id="color">
+      <h2>Color</h2>
+      <p class="lede">Reference the <strong style="color:var(--nb-text)">semantic roles</strong> in product code — they retint with the theme. The raw ramps are there when you need them.</p>
+
+      <h3 class="doc-sub">Semantic roles</h3>
+      <div class="doc-swatches" id="semanticSwatches">
+        <button class="doc-swatch" data-token="--nb-bg"><span class="cap" style="background:var(--nb-bg)"></span><span class="m"><span class="k">bg</span><span class="v">--nb-bg</span></span></button>
+        <button class="doc-swatch" data-token="--nb-surface"><span class="cap" style="background:var(--nb-surface)"></span><span class="m"><span class="k">surface</span><span class="v">--nb-surface</span></span></button>
+        <button class="doc-swatch" data-token="--nb-surface-raised"><span class="cap" style="background:var(--nb-surface-raised)"></span><span class="m"><span class="k">raised</span><span class="v">--nb-surface-raised</span></span></button>
+        <button class="doc-swatch" data-token="--nb-accent"><span class="cap" style="background:var(--nb-accent)"></span><span class="m"><span class="k">accent</span><span class="v">--nb-accent</span></span></button>
+        <button class="doc-swatch" data-token="--nb-accent-strong"><span class="cap" style="background:var(--nb-accent-strong)"></span><span class="m"><span class="k">accent strong</span><span class="v">--nb-accent-strong</span></span></button>
+        <button class="doc-swatch" data-token="--nb-core"><span class="cap" style="background:var(--nb-core)"></span><span class="m"><span class="k">core</span><span class="v">--nb-core</span></span></button>
+        <button class="doc-swatch" data-token="--nb-success"><span class="cap" style="background:var(--nb-success)"></span><span class="m"><span class="k">success</span><span class="v">--nb-success</span></span></button>
+        <button class="doc-swatch" data-token="--nb-warning"><span class="cap" style="background:var(--nb-warning)"></span><span class="m"><span class="k">warning</span><span class="v">--nb-warning</span></span></button>
+        <button class="doc-swatch" data-token="--nb-danger"><span class="cap" style="background:var(--nb-danger)"></span><span class="m"><span class="k">danger</span><span class="v">--nb-danger</span></span></button>
+        <button class="doc-swatch" data-token="--nb-info"><span class="cap" style="background:var(--nb-info)"></span><span class="m"><span class="k">info</span><span class="v">--nb-info</span></span></button>
+      </div>
+
+      <h3 class="doc-sub">Green ramp</h3>
+      <div class="doc-ramp" id="greenRamp"></div>
+
+      <h3 class="doc-sub">Ink ramp</h3>
+      <div class="doc-ramp" id="inkRamp" style="grid-template-columns:repeat(5,1fr)"></div>
+
+      <p class="nb-small" style="margin-top:var(--nb-space-5)">The default accent is the modern <code class="nb-mono">#3aee84</code>. The <strong style="color:var(--nb-text)">2001</strong> theme (top-right) swaps it for the authentic radioactive <code class="nb-mono" style="color:var(--nb-accent)">#7EB900</code> "apple green" the original dashboard shipped — limier than today's <code class="nb-mono">#107C10</code>. Click any swatch to copy its token.</p>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="doc-section" id="type">
+      <h2>Typography</h2>
+      <p class="lede">Three faces: a cold geometric display, a warm humanist UI sans, and a monospace for data. (Open fonts that evoke the era — not the original's custom type.)</p>
+      <div class="doc-grid three">
+        <div class="nb-glass nb-card"><span class="nb-eyebrow">Display · Exo 2</span><div style="font-family:var(--nb-font-display);font-weight:200;font-size:38px;line-height:1;margin:14px 0 6px">Alive</div><p class="nb-small" style="margin:0">Thin, geometric, for the biggest moments.</p></div>
+        <div class="nb-glass nb-card"><span class="nb-eyebrow">UI · Hanken Grotesk</span><div style="font-weight:400;font-size:26px;margin:14px 0 6px">Readable</div><p class="nb-small" style="margin:0">Warm and open. Everything you read.</p></div>
+        <div class="nb-glass nb-card"><span class="nb-eyebrow">Data · JetBrains Mono</span><div style="font-family:var(--nb-font-mono);font-size:22px;margin:14px 0 6px">--nb-accent</div><p class="nb-small" style="margin:0">Tokens, values, captions, hints.</p></div>
+      </div>
+      <h3 class="doc-sub">Scale</h3>
+      <div id="typeScale"></div>
+    </section>
+
+    <!-- SPACING & RADIUS -->
+    <section class="doc-section" id="space">
+      <h2>Spacing &amp; radius</h2>
+      <p class="lede">A 4px spacing base and a rounded radius scale keep rhythm consistent across components.</p>
+      <div class="doc-grid two">
+        <div>
+          <h3 class="doc-sub">Spacing</h3>
+          <div id="spaceScale"></div>
+        </div>
+        <div>
+          <h3 class="doc-sub">Radius</h3>
+          <div class="doc-grid two" style="gap:var(--nb-space-3)">
+            <div class="doc-radius-demo" style="border-radius:var(--nb-radius-sm)">sm · 6px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--nb-radius-md)">md · 10px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--nb-radius-lg)">lg · 14px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--nb-radius-xl)">xl · 18px</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ELEVATION & MOTION -->
+    <section class="doc-section" id="elevation">
+      <h2>Elevation &amp; motion</h2>
+      <p class="lede">Shadows lift glass off the dark; the glow is a light source, not decoration. Motion drifts and breathes — it never snaps.</p>
+      <div class="doc-grid three">
+        <div class="doc-elev-demo" style="box-shadow:var(--nb-shadow-1)">--nb-shadow-1</div>
+        <div class="doc-elev-demo" style="box-shadow:var(--nb-shadow-2)">--nb-shadow-2</div>
+        <div class="doc-elev-demo" style="box-shadow:var(--nb-glow-md)">--nb-glow-md</div>
+      </div>
+      <p class="nb-small" style="margin-top:var(--nb-space-5)">Durations <code class="nb-mono">--nb-dur-fast 160ms</code> · <code class="nb-mono">base 240ms</code> · <code class="nb-mono">slow 480ms</code>. Easings <code class="nb-mono">--nb-ease-organic</code> (drift) and <code class="nb-mono">--nb-ease-glass</code> (UI). The breathing core uses <code class="nb-mono">--nb-dur-pulse 5.5s</code>.</p>
+    </section>
+
+    <!-- BUTTONS -->
+    <section class="doc-section" id="buttons">
+      <h2>Buttons</h2>
+      <p class="lede">Four variants, three sizes, full state coverage. The primary carries the glow; everything else is glass or quiet.</p>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="nb-btn nb-btn--primary"&gt;Launch&lt;/button&gt;
+&lt;button class="nb-btn nb-btn--secondary"&gt;Secondary&lt;/button&gt;
+&lt;button class="nb-btn nb-btn--ghost"&gt;Ghost&lt;/button&gt;
+&lt;button class="nb-btn nb-btn--danger"&gt;Delete&lt;/button&gt;
+&lt;button class="nb-btn nb-btn--primary" disabled&gt;Disabled&lt;/button&gt;
+        </script></div>
+      </div>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="nb-btn nb-btn--primary nb-btn--sm"&gt;Small&lt;/button&gt;
+&lt;button class="nb-btn nb-btn--primary"&gt;Medium&lt;/button&gt;
+&lt;button class="nb-btn nb-btn--primary nb-btn--lg"&gt;Large&lt;/button&gt;
+&lt;button class="nb-btn nb-btn--secondary nb-btn--icon" aria-label="Settings"&gt;
+  &lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"&gt;&lt;circle cx="12" cy="12" r="3"/&gt;&lt;path d="M19 12a7 7 0 00-.2-1.6"/&gt;&lt;/svg&gt;
+&lt;/button&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- SURFACES -->
+    <section class="doc-section" id="surfaces">
+      <h2>Surfaces &amp; cards</h2>
+      <p class="lede">One frosted-glass material does most of the structural work — beveled, lit from above, translucent. <code class="nb-mono">.nb-glass</code> is the material; <code class="nb-mono">.nb-card</code> is the padded content block.</p>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="nb-glass nb-card" style="max-width:320px"&gt;
+  &lt;span class="nb-badge"&gt;alive&lt;/span&gt;
+  &lt;h3 class="nb-card__title" style="margin-top:12px"&gt;Frosted pane&lt;/h3&gt;
+  &lt;p class="nb-card__body"&gt;Bright top bevel, glossy sheen, soft inner shadow, and a blur that lets the glow bleed through from behind.&lt;/p&gt;
+  &lt;div class="nb-card__footer"&gt;
+    &lt;button class="nb-btn nb-btn--primary nb-btn--sm"&gt;Open&lt;/button&gt;
+    &lt;button class="nb-btn nb-btn--ghost nb-btn--sm"&gt;Dismiss&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- FORMS -->
+    <section class="doc-section" id="forms">
+      <h2>Forms</h2>
+      <p class="lede">Inputs, labels, help text, and a switch built on a real checkbox for accessibility.</p>
+      <div class="doc-example">
+        <div class="doc-demo col" style="max-width:420px"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;label class="nb-field"&gt;
+  &lt;span class="nb-label"&gt;Soundtrack name&lt;/span&gt;
+  &lt;input class="nb-input" type="text" placeholder="Untitled (1)"&gt;
+  &lt;span class="nb-help"&gt;Stored in memory, counted in blocks.&lt;/span&gt;
+&lt;/label&gt;
+
+&lt;label class="nb-switch" style="margin-top:16px"&gt;
+  &lt;input class="nb-switch__control" type="checkbox" checked&gt;
+  &lt;span class="nb-switch__track"&gt;&lt;/span&gt;
+  &lt;span class="nb-switch__label"&gt;Ambient audio&lt;/span&gt;
+&lt;/label&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- STATUS -->
+    <section class="doc-section" id="status">
+      <h2>Badges &amp; meters</h2>
+      <p class="lede">Status tones map into the green world; feedback colors (warning amber, danger red, info teal) stay legible against the dark.</p>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;span class="nb-badge"&gt;online&lt;/span&gt;
+&lt;span class="nb-badge nb-badge--neutral"&gt;idle&lt;/span&gt;
+&lt;span class="nb-badge nb-badge--success"&gt;healthy&lt;/span&gt;
+&lt;span class="nb-badge nb-badge--warning"&gt;degraded&lt;/span&gt;
+&lt;span class="nb-badge nb-badge--danger"&gt;offline&lt;/span&gt;
+&lt;span class="nb-badge nb-badge--info"&gt;syncing&lt;/span&gt;
+&lt;span class="nb-tag"&gt;8000 blocks&lt;/span&gt;
+        </script></div>
+      </div>
+      <div class="doc-example">
+        <div class="doc-demo col" style="max-width:420px"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="nb-meter"&gt;&lt;span class="nb-meter__value" style="width:62%"&gt;&lt;/span&gt;&lt;/div&gt;
+
+&lt;!-- memory in blocks (an OG-dashboard detail) --&gt;
+&lt;div class="nb-blocks" style="--nb-blocks-cols:20; margin-top:14px"&gt;
+  &lt;i class="is-filled"&gt;&lt;/i&gt;&lt;i class="is-filled"&gt;&lt;/i&gt;&lt;i class="is-filled"&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;
+  &lt;i class="is-filled"&gt;&lt;/i&gt;&lt;i class="is-filled"&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;&lt;i&gt;&lt;/i&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- NAVIGATION -->
+    <section class="doc-section" id="navigation">
+      <h2>Lists &amp; tabs</h2>
+      <p class="lede">A glowing menu row with an active state, and a pill tab group.</p>
+      <div class="doc-example">
+        <div class="doc-demo" style="align-items:flex-start"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;ul class="nb-glass nb-list" style="width:220px"&gt;
+  &lt;li class="nb-list__item is-active"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"&gt;&lt;path d="M9 8l7 4-7 4z"/&gt;&lt;rect x="3" y="4" width="18" height="16" rx="3"/&gt;&lt;/svg&gt; play&lt;/li&gt;
+  &lt;li class="nb-list__item"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"&gt;&lt;circle cx="7" cy="17" r="3"/&gt;&lt;path d="M10 17V5l9-2v12"/&gt;&lt;/svg&gt; music&lt;/li&gt;
+  &lt;li class="nb-list__item"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"&gt;&lt;rect x="3" y="6" width="18" height="12" rx="2"/&gt;&lt;path d="M7 10v4M11 10v4"/&gt;&lt;/svg&gt; memory&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class="nb-tabs"&gt;
+  &lt;button class="nb-tab is-active"&gt;games&lt;/button&gt;
+  &lt;button class="nb-tab"&gt;music&lt;/button&gt;
+  &lt;button class="nb-tab"&gt;settings&lt;/button&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- IDENTITY -->
+    <section class="doc-section" id="identity">
+      <h2>Identity &amp; controls</h2>
+      <p class="lede">The signature: a living core, the X-nexus. Plus the controller-hint pill and keyboard key — small nods that make the homage legible without copying anything.</p>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="nb-orb nb-orb--breathing" style="width:140px;height:140px"&gt;
+  &lt;svg class="nb-orb__x" viewBox="0 0 100 100"&gt;&lt;use href="#nexusGlyph"/&gt;&lt;/svg&gt;
+&lt;/div&gt;
+
+&lt;span class="nb-pad"&gt;&lt;span class="nb-pad__key"&gt;A&lt;/span&gt; select&lt;/span&gt;
+&lt;span class="nb-pad nb-pad--b"&gt;&lt;span class="nb-pad__key"&gt;B&lt;/span&gt; back&lt;/span&gt;
+&lt;span&gt;Press &lt;kbd class="nb-kbd"&gt;Esc&lt;/kbd&gt; to back out&lt;/span&gt;
+        </script></div>
+      </div>
+      <p class="nb-small">The <code class="nb-mono">nexusGlyph</code> is a stylized, original mark — provide your own <code class="nb-mono">&lt;svg&gt;&lt;defs&gt;</code> as shown in the docs source. Do not reproduce the Xbox logo.</p>
+    </section>
+
+    <!-- THEMING -->
+    <section class="doc-section" id="theming">
+      <h2>Theming</h2>
+      <p class="lede">Every component reads from semantic tokens, so a theme is just a token override. Two ship in the box; rolling your own is a handful of lines.</p>
+      <div class="doc-example" data-static>
+        <div class="doc-demo col"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;!-- built in: the authentic 2001 palette --&gt;
+&lt;html data-nb-theme="2001"&gt; … &lt;/html&gt;
+
+/* your own: override the semantic roles in any scope */
+[data-nb-theme="cyan"] {
+  --nb-accent: #38e8ff;
+  --nb-accent-rgb: 56, 232, 255;  /* keep -rgb in sync for glows */
+  --nb-accent-strong: #9af3ff;
+  --nb-core: #e8feff;
+  --nb-deep: #0a4a5a;
+}
+        </script></div>
+      </div>
+      <p class="nb-small">Try it now with the <strong style="color:var(--nb-text)">now / 2001</strong> toggle in the top bar — the entire page retints from one token change.</p>
+    </section>
+
+    <!-- PATTERNS -->
+    <section class="doc-section" id="patterns">
+      <h2>Motion patterns</h2>
+      <p class="lede">The original booted into a black void where particles gathered into a core, flared, and resolved into a glowing X. Reserve this <em>flash</em> for one earned moment — an app launch, never routine UI. It's a documented pattern here, not a forced overlay.</p>
+      <div class="doc-boot" id="docBoot" aria-hidden="true">
+        <div class="stage" id="bootStage">
+          <div class="bflash"></div>
+          <svg class="bx" viewBox="0 0 100 100"><use href="#nexusGlyph"/></svg>
+        </div>
+      </div>
+      <div style="margin-top:var(--nb-space-4);display:flex;gap:var(--nb-space-3);align-items:center;flex-wrap:wrap">
+        <button class="nb-btn nb-btn--primary" id="playBoot" type="button">Preview the boot</button>
+        <span class="nb-small">Contained, skippable, and disabled under <code class="nb-mono">prefers-reduced-motion</code>.</span>
+      </div>
+    </section>
+
+    <!-- ACCESSIBILITY -->
+    <section class="doc-section" id="a11y">
+      <h2>Accessibility</h2>
+      <p class="lede">Maturity is mostly the unglamorous parts.</p>
+      <div class="doc-grid two">
+        <div class="nb-glass nb-card"><h3 class="nb-card__title">Built in</h3><p class="nb-card__body">Consistent <code class="nb-mono">:focus-visible</code> ring on every interactive component · <code class="nb-mono">prefers-reduced-motion</code> disables breathing, reveals, and transitions · the switch is a real checkbox · accent-on-dark text meets WCAG AA at body sizes.</p></div>
+        <div class="nb-glass nb-card"><h3 class="nb-card__title">Your part</h3><p class="nb-card__body">Lists and tabs are styled, not re-implemented — keep correct roles and <code class="nb-mono">aria-*</code> · reserve the glow accent for emphasis and chrome, use <code class="nb-mono">--nb-text</code> / <code class="nb-mono">--nb-text-dim</code> for prose · don't place body text on the accent green.</p></div>
+      </div>
+    </section>
+
+    <!-- HERITAGE -->
+    <section class="doc-section" id="heritage">
+      <h2>Heritage</h2>
+      <p class="lede">Where the look comes from, credited plainly.</p>
+      <div class="doc-timeline">
+        <div class="doc-node"><div class="y">2001</div><div class="n">Original Xbox</div><div class="d">Particles forming a liquid core, a glowing X, translucent menus. Concept by Seton Kim, produced at REZN8.</div></div>
+        <div class="doc-node"><div class="y">2001</div><div class="n">The boot sound</div><div class="d">Brian Schmidt synthesized it live on the audio chip — ~25&nbsp;KB of ROM. "Power striving to break free."</div></div>
+        <div class="doc-node"><div class="y">2005&ndash;12</div><div class="n">Frutiger Aero</div><div class="d">Glass, water, and aurora everywhere. The optimistic era the original Xbox quietly predated.</div></div>
+        <div class="doc-node"><div class="y">Now</div><div class="n">Nebula</div><div class="d">The living-machine aesthetic, re-tokenized into a system you can ship with.</div></div>
+      </div>
+
+      <div class="doc-foot">
+        A design study, <strong style="color:var(--nb-text-dim)">not affiliated with Microsoft or Xbox</strong>. Type, sound patterns, and the X-nexus mark are original evocations, not Microsoft assets.<br>
+        With respect to the people behind the original screen: Seton Kim (concept, at REZN8) · Brian Schmidt (boot sound) · and the dashboard team — Victor Blanco, Sakphong Chanbai, Bradford Christian, Jim Helm — whose names hid in System Info for two decades.<br>
+        NEBULA v1.0.0 · MIT · <a href="README.md">README</a> · <a href="nebula.css">nebula.css</a> · <a href="nebula.tokens.json">tokens.json</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="doc-toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(s, c){ return (c||document).querySelector(s); }
+  function $all(s, c){ return Array.prototype.slice.call((c||document).querySelectorAll(s)); }
+
+  /* toast */
+  var toasts = $('#toasts');
+  function toast(html){
+    var t = document.createElement('div'); t.className = 'doc-toast'; t.innerHTML = html;
+    toasts.appendChild(t); requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.remove(); }, 300); }, 2400);
+  }
+  function copy(text, label){
+    var done = function(){ toast('Copied <b>' + (label || 'snippet') + '</b>'); };
+    if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); }); }
+    else { fallback(text); done(); }
+  }
+  function fallback(text){
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch(e){} ta.remove();
+  }
+
+  /* the snippets are stored HTML-escaped (so the code block reads correctly);
+     decode for the live demo injection */
+  function decode(s){ var d = document.createElement('textarea'); d.innerHTML = s; return d.value; }
+  function dedent(s){
+    s = s.replace(/^\n+/, '').replace(/\s+$/, '');
+    var lines = s.split('\n');
+    var indent = lines.reduce(function(min, l){ if (!l.trim()) return min; var m = l.match(/^\s*/)[0].length; return Math.min(min, m); }, Infinity);
+    if (!isFinite(indent)) indent = 0;
+    return lines.map(function(l){ return l.slice(indent); }).join('\n');
+  }
+
+  /* render each example: snippet -> code block (+copy) and, unless [data-static], a live demo */
+  $all('.doc-example').forEach(function(ex){
+    var src = $('.doc-snippet', ex); if (!src) return;
+    // snippets are stored HTML-escaped inside <script type="text/plain"> so the raw
+    // text is unambiguous; decode once for display, live demo, and copy.
+    var decoded = decode(dedent(src.textContent));
+    var codeEl = $('.doc-code code', ex);
+    if (codeEl) codeEl.textContent = decoded;      // textContent re-escapes for safe display
+    var demo = $('.doc-demo', ex);
+    if (demo && !demo.children.length && !ex.hasAttribute('data-static')) {
+      try { demo.innerHTML = decoded; } catch(e){}
+    }
+    var wrap = $('.doc-codewrap', ex);
+    if (wrap){
+      var btn = document.createElement('button');
+      btn.className = 'nb-btn nb-btn--ghost nb-btn--sm doc-copy';
+      btn.type = 'button'; btn.textContent = 'copy';
+      btn.addEventListener('click', function(){ copy(decoded, 'code'); });
+      wrap.appendChild(btn);
+    }
+  });
+
+  /* theming demo is illustrative CSS — give it a real, live preview */
+  (function(){
+    var ex = $('#theming .doc-example'); if(!ex) return;
+    var demo = $('.doc-demo', ex);
+    demo.innerHTML = '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">'
+      + '<button class="nb-btn nb-btn--primary">Themed button</button>'
+      + '<span class="nb-badge">retints live</span>'
+      + '<div class="nb-meter" style="width:160px"><span class="nb-meter__value" style="width:70%"></span></div></div>';
+  })();
+
+  /* color ramps */
+  var greens = [['50','#eafff0'],['100','#d6ffe2'],['200','#a9f7c4'],['300','#6cf0a0'],['400','#3aee84'],['500','#14b85a'],['600','#0e8f44'],['700','#0a5a2c'],['800','#073d1f'],['900','#04230f']];
+  var inks = [['0','#03070a'],['1','#060c0d'],['2','#0a1413'],['3','#0e1b18'],['4','#14211d']];
+  function buildRamp(el, items, prefix){
+    if(!el) return;
+    items.forEach(function(p){
+      var s = document.createElement('button'); s.className='s'; s.style.background = p[1];
+      s.innerHTML = '<span>'+p[0]+'</span>'; s.title = prefix+p[0]+' · '+p[1];
+      s.addEventListener('click', function(){ copy('var('+prefix+p[0]+')', prefix+p[0]); });
+      el.appendChild(s);
+    });
+  }
+  buildRamp($('#greenRamp'), greens, '--nb-green-');
+  buildRamp($('#inkRamp'), inks, '--nb-ink-');
+
+  /* semantic swatches copy */
+  $all('#semanticSwatches .doc-swatch').forEach(function(b){
+    b.addEventListener('click', function(){ var t=b.getAttribute('data-token'); copy('var('+t+')', t); });
+  });
+
+  /* type scale */
+  var typeRows = [
+    ['--nb-text-display','Nebula','var(--nb-font-display)',200,'42px'],
+    ['--nb-text-4xl','Heading','var(--nb-font-display)',300,'40px'],
+    ['--nb-text-2xl','Section title','var(--nb-font-display)',400,'28px'],
+    ['--nb-text-lg','Lead paragraph','var(--nb-font-sans)',400,'18px'],
+    ['--nb-text-md','Body copy is set here','var(--nb-font-sans)',300,'16px'],
+    ['--nb-text-sm','Secondary / captions','var(--nb-font-sans)',400,'14px'],
+    ['--nb-text-2xs','intensity: alive','var(--nb-font-mono)',500,'11px']
+  ];
+  var ts = $('#typeScale');
+  if (ts) typeRows.forEach(function(r){
+    var row = document.createElement('div'); row.className='doc-scale-row';
+    row.innerHTML = '<span class="tk">'+r[0]+'</span><span style="font-family:'+r[2]+';font-weight:'+r[3]+';font-size:'+r[4]+';color:var(--nb-text)"></span>';
+    row.lastChild.textContent = r[1];
+    ts.appendChild(row);
+  });
+
+  /* spacing scale */
+  var spaces = [['1','4'],['2','8'],['3','12'],['4','16'],['5','20'],['6','24'],['8','32'],['10','40'],['12','48']];
+  var sc = $('#spaceScale');
+  if (sc) spaces.forEach(function(p){
+    var row = document.createElement('div'); row.className='doc-space-row';
+    row.innerHTML = '<span class="tk">--nb-space-'+p[0]+'</span><span class="bar" style="width:'+p[1]+'px"></span><span class="nb-small">'+p[1]+'px</span>';
+    sc.appendChild(row);
+  });
+
+  /* theme toggle */
+  var nowBtn = $('#themeNow'), b2001 = $('#theme2001');
+  function setTheme(t){
+    document.documentElement.dataset.nbTheme = (t === '2001') ? '2001' : '';
+    nowBtn.classList.toggle('is-active', t !== '2001');
+    b2001.classList.toggle('is-active', t === '2001');
+  }
+  nowBtn.addEventListener('click', function(){ setTheme('now'); });
+  b2001.addEventListener('click', function(){ setTheme('2001'); });
+
+  /* copy install */
+  $('#copyInstall').addEventListener('click', function(){ copy('<link rel="stylesheet" href="nebula.css">', '<link>'); });
+
+  /* reveal on scroll */
+  $all('.doc-section').forEach(function(s){ s.classList.add('nb-reveal'); });
+  if (!reduce && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('is-in'); io.unobserve(e.target); } }); }, { threshold: 0.06 });
+    $all('.doc-section').forEach(function(s){ io.observe(s); });
+  } else { $all('.doc-section').forEach(function(s){ s.classList.add('is-in'); }); }
+
+  /* scrollspy for sidebar */
+  var links = $all('.doc-side a');
+  var byId = {}; links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window){
+    var spy = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (e.isIntersecting){
+          links.forEach(function(a){ a.classList.remove('is-active'); });
+          var a = byId[e.target.id]; if (a) a.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-64px 0px -70% 0px', threshold: 0 });
+    $all('.doc-section').forEach(function(s){ if (s.id) spy.observe(s); });
+  }
+
+  /* boot pattern demo (contained) */
+  var docBoot = $('#docBoot'), bootStage = $('#bootStage'), playBoot = $('#playBoot');
+  function runDocBoot(){
+    $all('.bp', bootStage).forEach(function(p){ p.remove(); });
+    var N = 12;
+    for (var i=0;i<N;i++){
+      var p = document.createElement('span'); p.className='bp';
+      var ang = (i/N)*Math.PI*2 + i*0.6, dist = 80 + (i%4)*16;
+      p.style.setProperty('--dx', Math.cos(ang)*dist+'px');
+      p.style.setProperty('--dy', Math.sin(ang)*dist+'px');
+      p.style.animationDelay = (i%5)*0.04+'s';
+      bootStage.insertBefore(p, bootStage.firstChild);
+    }
+    docBoot.classList.remove('run'); void docBoot.offsetWidth; docBoot.classList.add('run');
+  }
+  if (playBoot) playBoot.addEventListener('click', runDocBoot);
+
+  /* dev-facing credit (invisible, professional) */
+  try {
+    console.log('%cNEBULA v1.0.0', 'color:#3aee84;font-size:18px;font-weight:700');
+    console.log('%cA living-machine design system. Tokens: --nb-*  Components: .nb-*\nHomage to the original Xbox dashboard (2001). Not affiliated with Microsoft/Xbox.\nCredits: Seton Kim, Brian Schmidt, and the dashboard team (Blanco, Chanbai, Christian, Helm).',
+      'color:#a9c9b6;font-family:monospace;font-size:12px;line-height:1.6');
+  } catch(e){}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SONORA · Design Language</title>
+<meta name="description" content="SONORA — a loud, warm interface language of neon dusk and Memphis confetti, grounded in adobe and masa. Tokens, components, motion, and the three skies. A design study descended from Taco Bell's 1990s rebrand.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* base — desert night */
+    --noche:   #160a28;
+    --noche-2: #1f0f38;
+    --noche-3: #2a164e;
+
+    /* brand neon */
+    --fuego:    #ec1c7d;
+    --fuego-hi: #ff4fa0;
+    --fuego-lo: #9c1255;
+    --grape:    #7b2d97;
+    --turquesa: #17bdc0;
+    --turq-hi:  #45e4e0;
+    --sol:      #f9a51a;
+    --clay:     #c2562c;
+    --masa:     #f7edd8;
+
+    --accent: var(--fuego);
+
+    --ink:       #f7edd8;
+    --ink-dim:   #d8bdcf;
+    --ink-faint: rgba(247,237,216,0.52);
+    --line:        rgba(247,237,216,0.12);
+    --line-strong: rgba(247,237,216,0.26);
+
+    --font-display: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+    --font-ui:      'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-data:    'Space Mono', ui-monospace, 'SF Mono', monospace;
+
+    --ease-pop:  cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+    --dur-pop:   320ms;
+    --dur-shift: 800ms;
+    --dur-tap:   150ms;
+
+    /* spacing + radius scales */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px;
+    --r-sm:6px; --r-md:10px; --r-lg:16px; --r-pill:999px;
+
+    /* warm neutral ramp */
+    --sand-50:#faf6ee; --sand-100:#f3ece0; --sand-200:#e7dccb; --sand-300:#d4c6b0;
+    --sand-400:#b3a48b; --sand-500:#8c7d66; --sand-600:#6b5d49; --sand-700:#4d4234;
+    --sand-800:#2e271d; --sand-900:#1c1711;
+
+    /* ---- scene palette, themed by time of day (default: dusk) ---- */
+    --sky-1:#241047; --sky-2:#7d2f8f; --sky-3:#ec5a3a; --sky-4:#ffd98a;
+    --sun-core:#fff0c0; --sun-edge:#f9821a; --sun-glow:rgba(249,150,40,0.55);
+    --mesa-far:#7a3a6a; --mesa-mid:#561f4d; --ground:#3a163a; --cactus:#27102b;
+    --road:#2a1230; --road-line:#f9a51a; --star-op:0;
+  }
+  body[data-time="noon"] {
+    --accent: var(--sol);
+    --sky-1:#37c3d6; --sky-2:#84dccd; --sky-3:#dcebb0; --sky-4:#eec07a;
+    --sun-core:#fffbe6; --sun-edge:#ffcf4d; --sun-glow:rgba(249,200,80,0.6);
+    --mesa-far:#cba368; --mesa-mid:#b3743f; --ground:#caa15f; --cactus:#7c3f25;
+    --road:#6c5340; --road-line:#fff3d0; --star-op:0;
+  }
+  body[data-time="dusk"] {
+    --accent: var(--fuego);
+    --sky-1:#241047; --sky-2:#7d2f8f; --sky-3:#ec5a3a; --sky-4:#ffd98a;
+    --sun-core:#fff0c0; --sun-edge:#f9821a; --sun-glow:rgba(249,150,40,0.55);
+    --mesa-far:#7a3a6a; --mesa-mid:#561f4d; --ground:#3a163a; --cactus:#27102b;
+    --road:#2a1230; --road-line:#f9a51a; --star-op:0;
+  }
+  body[data-time="neon"] {
+    --accent: var(--fuego);
+    --sky-1:#0b0520; --sky-2:#1d0a36; --sky-3:#3a0f3e; --sky-4:#180a2c;
+    --sun-core:#ffffff; --sun-edge:#a98fd0; --sun-glow:rgba(150,120,210,0.4);
+    --mesa-far:#241038; --mesa-mid:#180b2c; --ground:#0b0518; --cactus:#190b2e;
+    --road:#0e0720; --road-line:#17bdc0; --star-op:1;
+  }
+
+  /* ============ docs-only chrome (NOT part of the library) ============
+     Remapped from Nebula's docs chrome onto Sonora's tokens, fonts, radii,
+     and the warm desert-night neon palette. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--noche); color: var(--ink); font-family: var(--font-ui); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--fuego); color: var(--masa); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  .doc-skip { position: fixed; left: -999px; top: 8px; z-index: 9000; background: var(--fuego); color: var(--masa); font-family: var(--font-display); font-weight: 800; padding: 8px 16px; border-radius: var(--r-pill); text-decoration: none; }
+  .doc-skip:focus { left: 8px; }
+
+  /* top bar — a warm neon chrome bar */
+  .doc-topbar {
+    position: sticky; top: 0; z-index: 500;
+    display: flex; align-items: center; gap: var(--sp-4);
+    height: 60px; padding: 0 var(--sp-5);
+    background: linear-gradient(180deg, rgba(22,10,40,0.92), rgba(22,10,40,0.66));
+    -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3);
+    border-bottom: 1px solid var(--line);
+  }
+  .doc-brand { display: inline-flex; align-items: center; gap: 11px; flex: 0 0 auto; text-decoration: none; }
+  .doc-brand svg { width: 26px; height: 26px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.45)); }
+  .doc-brand svg path, .doc-brand svg rect, .doc-brand svg circle { fill: var(--fuego); transition: fill var(--dur-shift) var(--ease-soft); }
+  .doc-brand b { font-family: var(--font-data); font-weight: 700; font-size: 13px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--masa); }
+  .doc-ver { font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); border: 1px solid var(--line-strong); padding: 2px 8px; border-radius: var(--r-pill); }
+  .doc-topbar .spacer { flex: 1; }
+  .doc-themetoggle { display: flex; align-items: center; gap: 7px; }
+  .doc-themetoggle .lbl { font-family: var(--font-data); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-right: 2px; }
+  @media (max-width: 620px){ .doc-themetoggle .lbl { display: none; } }
+  .doc-chip { appearance: none; border: 2px solid var(--line-strong); background: transparent; color: var(--ink-dim); font-family: var(--font-display); font-weight: 700; font-size: 13px; text-transform: lowercase; padding: 6px 14px; border-radius: var(--r-pill); cursor: pointer; transition: transform var(--dur-tap) var(--ease-pop), background var(--dur-tap), color var(--dur-tap), border-color var(--dur-tap); }
+  .doc-chip:hover { transform: translateY(-2px) rotate(-1.5deg); color: var(--masa); border-color: var(--accent); }
+  .doc-chip:active { transform: scale(.94); }
+  .doc-chip[aria-pressed="true"] { background: var(--fuego); border-color: var(--fuego); color: var(--masa); }
+
+  /* shell: sidebar + content */
+  .doc-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 0; max-width: 1320px; margin: 0 auto; }
+  .doc-side {
+    position: sticky; top: 60px; align-self: start; height: calc(100vh - 60px);
+    overflow-y: auto; padding: var(--sp-7) var(--sp-4) var(--sp-8) var(--sp-6);
+    border-right: 1px solid var(--line);
+  }
+  .doc-side h4 { font-family: var(--font-data); font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin: var(--sp-5) 0 var(--sp-2); }
+  .doc-side h4:first-child { margin-top: 0; }
+  .doc-side a { display: block; font-family: var(--font-ui); font-size: 13.5px; color: var(--ink-dim); text-decoration: none; padding: 5px 11px; border-radius: var(--r-sm); border-left: 2px solid transparent; transition: background var(--dur-tap), color var(--dur-tap); }
+  .doc-side a:hover { color: var(--masa); background: rgba(236,28,125,0.10); }
+  .doc-side a.is-active { color: var(--masa); border-left-color: var(--accent); background: rgba(236,28,125,0.13); font-weight: 600; }
+
+  .doc-main { padding: var(--sp-8) clamp(var(--sp-5), 4vw, 4rem) 7rem; min-width: 0; }
+  @media (max-width: 900px) {
+    .doc-shell { grid-template-columns: 1fr; }
+    .doc-side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); display: flex; gap: 4px; flex-wrap: wrap; padding: var(--sp-3) var(--sp-5); }
+    .doc-side h4 { display: none; }
+    .doc-side a { border-left: 0; }
+  }
+
+  .eyebrow { font-family: var(--font-data); font-size: 11px; font-weight: 700; letter-spacing: .30em; text-transform: uppercase; color: var(--accent); transition: color var(--dur-shift) var(--ease-soft); }
+  .small { font-family: var(--font-ui); font-size: 13px; color: var(--ink-dim); }
+  .mono { font-family: var(--font-data); font-size: 0.92em; color: var(--turq-hi); }
+
+  .doc-section { padding-top: var(--sp-8); scroll-margin-top: 76px; }
+  .doc-section:first-child { padding-top: var(--sp-5); }
+  .doc-section > h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 5vw, 54px); line-height: .98; letter-spacing: -0.025em; margin: 10px 0 var(--sp-3); color: var(--masa); }
+  .doc-section > .lede { color: var(--ink-dim); font-size: 16.5px; max-width: 62ch; margin: 0 0 var(--sp-7); }
+  .doc-sub { font-family: var(--font-data); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); margin: var(--sp-7) 0 var(--sp-4); }
+
+  /* hero */
+  .doc-hero { position: relative; padding: 0; overflow: hidden; border-radius: var(--r-lg); border: 1px solid var(--line); margin-top: var(--sp-4); }
+  .doc-hero .scene-wrap { position: relative; min-height: 540px; display: flex; align-items: center; }
+  .scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; display: block; }
+  .doc-hero::after { content:""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(90deg, rgba(9,4,22,0.66) 0%, rgba(9,4,22,0.22) 42%, transparent 66%); }
+  .hero-inner { position: relative; z-index: 7; padding: 44px clamp(24px,4vw,56px); max-width: 640px; }
+  .mark { display: flex; align-items: center; gap: 13px; margin-bottom: 22px; }
+  .mark .bell { width: 38px; height: 38px; flex: 0 0 auto; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.45)); }
+  .mark .name { font-family: var(--font-data); font-size: 12px; letter-spacing: .26em; text-transform: uppercase; color: var(--masa); font-weight: 700; }
+  .doc-hero h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(62px, 11vw, 132px); line-height: .82; letter-spacing: -0.035em; color: var(--masa); text-shadow: 5px 5px 0 var(--fuego), 10px 10px 0 rgba(123,45,151,0.55); margin: 0; }
+  .doc-hero .lede { margin-top: 22px; max-width: 510px; font-size: clamp(16px, 2.4vw, 20px); font-weight: 500; color: var(--masa); text-shadow: 0 1px 10px rgba(0,0,0,0.55); }
+  .doc-hero .lineage { margin-top: 14px; font-family: var(--font-data); font-size: 12.5px; color: var(--masa); opacity: .9; text-shadow: 0 1px 7px rgba(0,0,0,0.6); }
+  .doc-hero .cta { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 11px; align-items: center; }
+
+  /* themed scene paint, with a smooth crossfade between times of day */
+  .scene .s1 { stop-color: var(--sky-1); } .scene .s2 { stop-color: var(--sky-2); }
+  .scene .s3 { stop-color: var(--sky-3); } .scene .s4 { stop-color: var(--sky-4); }
+  .scene .gc { stop-color: var(--sun-core); } .scene .ge { stop-color: var(--sun-edge); }
+  .scene .gg { stop-color: var(--sun-glow); }
+  .scene .mesa-far { fill: var(--mesa-far); }
+  .scene .mesa-mid { fill: var(--mesa-mid); }
+  .scene .ground   { fill: var(--ground); }
+  .scene .road     { fill: var(--road); }
+  .scene .road-line{ stroke: var(--road-line); }
+  .scene .cactus   { stroke: var(--cactus); }
+  .scene .stars    { opacity: var(--star-op); }
+  .scene .bell-swing { fill: var(--fuego); }
+  .scene .panel-bg { fill: rgba(20,9,38,0.55); stroke: var(--line-strong); }
+  .scene .post     { fill: #4a3358; }
+  .scene .wm-text  { fill: var(--masa); }
+  .scene .sign-group { pointer-events: auto; cursor: pointer; }
+  .scene stop, .scene .mesa-far, .scene .mesa-mid, .scene .ground, .scene .road,
+  .scene .road-line, .scene .cactus, .scene .stars, .scene .wm-text {
+    transition: stop-color var(--dur-shift) var(--ease-soft), fill var(--dur-shift) var(--ease-soft),
+                stroke var(--dur-shift) var(--ease-soft), opacity var(--dur-shift) var(--ease-soft);
+  }
+  body[data-time="neon"] .scene .sign-group { filter: drop-shadow(0 0 9px rgba(236,28,125,0.55)); }
+  body[data-time="neon"] .scene .wm-text { fill: var(--turq-hi); animation: flicker 5s linear infinite; }
+  @keyframes flicker { 0%,95%,100%{ opacity:1; } 96%{ opacity:.45; } 97%{ opacity:1; } 98.4%{ opacity:.55; } }
+
+  /* drifting sky confetti */
+  .cfetti { transform-box: fill-box; transform-origin: center; }
+  body.ready .cfetti { animation: floaty 7.5s ease-in-out infinite; }
+  .cfetti.f2 { animation-delay: 1.6s; } .cfetti.f3 { animation-delay: 3.1s; }
+  @keyframes floaty { 0%,100%{ transform: translateY(0) rotate(0); } 50%{ transform: translateY(-16px) rotate(9deg); } }
+  .ring-anim { transform-box: fill-box; transform-origin: 50% 14%; animation: bell-ring 760ms var(--ease-pop); }
+  @keyframes bell-ring { 0%{ transform: rotate(0); } 16%{ transform: rotate(13deg); } 40%{ transform: rotate(-9deg); } 62%{ transform: rotate(6deg); } 82%{ transform: rotate(-3deg); } 100%{ transform: rotate(0); } }
+
+  /* hero buttons (chunky brand buttons) */
+  .tb-btn { appearance: none; border: 0; cursor: pointer; text-decoration: none; display: inline-block; font-family: var(--font-display); font-weight: 800; font-size: 16px; color: var(--masa); background: var(--fuego); padding: 13px 26px; border-radius: var(--r-pill); box-shadow: 0 5px 0 var(--fuego-lo); transition: transform var(--dur-tap) var(--ease-pop), box-shadow var(--dur-tap); }
+  .tb-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--fuego-lo); }
+  .tb-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--fuego-lo); }
+  .tb-btn.ghost { background: transparent; color: var(--masa); box-shadow: inset 0 0 0 2px var(--line-strong); }
+  .tb-btn.ghost:hover { box-shadow: inset 0 0 0 2px var(--accent); }
+  .tb-btn.ghost:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--line-strong); }
+
+  /* example: live demo + code */
+  .doc-example { border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; margin: var(--sp-3) 0 var(--sp-6); background: var(--noche-2); }
+  .doc-demo { padding: var(--sp-6); display: flex; flex-wrap: wrap; gap: var(--sp-4); align-items: center;
+    background: radial-gradient(80% 120% at 50% 0%, rgba(236,28,125,0.10), transparent 70%); }
+  .doc-demo.col { flex-direction: column; align-items: stretch; }
+  .doc-codewrap { position: relative; border-top: 1px solid var(--line); }
+  .doc-code { margin: 0; padding: var(--sp-4) var(--sp-5); overflow-x: auto; background: rgba(11,5,24,0.6); }
+  .doc-code code { font-family: var(--font-data); font-size: 12.5px; line-height: 1.7; color: var(--ink-dim); white-space: pre; }
+  .doc-copy { position: absolute; top: 8px; right: 8px; appearance: none; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 12px; color: var(--masa); background: var(--grape); border: 0; border-radius: var(--r-pill); padding: 5px 13px; box-shadow: 0 3px 0 rgba(0,0,0,0.35); transition: transform var(--dur-tap) var(--ease-pop); }
+  .doc-copy:hover { transform: translateY(-1px); }
+  .doc-copy:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
+
+  /* token grids */
+  .doc-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sp-3); }
+  .doc-swatch { text-align: left; cursor: copy; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; background: var(--noche-2); font: inherit; color: inherit; padding: 0; transition: border-color var(--dur-tap), transform var(--dur-tap) var(--ease-pop); }
+  .doc-swatch:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .doc-swatch .cap { display:block; height: 56px; }
+  .doc-swatch .m { display:block; padding: 9px 12px; }
+  .doc-swatch .m .k { display:block; font-family: var(--font-display); font-size: 13px; font-weight: 700; }
+  .doc-swatch .m .v { display:block; font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+  .doc-swatch .m .u { display:block; font-size: 11px; color: var(--ink-dim); margin-top: 3px; }
+
+  .doc-ramp { display: grid; grid-template-columns: repeat(10, 1fr); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  @media (max-width: 620px){ .doc-ramp { grid-template-columns: repeat(5,1fr); } }
+  .doc-ramp .s { height: 62px; position: relative; cursor: copy; border: 0; padding: 0; }
+  .doc-ramp .s span { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--font-data); font-size: 9px; text-align: center; padding: 2px 0; color: rgba(0,0,0,0.62); background: rgba(255,255,255,0.30); }
+
+  .doc-scale-row { display: flex; align-items: baseline; gap: var(--sp-5); padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .doc-scale-row .tk { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-faint); width: 150px; flex: 0 0 auto; }
+
+  .doc-space-row { display: flex; align-items: center; gap: var(--sp-4); padding: 9px 0; }
+  .doc-space-row .tk { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-faint); width: 130px; flex: 0 0 auto; }
+  .doc-space-row .bar { height: 14px; background: linear-gradient(90deg, var(--fuego), var(--grape)); border-radius: 4px; }
+
+  .doc-grid { display: grid; gap: var(--sp-4); }
+  .doc-grid.two { grid-template-columns: 1fr 1fr; }
+  .doc-grid.three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 760px){ .doc-grid.two, .doc-grid.three { grid-template-columns: 1fr; } }
+
+  .doc-card { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 26px; background: var(--noche-2); }
+  .doc-card h3 { font-family: var(--font-display); font-weight: 700; font-size: 18px; margin-bottom: 12px; }
+  .doc-card p { font-size: 14px; color: var(--ink-dim); }
+
+  .doc-radius-demo { height: 84px; border: 1px solid var(--line-strong); background: linear-gradient(135deg, var(--grape), var(--fuego)); display: grid; place-items: end center; padding-bottom: 8px; font-family: var(--font-data); font-size: 11px; color: var(--masa); }
+  .doc-elev-demo { height: 84px; border-radius: var(--r-md); background: var(--noche-3); display: grid; place-items: end center; padding-bottom: 8px; font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); }
+
+  /* type face cards */
+  .doc-face { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 26px; background: var(--noche-2); }
+  .doc-face .role { font-family: var(--font-data); font-weight: 700; font-size: 11px; color: var(--accent); letter-spacing: .16em; text-transform: uppercase; transition: color var(--dur-shift); }
+  .doc-face .fname { font-family: var(--font-data); font-size: 12px; color: var(--ink-faint); float: right; }
+  .doc-face .big { margin: 16px 0 8px; line-height: 1; }
+  .doc-face .note { font-size: 13.5px; color: var(--ink-dim); }
+  .d1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.03em; }
+  .d2 { font-family: var(--font-ui); font-weight: 700; font-size: clamp(22px, 4vw, 30px); letter-spacing: -0.01em; }
+  .d3 { font-family: var(--font-data); font-weight: 700; font-size: clamp(18px, 3.4vw, 24px); }
+
+  /* foundations bits */
+  .doc-rads { display: flex; gap: 18px; flex-wrap: wrap; }
+  .doc-radb { text-align: center; } .doc-radb .l { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-faint); margin-top: 8px; }
+
+  /* timeline (heritage) */
+  .doc-timeline { display: grid; grid-template-columns: repeat(4,1fr); }
+  @media (max-width: 760px){ .doc-timeline { grid-template-columns: 1fr 1fr; gap: 30px 0; } }
+  .doc-node { position: relative; padding: 30px 22px 0 0; }
+  .doc-node::before { content:""; position:absolute; top:9px; left:0; right:0; height:3px; background: var(--line-strong); }
+  .doc-node::after { content:""; position:absolute; top:1px; left:0; width:18px; height:18px; border-radius:50%; background: var(--clay); box-shadow: 0 0 0 5px var(--noche); }
+  .doc-node:nth-child(2)::after { background: var(--fuego); } .doc-node:nth-child(3)::after { background: var(--turquesa); } .doc-node:nth-child(4)::after { background: var(--sol); }
+  .doc-node .y { font-family: var(--font-data); font-weight: 700; font-size: 12px; color: var(--ink-faint); }
+  .doc-node .n { font-family: var(--font-display); font-weight: 700; font-size: 17px; margin: 8px 0; }
+  .doc-node .d { font-size: 13.5px; color: var(--ink-dim); }
+
+  /* do / don't */
+  .doc-dd { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 26px 28px; background: var(--noche-2); }
+  .doc-dd h4 { font-family: var(--font-data); font-weight: 700; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 18px; }
+  .doc-dd.do h4 { color: var(--turquesa); } .doc-dd.dont h4 { color: var(--fuego); }
+  .doc-dd ul { list-style: none; } .doc-dd li { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--ink-dim); display: flex; gap: 12px; }
+  .doc-dd li:last-child { border-bottom: 0; }
+  .doc-dd li::before { content:""; width: 8px; height: 8px; margin-top: 7px; flex: 0 0 auto; transform: rotate(45deg); }
+  .doc-dd.do li::before { background: var(--turquesa); } .doc-dd.dont li::before { background: var(--fuego); }
+
+  .doc-foot { margin-top: var(--sp-8); padding-top: var(--sp-6); border-top: 1px solid var(--line); font-family: var(--font-data); font-size: 12px; color: var(--ink-faint); line-height: 1.95; }
+  .doc-foot a { color: var(--turq-hi); }
+  .doc-foot .big { font-family: var(--font-display); font-weight: 800; font-size: clamp(40px, 8vw, 72px); letter-spacing: -0.03em; line-height: .9; color: var(--masa); text-shadow: 4px 4px 0 var(--fuego); margin-bottom: 18px; }
+
+  /* toast */
+  .doc-toasts { position: fixed; left: 0; right: 0; bottom: 24px; z-index: 9000; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .doc-toast { pointer-events: auto; background: var(--noche-3); border: 1px solid var(--line-strong); border-radius: var(--r-md); padding: 10px 16px; font-size: 13px; color: var(--ink); box-shadow: 0 16px 36px rgba(0,0,0,0.55); opacity: 0; transform: translateY(10px); transition: opacity .26s, transform .26s; }
+  .doc-toast.show { opacity: 1; transform: none; }
+  .doc-toast b { color: var(--fuego-hi); font-family: var(--font-data); }
+
+  /* ============ the rest is Sonora's own component CSS, kept verbatim ============ */
+  /* Memphis primitives */
+  .pat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 720px){ .pat-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 460px){ .pat-grid { grid-template-columns: 1fr; } }
+  .pat { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--noche-2); }
+  .pat .canvas { height: 132px; display: grid; place-items: center; background: radial-gradient(80% 90% at 50% 30%, rgba(123,45,151,0.22), var(--noche) 76%); }
+  .pat .meta { padding: 13px 16px; border-top: 1px solid var(--line); }
+  .pat .meta .k { font-family: var(--font-display); font-weight: 700; font-size: 14px; }
+  .pat .meta .v { font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+  .pat .squig { width: 56px; height: 26px; }
+  .pat .burst { width: 46px; height: 46px; background: var(--fuego); clip-path: polygon(50% 0,61% 30%,93% 12%,75% 42%,100% 50%,75% 58%,93% 88%,61% 70%,50% 100%,39% 70%,7% 88%,25% 58%,0 50%,25% 42%,7% 12%,39% 30%); }
+  .pat-tools { display: flex; align-items: center; gap: 14px; margin-top: 22px; }
+  .pat-band { flex: 1; height: 58px; border-radius: 12px; border: 1px solid var(--line); background: repeating-linear-gradient(45deg, var(--fuego) 0 16px, var(--grape) 16px 32px, var(--turquesa) 32px 48px, var(--sol) 48px 64px); opacity: .92; }
+  .tri  { width:0; height:0; border-left:13px solid transparent; border-right:13px solid transparent; border-bottom:22px solid var(--turquesa); }
+  .zig  { width:42px; height:14px; background: linear-gradient(45deg, transparent 50%, var(--sol) 50%) 0 0/10px 14px repeat-x, linear-gradient(-45deg, var(--sol) 50%, transparent 50%) 0 0/10px 14px repeat-x; }
+  .dotg { width:34px; height:34px; background: radial-gradient(var(--fuego) 30%, transparent 32%) 0 0/11px 11px; }
+  .half { width:30px; height:15px; border-radius:30px 30px 0 0; background: var(--grape); }
+  .plus { width:26px; height:26px; background: linear-gradient(var(--turquesa),var(--turquesa)) center/9px 100% no-repeat, linear-gradient(var(--turquesa),var(--turquesa)) center/100% 9px no-repeat; }
+  .ring-o { width:28px; height:28px; border-radius:50%; border:6px solid var(--fuego); }
+
+  .bell path, .bell rect, .bell circle { fill: var(--fuego); transition: fill var(--dur-shift) var(--ease-soft); }
+
+  /* the bell lab */
+  .bell-lab { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: stretch; }
+  @media (max-width: 820px){ .bell-lab { grid-template-columns: 1fr; } }
+  .construct { border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(var(--line) 1px, transparent 1px) 0 0/26px 26px, linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/26px 26px, var(--noche-2); display: grid; place-items: center; padding: 30px; position: relative; min-height: 300px; }
+  .construct .frame { position: relative; width: 200px; height: 200px; }
+  .construct .frame .clear { position: absolute; inset: -22px; border: 1.5px dashed var(--turquesa); border-radius: 12px; opacity: .6; }
+  .construct .frame .cb { width: 200px; height: 200px; }
+  .construct .frame .cb path, .construct .frame .cb rect, .construct .frame .cb circle { fill: var(--masa); }
+  .construct .cap { position: absolute; left: 16px; bottom: 12px; font-family: var(--font-data); font-size: 10.5px; color: var(--ink-faint); }
+  .lockups { display: grid; gap: 16px; }
+  .lk { border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; background: var(--noche-2); display: flex; align-items: center; gap: 18px; }
+  .lk.stacked { flex-direction: column; gap: 6px; text-align: center; }
+  .lk .lb { width: 56px; height: 56px; flex: 0 0 auto; } .lk.stacked .lb { width: 64px; height: 64px; }
+  .lk .wm { font-family: var(--font-display); font-weight: 800; font-size: 34px; letter-spacing: -0.02em; }
+  .lk.stacked .wm { font-size: 30px; }
+  .lk .tag { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-faint); margin-left: auto; }
+  .lk.neon { background: radial-gradient(120% 130% at 70% 0%, rgba(236,28,125,0.18), var(--noche) 70%); }
+  .lk.neon .lb path, .lk.neon .lb rect, .lk.neon .lb circle { filter: drop-shadow(0 0 8px rgba(236,28,125,0.9)); }
+  .lk.neon .wm { color: var(--turq-hi); text-shadow: 0 0 12px rgba(69,228,224,0.7); }
+
+  /* motion */
+  .motion-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; }
+  @media (max-width: 760px){ .motion-grid { grid-template-columns: 1fr; } }
+  .curve-box { border: 1px solid var(--line); border-radius: 14px; padding: 26px; background: var(--noche-2); }
+  .curve-box svg { width: 100%; height: auto; display: block; }
+  .pop-demo { margin-top: 18px; height: 58px; display: grid; place-items: center; }
+  .pop-demo b { width: 38px; height: 38px; border-radius: 9px; background: var(--fuego); }
+  body.ready .pop-demo b { animation: pop 2.4s var(--ease-pop) infinite; }
+  @keyframes pop { 0%,100%{ transform: scale(.7) rotate(-6deg); } 30%{ transform: scale(1.12) rotate(4deg); } 50%{ transform: scale(1) rotate(0); } }
+  .motion-tokens { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .mt { display: flex; justify-content: space-between; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--line); background: var(--noche-2); }
+  .mt:last-child { border-bottom: 0; }
+  .mt .k { font-family: var(--font-display); font-weight: 700; font-size: 14px; }
+  .mt .k small { display: block; color: var(--ink-faint); font-weight: 400; font-size: 12.5px; font-family: var(--font-ui); }
+  .mt .v { font-family: var(--font-data); font-size: 12px; color: var(--accent); text-align: right; transition: color var(--dur-shift); }
+
+  /* component demos */
+  .comp-stage { background: radial-gradient(80% 90% at 60% 26%, rgba(236,28,125,0.16), var(--noche) 74%); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: center; min-height: 120px; }
+  .tag-badge { position: relative; width: 100px; height: 100px; display: grid; place-items: center; }
+  .tag-badge .star { position: absolute; inset: 0; background: var(--sol); animation: spin 14s linear infinite; clip-path: polygon(50% 0,61% 30%,93% 12%,75% 42%,100% 50%,75% 58%,93% 88%,61% 70%,50% 100%,39% 70%,7% 88%,25% 58%,0 50%,25% 42%,7% 12%,39% 30%); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .tag-badge .price { position: relative; font-family: var(--font-display); font-weight: 800; font-size: 26px; color: var(--noche); }
+  .menu-row { width: 100%; display: flex; align-items: center; gap: 14px; padding: 13px 8px; border-bottom: 1px solid var(--line); }
+  .menu-row:last-child { border-bottom: 0; }
+  .menu-row .mi { width: 38px; height: 38px; border-radius: 10px; flex: 0 0 auto; display: grid; place-items: center; background: linear-gradient(135deg, var(--grape), var(--fuego)); }
+  .menu-row .mi svg { width: 21px; height: 21px; }
+  .menu-row .nm { flex: 1; } .menu-row .nm b { font-family: var(--font-display); font-weight: 700; font-size: 15px; display: block; } .menu-row .nm small { font-size: 12px; color: var(--ink-faint); }
+  .menu-row .pr { font-family: var(--font-data); font-weight: 700; font-size: 14px; color: var(--turquesa); }
+  .seg { display: inline-flex; border: 2px solid var(--line-strong); border-radius: 999px; overflow: hidden; }
+  .seg button { appearance: none; border: 0; cursor: pointer; background: transparent; color: var(--ink-dim); font-family: var(--font-display); font-weight: 700; font-size: 13px; padding: 9px 18px; transition: all var(--dur-tap); }
+  .seg button.on { background: var(--fuego); color: var(--masa); }
+  .bell-demo { width: 84px; height: 84px; cursor: pointer; }
+
+  /* registers callout */
+  .registers { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 26px; }
+  @media (max-width: 720px){ .registers { grid-template-columns: 1fr; } }
+  .reg { border: 1px solid var(--line); border-radius: 14px; padding: 24px 26px; background: var(--noche-2); }
+  .reg .t { font-family: var(--font-display); font-weight: 700; font-size: 18px; margin-bottom: 8px; }
+  .reg .d { font-size: 14px; color: var(--ink-dim); }
+  .reg.exp { background: radial-gradient(120% 130% at 80% 0%, rgba(236,28,125,.16), var(--noche-2) 70%); }
+  .reg .tag { display: inline-block; font-family: var(--font-data); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); margin-top: 14px; }
+
+  /* semantic theme layer — flip with data-theme */
+  .themed {
+    --bg:#faf6ee; --surface:#ffffff; --surface-2:#f4ecdf; --elevated:#ffffff;
+    --text:#2a2018; --text-muted:#6b5d49; --text-faint:#9b8c76;
+    --border:#e7dccb; --border-strong:#d4c6b0;
+    --primary:#d11a72; --on-primary:#ffffff; --primary-soft:#fde2ef; --primary-text:#a3145a; --ring:rgba(209,26,114,0.30);
+    --success:#2e9e5b; --success-soft:#e3f5ea; --success-text:#1d6b3d;
+    --warning:#c8780a; --warning-soft:#fbeed2; --warning-text:#86530a;
+    --danger:#d83a2f; --danger-soft:#fbe4e1; --danger-text:#9c2820;
+    --info:#0e9aa0; --info-soft:#ddf3f3; --info-text:#0a6266;
+    --shadow:0 1px 2px rgba(40,28,18,0.06), 0 10px 28px rgba(40,28,18,0.09);
+    color: var(--text);
+  }
+  .themed[data-theme="dark"] {
+    --bg:#160a28; --surface:#1f0f38; --surface-2:#190b2e; --elevated:#2a164e;
+    --text:#f7edd8; --text-muted:#c3aec0; --text-faint:#8d7d93;
+    --border:rgba(247,237,216,0.12); --border-strong:rgba(247,237,216,0.24);
+    --primary:#ec1c7d; --on-primary:#ffffff; --primary-soft:rgba(236,28,125,0.18); --primary-text:#ff7ab3; --ring:rgba(236,28,125,0.45);
+    --success:#3bb56e; --success-soft:rgba(59,181,110,0.18); --success-text:#88e3ab;
+    --warning:#f0a323; --warning-soft:rgba(240,163,35,0.18); --warning-text:#ffd182;
+    --danger:#ef5347; --danger-soft:rgba(239,83,71,0.18); --danger-text:#ffa49b;
+    --info:#1fc6cb; --info-soft:rgba(31,198,203,0.18); --info-text:#7cebef;
+    --shadow:0 1px 2px rgba(0,0,0,0.3), 0 14px 32px rgba(0,0,0,0.42);
+    color: var(--text);
+  }
+  .themed, .themed * { transition: background-color var(--dur-shift) var(--ease-soft), border-color var(--dur-shift) var(--ease-soft), color var(--dur-shift) var(--ease-soft); }
+
+  /* role-token map */
+  .map { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin: var(--sp-4) 0 var(--sp-5); }
+  .maph, .mapr { display: grid; grid-template-columns: 160px 1fr 1fr; gap: 12px; padding: 12px 18px; align-items: center; }
+  .maph { background: var(--noche-3); font-family: var(--font-data); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+  .mapr { border-top: 1px solid var(--line); background: var(--noche-2); }
+  .mapr .role { font-family: var(--font-data); font-weight: 700; font-size: 12.5px; color: var(--ink); }
+  .chipv { display: flex; align-items: center; gap: 9px; font-family: var(--font-data); font-size: 11px; color: var(--ink-dim); }
+  .chipv i { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line-strong); flex: 0 0 auto; }
+
+  .tpair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 620px){ .tpair { grid-template-columns: 1fr; } }
+  .tprev { border-radius: 16px; padding: 22px; background: var(--bg); border: 1px solid var(--border); }
+  .tprev .pc { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; box-shadow: var(--shadow); }
+  .tprev .pt { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--text); }
+  .tprev .ps { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 14px; }
+  .tprev .tlabel { font-family: var(--font-data); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 14px; }
+
+  /* UI kit (semantic) */
+  .ui-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .ui-btn { font-family: var(--font-ui); font-weight: 600; font-size: 14px; border-radius: 10px; padding: 10px 16px; cursor: pointer; border: 1px solid transparent; transition: transform 120ms var(--ease-pop), filter 140ms; }
+  .ui-btn:hover { filter: brightness(1.05); } .ui-btn:active { transform: translateY(1px); }
+  .ui-btn.primary { background: var(--primary); color: var(--on-primary); }
+  .ui-btn.secondary { background: var(--surface-2); color: var(--text); border-color: var(--border-strong); }
+  .ui-btn.ghost { background: transparent; color: var(--primary-text); }
+  .ui-btn.danger { background: var(--danger); color: #fff; }
+  .ui-field { display: block; } .ui-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+  .ui-input, .ui-select { width: 100%; font-family: var(--font-ui); font-size: 14px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); }
+  .ui-input::placeholder { color: var(--text-faint); }
+  .ui-input:focus, .ui-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
+  .ui-badge { font-family: var(--font-data); font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; display: inline-block; }
+  .ui-badge.success { background: var(--success-soft); color: var(--success-text); }
+  .ui-badge.warning { background: var(--warning-soft); color: var(--warning-text); }
+  .ui-badge.danger  { background: var(--danger-soft);  color: var(--danger-text); }
+  .ui-badge.info    { background: var(--info-soft);    color: var(--info-text); }
+  .ui-alert { display: flex; gap: 11px; padding: 12px 14px; border-radius: 12px; font-size: 13.5px; border: 1px solid; align-items: flex-start; }
+  .ui-alert.info { background: var(--info-soft); border-color: var(--info); color: var(--info-text); }
+  .ui-alert.success { background: var(--success-soft); border-color: var(--success); color: var(--success-text); }
+  .ui-alert .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; margin-top: 6px; flex: 0 0 auto; }
+  .ui-switch { width: 42px; height: 24px; border-radius: 999px; background: var(--border-strong); position: relative; cursor: pointer; transition: background 160ms; flex: 0 0 auto; }
+  .ui-switch.on { background: var(--primary); }
+  .ui-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left 160ms var(--ease-pop); box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .ui-switch.on::after { left: 20px; }
+  .ui-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+  .ui-tab { padding: 9px 14px; font-family: var(--font-ui); font-size: 13px; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid transparent; cursor: pointer; }
+  .ui-tab.on { color: var(--primary-text); border-bottom-color: var(--primary); }
+
+  /* product app demo */
+  .app-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+  .theme-toggle { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; overflow: hidden; }
+  .theme-toggle button { appearance: none; border: 0; cursor: pointer; background: transparent; color: var(--ink-dim); font-family: var(--font-display); font-weight: 700; font-size: 13px; padding: 8px 18px; transition: all var(--dur-tap); }
+  .theme-toggle button.on { background: var(--fuego); color: var(--masa); }
+  .app-shell { display: grid; grid-template-columns: 176px 1fr; border-radius: 18px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); }
+  @media (max-width: 600px){ .app-shell { grid-template-columns: 1fr; } .app-side { display: none; } }
+  .app-side { background: var(--surface-2); border-right: 1px solid var(--border); padding: 18px 14px; }
+  .app-brand { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; }
+  .app-brand .ab { width: 26px; height: 26px; } .app-brand .ab path, .app-brand .ab rect, .app-brand .ab circle { fill: var(--primary); }
+  .app-brand b { font-family: var(--font-display); font-weight: 800; font-size: 16px; color: var(--text); }
+  .app-nav a { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 9px; font-size: 13.5px; color: var(--text-muted); cursor: pointer; }
+  .app-nav a.on { background: var(--primary-soft); color: var(--primary-text); font-weight: 600; }
+  .app-nav a + a { margin-top: 2px; }
+  .app-nav a svg { width: 16px; height: 16px; }
+  .app-main { background: var(--bg); padding: 22px 24px; }
+  .app-h { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--text); }
+  .app-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .app-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 520px){ .app-grid2 { grid-template-columns: 1fr; } }
+  .app-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 18px; }
+  .set-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .set-row:last-child { border-bottom: 0; }
+  .set-row .sl b { display: block; font-size: 13.5px; font-weight: 600; color: var(--text); } .set-row .sl small { font-size: 12px; color: var(--text-muted); }
+
+  /* applications — kiosk, phone, cup */
+  .apps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; align-items: end; }
+  @media (max-width: 900px){ .apps { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px){ .apps { grid-template-columns: 1fr; } }
+  .app-cap { font-family: var(--font-data); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin-top: 14px; text-align: center; }
+  .kiosk { border-radius: 20px; overflow: hidden; border: 3px solid #2a1740; background: var(--noche); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+  .kiosk .top { padding: 16px 18px; display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--grape), var(--fuego)); }
+  .kiosk .top .kb { width: 26px; height: 26px; } .kiosk .top .kb path,.kiosk .top .kb rect,.kiosk .top .kb circle { fill: var(--masa); }
+  .kiosk .top b { font-family: var(--font-display); font-weight: 800; font-size: 17px; color: var(--masa); }
+  .kiosk .top .o { margin-left: auto; font-family: var(--font-data); font-size: 10px; color: rgba(255,255,255,.8); }
+  .kiosk .body { padding: 16px; display: grid; gap: 10px; background: radial-gradient(80% 50% at 80% 0%, rgba(236,28,125,0.12), transparent 60%), var(--noche); }
+  .kcard { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: var(--noche-2); border: 1px solid var(--line); }
+  .kcard .th { width: 44px; height: 44px; border-radius: 10px; flex: 0 0 auto; }
+  .kcard .kt { flex: 1; } .kcard .kt b { font-family: var(--font-display); font-weight: 700; font-size: 14px; display: block; } .kcard .kt small { font-size: 11px; color: var(--ink-faint); }
+  .kcard .kp { font-family: var(--font-data); font-weight: 700; font-size: 13px; color: var(--sol); }
+  .kiosk .pay { margin-top: 4px; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: 16px; color: var(--masa); background: var(--fuego); padding: 13px; border-radius: 12px; box-shadow: 0 4px 0 var(--fuego-lo); }
+  .phone { width: 100%; max-width: 240px; margin: 0 auto; border-radius: 30px; border: 8px solid #20122f; background: var(--noche); overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); position: relative; }
+  .phone .notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 70px; height: 16px; border-radius: 10px; background: #20122f; z-index: 3; }
+  .phone .scr { padding: 30px 14px 14px; }
+  .phone .ph { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .phone .ph .pb { width: 22px; height: 22px; } .phone .ph .pb path,.phone .ph .pb rect,.phone .ph .pb circle{ fill: var(--fuego); }
+  .phone .ph b { font-family: var(--font-display); font-weight: 800; font-size: 16px; }
+  .phone .hero-card { border-radius: 14px; padding: 14px; color: var(--masa); background: linear-gradient(135deg, var(--fuego), var(--grape)); position: relative; overflow: hidden; }
+  .phone .hero-card .t { font-family: var(--font-display); font-weight: 800; font-size: 18px; }
+  .phone .hero-card .s { font-size: 11px; opacity: .9; margin-top: 2px; }
+  .phone .hero-card .pz { position: absolute; right: 10px; bottom: 8px; font-family: var(--font-display); font-weight: 800; font-size: 22px; }
+  .phone .qr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .phone .qr div { border-radius: 10px; padding: 10px; background: var(--noche-2); border: 1px solid var(--line); font-family: var(--font-display); font-weight: 700; font-size: 12px; }
+  .phone .qr div small { display: block; font-family: var(--font-data); font-weight: 400; font-size: 10px; color: var(--turquesa); margin-top: 4px; }
+  .phone .tabs { display: flex; justify-content: space-around; padding: 12px 0 4px; margin-top: 12px; border-top: 1px solid var(--line); }
+  .phone .tabs i { width: 18px; height: 18px; border-radius: 5px; background: var(--line-strong); }
+  .phone .tabs i.on { background: var(--fuego); }
+  .cup-wrap { display: grid; place-items: end center; height: 100%; }
+  .cup { width: 150px; height: 210px; position: relative; clip-path: polygon(12% 0, 88% 0, 78% 100%, 22% 100%); background: repeating-linear-gradient(115deg, var(--fuego) 0 14px, var(--grape) 14px 28px, var(--turquesa) 28px 42px, var(--sol) 42px 56px); box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
+  .cup .band { position: absolute; left: 0; right: 0; top: 38%; height: 78px; background: var(--masa); display: grid; place-items: center; gap: 2px; }
+  .cup .band .cb { width: 40px; height: 40px; } .cup .band .cb path,.cup .band .cb rect,.cup .band .cb circle { fill: var(--fuego); }
+  .cup .band b { font-family: var(--font-display); font-weight: 800; font-size: 13px; letter-spacing: .04em; color: var(--noche); }
+  .cup .lid { position: absolute; top: -14px; left: -6%; width: 112%; height: 18px; border-radius: 8px 8px 4px 4px; background: #2a1740; }
+  .cup .straw { position: absolute; top: -54px; left: 58%; width: 9px; height: 56px; border-radius: 4px; background: var(--turquesa); transform: rotate(8deg); }
+
+  /* sky preview boxes + hue + ramp */
+  .skies { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  @media (max-width: 620px){ .skies { grid-template-columns: 1fr; } }
+  .skybox { height: 170px; border-radius: 14px; border: 1px solid var(--line); position: relative; overflow: hidden; }
+  .skybox .lab { position: absolute; left: 14px; bottom: 12px; font-family: var(--font-data); font-size: 11px; font-weight: 700; color: var(--masa); background: rgba(22,10,40,.5); padding: 4px 9px; border-radius: 6px; }
+  .sky-noon { background: linear-gradient(180deg,#37c3d6,#84dccd 34%,#dcebb0 60%,#eec07a 86%); }
+  .sky-dusk { background: linear-gradient(180deg,#241047,#7d2f8f 30%,#ec5a3a 64%,#ffd98a 92%); }
+  .sky-neon { background: radial-gradient(120% 80% at 72% 24%, rgba(236,28,125,.5), transparent 56%), radial-gradient(80% 64% at 14% 92%, rgba(23,189,192,.3), transparent 60%), linear-gradient(180deg,#0b0520,#180a2c 56%,#08030f); }
+
+  .spark { position: fixed; width: 11px; height: 11px; z-index: 130; pointer-events: none; border-radius: 2px; animation: spark 920ms var(--ease-pop) forwards; }
+  @keyframes spark { to { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)); opacity: 0; } }
+
+  /* scroll reveal */
+  .doc-reveal { opacity: 0; transform: translateY(16px); }
+  .doc-reveal.is-in { opacity: 1; transform: none; transition: opacity .56s var(--ease-pop), transform .56s var(--ease-pop); }
+  @media (prefers-reduced-motion: reduce){
+    * { animation: none !important; }
+    .doc-reveal, .doc-reveal.is-in { opacity: 1 !important; transform: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body data-time="dusk">
+
+<a class="doc-skip" href="#overview">Skip to content</a>
+
+<!-- top bar -->
+<header class="doc-topbar">
+  <a class="doc-brand" href="#overview" aria-label="Sonora home">
+    <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+    <b>Sonora</b>
+  </a>
+  <span class="doc-ver">v1.0.0</span>
+  <span class="spacer"></span>
+  <div class="doc-themetoggle" role="group" aria-label="Time of day">
+    <span class="lbl">Run for the border</span>
+    <button class="doc-chip" type="button" data-time="noon" aria-pressed="false">noon</button>
+    <button class="doc-chip" type="button" data-time="dusk" aria-pressed="true">dusk</button>
+    <button class="doc-chip" type="button" data-time="neon" aria-pressed="false">neon</button>
+  </div>
+</header>
+
+<div class="doc-shell">
+  <!-- sidebar -->
+  <nav class="doc-side" aria-label="Sections">
+    <h4>Start</h4>
+    <a href="#overview" class="is-active">Overview</a>
+    <a href="#install">Getting started</a>
+    <h4>Foundations</h4>
+    <a href="#color">Color &amp; themes</a>
+    <a href="#type">Typography</a>
+    <a href="#space">Spacing &amp; radius</a>
+    <a href="#elevation">Confetti &amp; motion</a>
+    <h4>Components</h4>
+    <a href="#bell">The bell</a>
+    <a href="#components">Components</a>
+    <a href="#product">Product UI</a>
+    <a href="#applications">In the wild</a>
+    <h4>Guidance</h4>
+    <a href="#principles">Principles</a>
+    <a href="#a11y">Accessibility</a>
+    <a href="#heritage">Heritage</a>
+  </nav>
+
+  <main class="doc-main">
+
+    <!-- OVERVIEW / HERO -->
+    <section class="doc-section doc-hero" id="overview">
+      <div class="scene-wrap">
+        <svg class="scene" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop class="s1" offset="0"/><stop class="s2" offset="0.42"/><stop class="s3" offset="0.74"/><stop class="s4" offset="1"/>
+            </linearGradient>
+            <radialGradient id="sunGrad" cx="0.5" cy="0.5" r="0.5">
+              <stop class="gc" offset="0"/><stop class="ge" offset="1"/>
+            </radialGradient>
+            <radialGradient id="glowGrad" cx="0.5" cy="0.5" r="0.5">
+              <stop class="gg" offset="0"/><stop offset="1" stop-color="rgba(0,0,0,0)"/>
+            </radialGradient>
+          </defs>
+
+          <rect width="1440" height="900" fill="url(#skyGrad)"/>
+          <circle cx="980" cy="235" r="300" fill="url(#glowGrad)"/>
+          <circle cx="980" cy="235" r="92" fill="url(#sunGrad)"/>
+
+          <g class="stars" fill="#f7edd8">
+            <circle cx="170" cy="120" r="2.2"/><circle cx="320" cy="80" r="1.6"/><circle cx="470" cy="150" r="2"/>
+            <circle cx="620" cy="90" r="1.5"/><circle cx="250" cy="210" r="1.7"/><circle cx="700" cy="180" r="2.1"/>
+            <circle cx="1180" cy="120" r="2"/><circle cx="1300" cy="80" r="1.6"/><circle cx="1250" cy="210" r="1.8"/>
+            <circle cx="540" cy="240" r="1.5"/><circle cx="120" cy="300" r="1.6"/><circle cx="800" cy="120" r="1.5"/>
+            <circle cx="1360" cy="170" r="1.7"/><circle cx="60" cy="180" r="1.5"/>
+          </g>
+
+          <!-- drifting sky confetti -->
+          <g transform="translate(360,160)"><g class="cfetti"><path d="M0,-15 L15,12 L-15,12 Z" fill="var(--turquesa)"/></g></g>
+          <g transform="translate(700,120)"><g class="cfetti f2"><circle r="11" fill="none" stroke="var(--fuego)" stroke-width="5"/></g></g>
+          <g transform="translate(1140,150)"><g class="cfetti f3"><rect x="-3" y="-13" width="6" height="26" fill="var(--sol)"/><rect x="-13" y="-3" width="26" height="6" fill="var(--sol)"/></g></g>
+
+          <!-- distant + mid mesa silhouettes -->
+          <path class="mesa-far" d="M0,600 L0,540 L120,540 L120,498 L300,498 L300,540 L470,540 L470,466 L640,466 L640,520 L860,520 L860,486 L1050,486 L1050,520 L1230,520 L1230,500 L1440,500 L1440,600 Z" opacity="0.85"/>
+          <path class="mesa-mid" d="M0,600 L0,560 L200,560 L200,520 L420,520 L420,560 L720,560 L720,540 L980,540 L980,566 L1440,566 L1440,600 Z"/>
+
+          <!-- desert floor -->
+          <rect class="ground" x="0" y="598" width="1440" height="302"/>
+
+          <!-- receding highway -->
+          <path class="road" d="M560,900 L880,900 L772,600 L748,600 Z"/>
+          <line class="road-line" x1="760" y1="606" x2="720" y2="900" stroke-width="7" stroke-dasharray="22 30" stroke-linecap="round"/>
+
+          <!-- saguaro cacti, planted on the ground -->
+          <g class="cactus" fill="none" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="translate(250,872) scale(1.25)"><path d="M0,0 V-150"/><path d="M0,-80 H-34 V-122"/><path d="M0,-104 H32 V-142"/></g>
+            <g transform="translate(1030,792) scale(0.8)"><path d="M0,0 V-150"/><path d="M0,-78 H-32 V-118"/><path d="M0,-100 H30 V-138"/></g>
+            <g transform="translate(470,752) scale(0.5)"><path d="M0,0 V-150"/><path d="M0,-82 H-30 V-120"/></g>
+          </g>
+
+          <!-- roadside neon bell sign -->
+          <g class="sign-group" id="heroSign">
+            <rect class="post" x="1200" y="484" width="14" height="262" rx="3"/>
+            <rect class="panel-bg" x="1107" y="296" width="200" height="190" rx="20" stroke-width="3"/>
+            <g class="bell-swing" transform="translate(1156,323) scale(0.85)">
+              <circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/>
+              <path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/>
+              <rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/>
+            </g>
+            <text class="wm-text" x="1207" y="452" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="25">SONORA</text>
+          </g>
+        </svg>
+
+        <div class="hero-inner">
+          <div class="mark">
+            <svg class="bell" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+            <div class="name">SONORA &middot; design language</div>
+          </div>
+          <h1>Sonora</h1>
+          <p class="lede">A loud, warm interface language of neon dusk and Memphis confetti, grounded in adobe and masa. Descended from Taco Bell's 1990s rebrand, when fast food went hot pink, purple, and a little bit jagged.</p>
+          <p class="lineage">Run for the Border 1990 &rsaquo; the magenta bell 1995 &rsaquo; Yo Quiero 1997. Warm Southwest, hit with electric neon.</p>
+          <div class="cta">
+            <a class="tb-btn" href="#install">Get started</a>
+            <a class="tb-btn ghost" href="#components">Components</a>
+            <button class="tb-btn ghost" id="copyInstall" type="button">Copy tokens</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GETTING STARTED -->
+    <section class="doc-section" id="install">
+      <span class="eyebrow">Start</span>
+      <h2>Getting started</h2>
+      <p class="lede">Adopt the system by dropping in the fonts and the token layer. Everything is namespaced custom properties (<code class="mono">--fuego</code>, <code class="mono">--sp-*</code>, semantic <code class="mono">--primary</code>) plus simple <code class="mono">.ui-*</code> components — no global reset, so it sits beside your existing styles. Set <code class="mono">data-theme</code> to flip light/dark.</p>
+
+      <div class="doc-example" data-static>
+        <div class="doc-demo col">
+          <p class="small" style="margin:0">1 &middot; Link the three faces &mdash; Bricolage Grotesque, DM Sans, Space Mono. &nbsp; 2 &middot; Paste the token block. &nbsp; 3 &middot; Build against the role tokens, set <code class="mono">data-theme</code> on any region.</p>
+        </div>
+        <div class="doc-codewrap">
+          <pre class="doc-code"><code></code></pre>
+          <script type="text/plain" class="doc-snippet">
+&lt;link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&amp;family=DM+Sans:wght@400;500;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"&gt;
+
+&lt;style&gt;
+  :root {
+    /* brand neon */
+    --fuego:#ec1c7d; --grape:#7b2d97; --turquesa:#17bdc0;
+    --sol:#f9a51a;   --clay:#c2562c;  --masa:#f7edd8;
+    --font-display:'Bricolage Grotesque',sans-serif;
+    --font-ui:'DM Sans',system-ui,sans-serif;
+    --font-data:'Space Mono',ui-monospace,monospace;
+  }
+  /* semantic roles — flip with data-theme */
+  [data-theme="light"] { --bg:#faf6ee; --surface:#fff; --text:#2a2018; --primary:#d11a72; }
+  [data-theme="dark"]  { --bg:#160a28; --surface:#1f0f38; --text:#f7edd8; --primary:#ec1c7d; }
+&lt;/style&gt;
+
+&lt;body data-theme="dark"&gt;
+  &lt;button class="ui-btn primary"&gt;order now&lt;/button&gt;
+&lt;/body&gt;
+          </script>
+        </div>
+      </div>
+
+      <p class="small">Want only the loud brand layer for marketing surfaces? Use the five brand hues against <code class="mono">--noche</code> directly. For product UI, build against the semantic role tokens below &mdash; the same screen themes itself between light and dark.</p>
+    </section>
+
+    <!-- COLOR & THEMES -->
+    <section class="doc-section" id="color">
+      <span class="eyebrow">Tokens</span>
+      <h2>Color &amp; themes</h2>
+      <p class="lede">The signature is one themeable sky that runs from bright desert noon, through the magenta dusk, into glowing neon night. From it come five brand hues against a deep purple-black. To live in real apps, those loud hues map onto neutral, role-based tokens with a tuned value for light and dark. Click any swatch to copy. Flip the page sky with the toggle in the top bar.</p>
+
+      <h3 class="doc-sub">The three skies</h3>
+      <div class="skies">
+        <button class="skybox sky-noon" type="button" data-time="noon" aria-label="Switch to noon"><span class="lab">noon</span></button>
+        <button class="skybox sky-dusk" type="button" data-time="dusk" aria-label="Switch to dusk"><span class="lab">dusk</span></button>
+        <button class="skybox sky-neon" type="button" data-time="neon" aria-label="Switch to neon"><span class="lab">neon</span></button>
+      </div>
+
+      <h3 class="doc-sub">Brand hues</h3>
+      <div class="doc-swatches" id="hueSwatches"></div>
+
+      <h3 class="doc-sub">Desert-night ramp</h3>
+      <div class="doc-ramp" id="nocheRamp" style="grid-template-columns:repeat(6,1fr)"></div>
+
+      <h3 class="doc-sub">Warm neutral ramp &mdash; sand</h3>
+      <div class="doc-ramp" id="sandRamp"></div>
+
+      <h3 class="doc-sub">Semantic status</h3>
+      <div class="doc-swatches" id="statusSwatches"></div>
+
+      <h3 class="doc-sub">Role-token map &mdash; light &amp; dark</h3>
+      <div class="map">
+        <div class="maph"><span>role token</span><span>light</span><span>dark</span></div>
+        <div class="mapr"><span class="role">--bg</span><span class="chipv"><i style="background:#faf6ee"></i>#faf6ee</span><span class="chipv"><i style="background:#160a28"></i>#160a28</span></div>
+        <div class="mapr"><span class="role">--surface</span><span class="chipv"><i style="background:#ffffff"></i>#ffffff</span><span class="chipv"><i style="background:#1f0f38"></i>#1f0f38</span></div>
+        <div class="mapr"><span class="role">--text</span><span class="chipv"><i style="background:#2a2018"></i>#2a2018</span><span class="chipv"><i style="background:#f7edd8"></i>#f7edd8</span></div>
+        <div class="mapr"><span class="role">--text-muted</span><span class="chipv"><i style="background:#6b5d49"></i>#6b5d49</span><span class="chipv"><i style="background:#c3aec0"></i>#c3aec0</span></div>
+        <div class="mapr"><span class="role">--border</span><span class="chipv"><i style="background:#e7dccb"></i>#e7dccb</span><span class="chipv"><i style="background:#3a2c44"></i>masa 12%</span></div>
+        <div class="mapr"><span class="role">--primary</span><span class="chipv"><i style="background:#d11a72"></i>#d11a72</span><span class="chipv"><i style="background:#ec1c7d"></i>#ec1c7d</span></div>
+        <div class="mapr"><span class="role">--primary-text</span><span class="chipv"><i style="background:#a3145a"></i>#a3145a</span><span class="chipv"><i style="background:#ff7ab3"></i>#ff7ab3</span></div>
+      </div>
+
+      <p class="small" style="margin:0 0 14px">Same component, same tokens &mdash; only the theme changes.</p>
+      <div class="tpair">
+        <div class="themed tprev" data-theme="light">
+          <div class="tlabel">light</div>
+          <div class="pc">
+            <div class="pt">Order confirmed</div>
+            <div class="ps">Same component, same tokens — only the theme changed.</div>
+            <div class="ui-row"><button class="ui-btn primary">Track order</button><span class="ui-badge success">on its way</span></div>
+          </div>
+        </div>
+        <div class="themed tprev" data-theme="dark">
+          <div class="tlabel">dark</div>
+          <div class="pc">
+            <div class="pt">Order confirmed</div>
+            <div class="ps">Same component, same tokens — only the theme changed.</div>
+            <div class="ui-row"><button class="ui-btn primary">Track order</button><span class="ui-badge success">on its way</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="doc-section" id="type">
+      <span class="eyebrow">Voice</span>
+      <h2>Typography</h2>
+      <p class="lede">A chunky grotesque for the loud moments, a warm humanist sans for everything you read, a quirky monospace for prices and tokens. Heavy and friendly, never thin and precious.</p>
+      <div class="doc-grid three">
+        <div class="doc-face"><span class="fname">Bricolage Grotesque</span><div class="role">Display &middot; 700 / 800</div><div class="big d1">make a run for it</div><div class="note">Chunky, a touch idiosyncratic, set heavy with a tight track and a hard offset shadow. The poster voice, the wordmark energy.</div></div>
+        <div class="doc-face"><span class="fname">DM Sans</span><div class="role">Interface &middot; 400 / 700</div><div class="big d2">crunchwrap &middot; combo</div><div class="note">Warm, rounded, geometric humanist. The friendly working voice you read while you order. Lowercase by default.</div></div>
+        <div class="doc-face"><span class="fname">Space Mono</span><div class="role">Data &middot; 400 / 700</div><div class="big d3">99&cent; --fuego</div><div class="note">Retro-technical and a little funky. For prices, tokens, hex, captions — the nineties-future layer.</div></div>
+      </div>
+      <h3 class="doc-sub">Scale</h3>
+      <div id="typeScale"></div>
+    </section>
+
+    <!-- SPACING & RADIUS -->
+    <section class="doc-section" id="space">
+      <span class="eyebrow">Measure</span>
+      <h2>Spacing &amp; radius</h2>
+      <p class="lede">A 4px spacing base, a small radius set, and an elevation ladder keep rhythm consistent. Pick from these, never arbitrary numbers.</p>
+      <div class="doc-grid two">
+        <div>
+          <h3 class="doc-sub">Spacing &middot; 4px base</h3>
+          <div id="spaceScale"></div>
+        </div>
+        <div>
+          <h3 class="doc-sub">Radius</h3>
+          <div class="doc-grid two" style="gap:var(--sp-3)">
+            <div class="doc-radius-demo" style="border-radius:var(--r-sm)">sm &middot; 6px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--r-md)">md &middot; 10px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--r-lg)">lg &middot; 16px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--r-pill)">pill &middot; 999</div>
+          </div>
+          <h3 class="doc-sub">Elevation</h3>
+          <div class="doc-grid two" style="gap:var(--sp-3)">
+            <div class="doc-elev-demo" style="box-shadow:none">flat</div>
+            <div class="doc-elev-demo" style="box-shadow:0 1px 2px rgba(0,0,0,.35)">raised</div>
+            <div class="doc-elev-demo" style="box-shadow:0 6px 16px rgba(0,0,0,.45)">overlay</div>
+            <div class="doc-elev-demo" style="box-shadow:0 16px 36px rgba(0,0,0,.55)">modal</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFETTI & MOTION -->
+    <section class="doc-section" id="elevation">
+      <span class="eyebrow">Material &amp; behavior</span>
+      <h2>Confetti &amp; motion</h2>
+      <p class="lede">The Memphis kit does the decorative work the way glass or light does it elsewhere. Six primitive shapes, drawn in the brand hues, scattered with rhythm — a small vocabulary, endless arrangements. And one springy curve does most of the motion: a fast departure that overshoots its mark and settles back with a little bounce.</p>
+
+      <h3 class="doc-sub">The confetti &mdash; six primitives</h3>
+      <div class="pat-grid">
+        <div class="pat"><div class="canvas"><span class="tri"></span></div><div class="meta"><div class="k">Triangle</div><div class="v">turquesa &middot; pointer / spark</div></div></div>
+        <div class="pat"><div class="canvas"><span class="zig"></span></div><div class="meta"><div class="k">Zigzag</div><div class="v">sol &middot; energy / divider</div></div></div>
+        <div class="pat"><div class="canvas"><span class="dotg"></span></div><div class="meta"><div class="k">Dot grid</div><div class="v">fuego &middot; texture / fill</div></div></div>
+        <div class="pat"><div class="canvas"><svg class="squig" viewBox="0 0 56 26" fill="none" stroke="#17bdc0" stroke-width="4" stroke-linecap="round"><path d="M3 13c6-12 12 12 18 0s12 12 18 0 12-12 14-6"/></svg></div><div class="meta"><div class="k">Squiggle</div><div class="v">turquesa &middot; motion / accent</div></div></div>
+        <div class="pat"><div class="canvas"><span class="half"></span></div><div class="meta"><div class="k">Half-circle</div><div class="v">grape &middot; arch / cap</div></div></div>
+        <div class="pat"><div class="canvas"><span class="burst"></span></div><div class="meta"><div class="k">Burst</div><div class="v">fuego &middot; value / pop</div></div></div>
+      </div>
+      <div class="pat-tools">
+        <div class="pat-band" id="patBand" aria-hidden="true"></div>
+        <button class="tb-btn ghost" id="shuffle" type="button">shuffle</button>
+      </div>
+
+      <h3 class="doc-sub">Motion &mdash; pop, do not glide</h3>
+      <div class="motion-grid">
+        <div class="curve-box">
+          <svg viewBox="0 0 300 170" aria-label="Spring easing curve">
+            <line x1="20" y1="150" x2="280" y2="150" stroke="rgba(247,237,216,0.18)" stroke-width="1"/>
+            <line x1="20" y1="20" x2="20" y2="150" stroke="rgba(247,237,216,0.18)" stroke-width="1"/>
+            <path d="M20 150 C 122 150, 150 -8, 200 40 C 230 68, 250 20, 280 20" fill="none" stroke="#ec1c7d" stroke-width="2.6"/>
+            <circle cx="20" cy="150" r="3.5" fill="#ec1c7d"/><circle cx="280" cy="20" r="3.5" fill="#ec1c7d"/>
+          </svg>
+          <div style="font-family:var(--font-data);font-size:11.5px;color:var(--ink-faint);margin-top:14px">--ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1)</div>
+          <div class="pop-demo" aria-hidden="true"><b></b></div>
+        </div>
+        <div class="motion-tokens">
+          <div class="mt"><div class="k">Pop in<small>buttons, chips, cards</small></div><div class="v">320ms<br>ease-pop</div></div>
+          <div class="mt"><div class="k">Sky shift<small>time-of-day crossfade</small></div><div class="v">800ms<br>ease-soft</div></div>
+          <div class="mt"><div class="k">Bell ring<small>on the big moment</small></div><div class="v">760ms<br>wobble + tone</div></div>
+          <div class="mt"><div class="k">Tap<small>hover and press</small></div><div class="v">150ms<br>ease-pop</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THE BELL -->
+    <section class="doc-section" id="bell">
+      <span class="eyebrow">The mark</span>
+      <h2>The bell</h2>
+      <p class="lede">One icon carries the whole brand, so it is drawn on a grid, given room to breathe, and locked up the same way every time. It works flat by day and lit as neon by night. Tap any bell to ring it.</p>
+      <div class="bell-lab">
+        <div class="construct">
+          <div class="frame">
+            <div class="clear"></div>
+            <svg class="cb" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+          </div>
+          <div class="cap">construction grid &middot; clearspace = &frac14; bell height</div>
+        </div>
+        <div class="lockups">
+          <div class="lk">
+            <svg class="lb bell" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+            <div class="wm">Sonora</div><div class="tag">horizontal lockup</div>
+          </div>
+          <div class="lk stacked">
+            <svg class="lb bell" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+            <div class="wm">Sonora</div>
+          </div>
+          <div class="lk neon">
+            <svg class="lb bell" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+            <div class="wm">Sonora</div><div class="tag">neon variant</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPONENTS -->
+    <section class="doc-section" id="components">
+      <span class="eyebrow">Parts</span>
+      <h2>Components</h2>
+      <p class="lede">A small kit built from the bell, the neon hues, and the confetti. A ringable mark, a chunky button with a real press, a value starburst, a combo row, a segmented toggle.</p>
+
+      <h3 class="doc-sub">The bell mark &middot; tap to ring</h3>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;svg class="bell-demo bell" viewBox="0 0 120 120" role="img" aria-label="Ring the bell"&gt;
+  &lt;circle cx="60" cy="18" r="7"/&gt;&lt;rect x="56" y="22" width="8" height="9"/&gt;
+  &lt;path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/&gt;
+  &lt;rect x="24" y="84" width="72" height="9" rx="3"/&gt;&lt;circle cx="60" cy="101" r="6"/&gt;
+&lt;/svg&gt;
+        </script></div>
+      </div>
+
+      <h3 class="doc-sub">Buttons</h3>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="tb-btn" type="button"&gt;order now&lt;/button&gt;
+&lt;button class="tb-btn ghost" type="button"&gt;view menu&lt;/button&gt;
+        </script></div>
+      </div>
+
+      <h3 class="doc-sub">Value badge &amp; segmented toggle</h3>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;span class="tag-badge"&gt;&lt;span class="star"&gt;&lt;/span&gt;&lt;span class="price"&gt;99&amp;cent;&lt;/span&gt;&lt;/span&gt;
+
+&lt;span class="seg"&gt;
+  &lt;button class="on" type="button"&gt;eat in&lt;/button&gt;
+  &lt;button type="button"&gt;to go&lt;/button&gt;
+&lt;/span&gt;
+        </script></div>
+      </div>
+
+      <h3 class="doc-sub">Combo menu row</h3>
+      <div class="doc-example">
+        <div class="doc-demo col"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="menu-row"&gt;
+  &lt;span class="mi"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="#f7edd8" stroke-width="1.7"&gt;&lt;path d="M4 13h16M5 13a7 7 0 0114 0M9 17h6"/&gt;&lt;/svg&gt;&lt;/span&gt;
+  &lt;span class="nm"&gt;&lt;b&gt;Crunchwrap&lt;/b&gt;&lt;small&gt;combo &middot; large&lt;/small&gt;&lt;/span&gt;&lt;span class="pr"&gt;$4.99&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="menu-row"&gt;
+  &lt;span class="mi"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="#f7edd8" stroke-width="1.7"&gt;&lt;path d="M5 19l7-14 7 14zM8 19l4-8 4 8"/&gt;&lt;/svg&gt;&lt;/span&gt;
+  &lt;span class="nm"&gt;&lt;b&gt;Nachos&lt;/b&gt;&lt;small&gt;supreme&lt;/small&gt;&lt;/span&gt;&lt;span class="pr"&gt;$2.49&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class="menu-row"&gt;
+  &lt;span class="mi"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="#f7edd8" stroke-width="1.7"&gt;&lt;path d="M6 8h12l-1 11H7zM9 8V6a3 3 0 016 0v2"/&gt;&lt;/svg&gt;&lt;/span&gt;
+  &lt;span class="nm"&gt;&lt;b&gt;Baja Blast&lt;/b&gt;&lt;small&gt;fountain&lt;/small&gt;&lt;/span&gt;&lt;span class="pr"&gt;$1.99&lt;/span&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- PRODUCT UI -->
+    <section class="doc-section" id="product">
+      <span class="eyebrow">Functional register</span>
+      <h2>Built for real product UI</h2>
+      <p class="lede">Sonora runs at two volumes. The loud one sells; the quiet one ships. For dense, everyday screens the system dials the neon down to a single primary accent over warm neutrals, leans on semantic tokens and status colors, restrains the motion, and holds AA contrast — in light or dark. Same soul, lower volume.</p>
+
+      <div class="registers">
+        <div class="reg exp"><div class="t">Expressive</div><div class="d">Marketing, menu boards, packaging. Full neon, big display type, Memphis confetti, the bouncy pop. Turn it all the way up.</div><span class="tag">hero &middot; kiosk &middot; cup</span></div>
+        <div class="reg"><div class="t">Functional</div><div class="d">Apps, dashboards, settings. One primary accent on warm neutrals, intent-driven status color, calm motion, real contrast. The confetti retires; the bell stays.</div><span class="tag">dashboards &middot; forms &middot; tables</span></div>
+      </div>
+
+      <div class="app-bar">
+        <div style="font-family:var(--font-data);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)">live preview &middot; flip the theme &rarr;</div>
+        <div class="theme-toggle" id="appToggle"><button class="on" type="button" data-theme="light">light</button><button type="button" data-theme="dark">dark</button></div>
+      </div>
+
+      <div class="themed app-demo" data-theme="light" id="appDemo">
+        <div class="app-shell">
+          <aside class="app-side">
+            <div class="app-brand">
+              <svg class="ab bell" viewBox="0 0 120 120"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+              <b>Sonora</b>
+            </div>
+            <nav class="app-nav">
+              <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Overview</a>
+              <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.2-1.6l2-1.5-2-3.4-2.3 1a7 7 0 00-2.8-1.6L13 1h-2"/></svg>Settings</a>
+              <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M9 12h6M9 16h6"/></svg>Orders</a>
+              <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 2.6 1-5.5-4-3.9 5.5-.8z"/></svg>Rewards</a>
+            </nav>
+          </aside>
+          <div class="app-main">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px">
+              <div><div class="app-h">Account settings</div><div class="app-sub">Manage your profile and preferences</div></div>
+              <span class="ui-badge success">all saved</span>
+            </div>
+            <div class="ui-tabs"><span class="ui-tab on">Profile</span><span class="ui-tab">Notifications</span><span class="ui-tab">Billing</span></div>
+            <div class="app-grid2" style="margin-bottom:16px">
+              <div class="ui-field"><label class="ui-label">Full name</label><input class="ui-input" value="Roger Hernandez"></div>
+              <div class="ui-field"><label class="ui-label">Email</label><input class="ui-input" value="amos@example.com"></div>
+              <div class="ui-field"><label class="ui-label">Home store</label><select class="ui-select"><option>Tucson &middot; Speedway</option><option>Mesa &middot; Main St</option><option>Phoenix &middot; Camelback</option></select></div>
+              <div class="ui-field"><label class="ui-label">Favorite order</label><input class="ui-input" placeholder="e.g. Crunchwrap combo"></div>
+            </div>
+            <div class="app-card" style="margin-bottom:16px">
+              <div class="set-row"><div class="sl"><b>Order updates</b><small>Push me when the order status changes</small></div><span class="ui-switch on" data-switch></span></div>
+              <div class="set-row"><div class="sl"><b>Weekly deals</b><small>One email a week, never more</small></div><span class="ui-switch" data-switch></span></div>
+            </div>
+            <div class="ui-alert info" style="margin-bottom:18px"><span class="dot"></span><div>Your rewards tier renews in 12 days — one more order keeps it.</div></div>
+            <div class="ui-row" style="justify-content:flex-end"><button class="ui-btn ghost" type="button">Cancel</button><button class="ui-btn secondary" type="button">Reset</button><button class="ui-btn primary" type="button">Save changes</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPLICATIONS -->
+    <section class="doc-section" id="applications">
+      <span class="eyebrow">In the wild</span>
+      <h2>The language, applied</h2>
+      <p class="lede">Tokens only earn their keep on real surfaces. Here the same bell, hues, confetti, and pop curve compose a self-order kiosk, a mobile app, and a fountain cup — nothing added that is not already in the kit.</p>
+      <div class="apps">
+        <div>
+          <div class="kiosk">
+            <div class="top">
+              <svg class="kb bell" viewBox="0 0 120 120"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+              <b>order here</b><span class="o">kiosk 03</span>
+            </div>
+            <div class="body">
+              <div class="kcard"><span class="th" style="background:linear-gradient(135deg,var(--fuego),var(--grape))"></span><span class="kt"><b>Crunchwrap Combo</b><small>+ drink &amp; sides</small></span><span class="kp">$4.99</span></div>
+              <div class="kcard"><span class="th" style="background:linear-gradient(135deg,var(--turquesa),var(--grape))"></span><span class="kt"><b>Nachos Supreme</b><small>extra cheese</small></span><span class="kp">$2.49</span></div>
+              <div class="kcard"><span class="th" style="background:linear-gradient(135deg,var(--sol),var(--fuego))"></span><span class="kt"><b>Baja Blast</b><small>large fountain</small></span><span class="kp">$1.99</span></div>
+              <div class="pay">checkout &middot; $9.47</div>
+            </div>
+          </div>
+          <div class="app-cap">self-order kiosk</div>
+        </div>
+        <div>
+          <div class="phone">
+            <div class="notch"></div>
+            <div class="scr">
+              <div class="ph"><svg class="pb bell" viewBox="0 0 120 120"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg><b>Sonora</b></div>
+              <div class="hero-card"><div class="t">Crunchwrap</div><div class="s">back for a limited run</div><div class="pz">$4.99</div></div>
+              <div class="qr">
+                <div>Reorder<small>last: nachos</small></div>
+                <div>Rewards<small>240 pts</small></div>
+                <div>Deals<small>3 today</small></div>
+                <div>Locate<small>0.4 mi</small></div>
+              </div>
+              <div class="tabs"><i class="on"></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
+          <div class="app-cap">mobile app</div>
+        </div>
+        <div>
+          <div class="cup-wrap">
+            <div class="cup">
+              <div class="straw"></div><div class="lid"></div>
+              <div class="band">
+                <svg class="cb bell" viewBox="0 0 120 120"><circle cx="60" cy="18" r="7"/><rect x="56" y="22" width="8" height="9"/><path d="M30 86 C 28 56 36 34 60 30 C 84 34 92 56 90 86 Z"/><rect x="24" y="84" width="72" height="9" rx="3"/><circle cx="60" cy="101" r="6"/></svg>
+                <b>SONORA</b>
+              </div>
+            </div>
+          </div>
+          <div class="app-cap">fountain cup</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRINCIPLES -->
+    <section class="doc-section" id="principles">
+      <span class="eyebrow">The spine</span>
+      <h2>Six principles</h2>
+      <p class="lede">Each is lifted from something the 1990s brand actually did, then written as a rule you can hold a screen against.</p>
+      <div class="doc-grid two">
+        <div class="doc-card"><h3>01 &middot; Ring the bell</h3><p><b style="color:var(--ink)">One bold mark anchors everything.</b> The bell is the gravity. Simple, friendly, unmistakable. Every layout earns its place by pointing back to that one icon.</p></div>
+        <div class="doc-card"><h3>02 &middot; Neon dusk</h3><p><b style="color:var(--ink)">Magenta to grape to turquoise — color as flavor.</b> The palette is the sunset turned electric. Hot pink leads, purple deepens, teal cuts. Color is the taste of the brand, not decoration.</p></div>
+        <div class="doc-card"><h3>03 &middot; Memphis confetti</h3><p><b style="color:var(--ink)">Scatter geometry, but scatter it on purpose.</b> Triangles, zigzags, dots, and bursts give the surface energy. Playful, never random. Confetti frames content and fills dead air with personality.</p></div>
+        <div class="doc-card"><h3>04 &middot; Adobe ground</h3><p><b style="color:var(--ink)">Terracotta and masa keep the neon human.</b> Under the electric sky is warm clay and corn cream. The Southwestern base stops the brightness going cold. Warmth makes loud feel welcoming.</p></div>
+        <div class="doc-card"><h3>05 &middot; Big friendly voice</h3><p><b style="color:var(--ink)">Chunky type, lowercase warmth, honest prices.</b> Headlines are heavy and a touch hand-made. Labels are lowercase and casual. Values stated plainly, sixty-cent-menu honest. Approachable beats polished.</p></div>
+        <div class="doc-card"><h3>06 &middot; Pop, do not glide</h3><p><b style="color:var(--ink)">Motion bounces, overshoots, lands with momentum.</b> Where other languages slide or breathe, this one springs. Things scale past their mark and settle back, with forward energy — running for the border, not strolling there.</p></div>
+      </div>
+
+      <h3 class="doc-sub">Do, and do not</h3>
+      <div class="doc-grid two">
+        <div class="doc-dd do"><h4>Do</h4><ul>
+          <li>Let one bold bell anchor the composition and earn the eye.</li>
+          <li>Lead with hot magenta, deepen with grape, cut with turquoise.</li>
+          <li>Ground the neon in warm clay and masa so it stays human.</li>
+          <li>Scatter Memphis confetti with rhythm to fill dead air.</li>
+          <li>Set type heavy, lowercase, and friendly, with honest prices.</li>
+          <li>Make things pop and overshoot, with forward momentum.</li>
+        </ul></div>
+        <div class="doc-dd dont"><h4>Do not</h4><ul>
+          <li>Crowd the screen with competing marks; the bell loses its gravity.</li>
+          <li>Mute the palette into tasteful pastels; the loudness is the point.</li>
+          <li>Drop the warm ground; neon with no adobe goes cold and clinical.</li>
+          <li>Sprinkle confetti at random until it reads as noise, not energy.</li>
+          <li>Reach for thin, precious, all-caps type; it fights the friendliness.</li>
+          <li>Use slow, smooth, mechanical glides; they kill the bounce.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- ACCESSIBILITY -->
+    <section class="doc-section" id="a11y">
+      <span class="eyebrow">Accessibility</span>
+      <h2>Accessibility</h2>
+      <p class="lede">Loud neon needs care. A bright, saturated system has real energy — and a few honest obligations to stay legible for everyone.</p>
+      <div class="doc-grid two">
+        <div class="doc-card">
+          <h3>Built in</h3>
+          <p>The functional register holds WCAG AA at body sizes in both light and dark · status always reads through more than color — paired labels, dots, and icons · inputs carry a visible <code class="mono">--ring</code> focus halo · the drifting hero confetti and sky shift are decorative (<code class="mono">aria-hidden</code>) and freeze under <code class="mono">prefers-reduced-motion</code>, which disables every animation.</p>
+        </div>
+        <div class="doc-card">
+          <h3>Your part</h3>
+          <p>The neon hues are vivid but light — reserve full <code class="mono">--fuego</code> on <code class="mono">--noche</code> for display moments, and switch to the semantic role tokens for prose, where each value is tuned for contrast · never set body text directly on hot magenta or turquoise; pair them with <code class="mono">--masa</code> or <code class="mono">--noche</code> and re-check · keep the bell ring's sound optional and the burst purely visual.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HERITAGE -->
+    <section class="doc-section" id="heritage">
+      <span class="eyebrow">Where it comes from</span>
+      <h2>Heritage</h2>
+      <p class="lede">Taco Bell opened the 1990s warm and dusty: a mission bell, adobe browns, an invitation to "make a run for the border." Then in 1995 it detonated. The new free-standing bell landed on a field of hot magenta, grape, and turquoise, wrapped in Memphis-Group geometry — zigzags, confetti dots, jagged bursts. Optimistic, loud, unmistakably of its moment. Sonora takes that arc, warm ground struck by electric neon, and makes it buildable.</p>
+      <div class="doc-timeline">
+        <div class="doc-node"><div class="y">1990</div><div class="n">Run for the Border</div><div class="d">Mission bell, adobe and tan, desert Southwest. Hand-thrown and human, dusty at the edges.</div></div>
+        <div class="doc-node"><div class="y">1995</div><div class="n">The magenta bell</div><div class="d">The rebrand. Free-standing bell on hot pink, purple, and teal. Memphis confetti everywhere. Peak nineties.</div></div>
+        <div class="doc-node"><div class="y">1997</div><div class="n">Yo Quiero</div><div class="d">The Chihuahua, the value menu, a playful pop-culture voice. The people's food, loud and friendly.</div></div>
+        <div class="doc-node"><div class="y">Now</div><div class="n">Sonora</div><div class="d">The warm-ground, neon-sky instinct re-tokenized, so you can design with it on purpose.</div></div>
+      </div>
+
+      <div class="doc-foot">
+        <div class="big">Sonora</div>
+        A design study, <strong style="color:var(--ink-dim)">not affiliated with Taco Bell or Yum! Brands</strong>. The bell mark, palette, Memphis primitives, and type pairings are original evocations of the 1990s look, not brand assets.<br>
+        Warm ground &middot; neon dusk &middot; pop, do not glide. Derived from Taco Bell's 1990s identity, 1990&ndash;1999.<br>
+        SONORA v1.0.0 &middot; Bricolage Grotesque &middot; DM Sans &middot; Space Mono &middot; magenta bell, Memphis confetti, springy pop.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="doc-toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(s, c){ return (c||document).querySelector(s); }
+  function $all(s, c){ return Array.prototype.slice.call((c||document).querySelectorAll(s)); }
+
+  /* toast */
+  var toasts = $('#toasts');
+  function toast(html){
+    var t = document.createElement('div'); t.className = 'doc-toast'; t.innerHTML = html;
+    toasts.appendChild(t); requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.remove(); }, 300); }, 2400);
+  }
+  function copy(text, label){
+    var done = function(){ toast('Copied <b>' + (label || 'snippet') + '</b>'); };
+    if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); }); }
+    else { fallback(text); done(); }
+  }
+  function fallback(text){
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch(e){} ta.remove();
+  }
+
+  /* snippets are stored HTML-escaped inside <script type="text/plain">; decode for the live demo */
+  function decode(s){ var d = document.createElement('textarea'); d.innerHTML = s; return d.value; }
+  function dedent(s){
+    s = s.replace(/^\n+/, '').replace(/\s+$/, '');
+    var lines = s.split('\n');
+    var indent = lines.reduce(function(min, l){ if (!l.trim()) return min; var m = l.match(/^\s*/)[0].length; return Math.min(min, m); }, Infinity);
+    if (!isFinite(indent)) indent = 0;
+    return lines.map(function(l){ return l.slice(indent); }).join('\n');
+  }
+
+  /* render each example: snippet -> code block (+copy) and, unless [data-static], a live demo */
+  $all('.doc-example').forEach(function(ex){
+    var src = $('.doc-snippet', ex); if (!src) return;
+    var decoded = decode(dedent(src.textContent));
+    var codeEl = $('.doc-code code', ex);
+    if (codeEl) codeEl.textContent = decoded;     // re-escapes for safe display
+    var demo = $('.doc-demo', ex);
+    if (demo && !demo.children.length && !ex.hasAttribute('data-static')) {
+      try { demo.innerHTML = decoded; } catch(e){}
+    }
+    var wrap = $('.doc-codewrap', ex);
+    if (wrap){
+      var btn = document.createElement('button');
+      btn.className = 'doc-copy';
+      btn.type = 'button'; btn.textContent = 'copy';
+      btn.addEventListener('click', function(){ copy(decoded, 'code'); });
+      wrap.appendChild(btn);
+    }
+  });
+
+  /* brand-hue swatches */
+  var hues = [
+    ['fuego','#ec1c7d','--fuego','the bell / primary'],
+    ['grape','#7b2d97','--grape','depth / shadow'],
+    ['turquesa','#17bdc0','--turquesa','cut / accent'],
+    ['sol','#f9a51a','--sol','value / highlight'],
+    ['clay','#c2562c','--clay','adobe ground']
+  ];
+  var hueHost = $('#hueSwatches');
+  if (hueHost) hues.forEach(function(h){
+    var b = document.createElement('button');
+    b.className = 'doc-swatch'; b.type = 'button'; b.setAttribute('aria-label', 'Copy ' + h[0] + ' ' + h[1]);
+    b.innerHTML = '<span class="cap" style="background:' + h[1] + '"></span>' +
+      '<span class="m"><span class="k">' + h[0] + '</span><span class="v">' + h[1] + '</span><span class="u">' + h[3] + '</span></span>';
+    b.addEventListener('click', function(){ copy(h[1], h[2] + ' · ' + h[1]); });
+    hueHost.appendChild(b);
+  });
+
+  /* status swatches */
+  var stats = [
+    ['verde','#2e9e5b','--success','success'],
+    ['sol','#f9a51a','--warning','warning'],
+    ['chile','#d83a2f','--danger','danger'],
+    ['turquesa','#0e9aa0','--info','info']
+  ];
+  var statHost = $('#statusSwatches');
+  if (statHost) stats.forEach(function(h){
+    var b = document.createElement('button');
+    b.className = 'doc-swatch'; b.type = 'button'; b.setAttribute('aria-label', 'Copy ' + h[0] + ' ' + h[1]);
+    b.innerHTML = '<span class="cap" style="background:' + h[1] + '"></span>' +
+      '<span class="m"><span class="k">' + h[0] + '</span><span class="v">' + h[1] + '</span><span class="u">' + h[3] + '</span></span>';
+    b.addEventListener('click', function(){ copy(h[1], h[2] + ' · ' + h[1]); });
+    statHost.appendChild(b);
+  });
+
+  /* ramps */
+  function buildRamp(el, items){
+    if(!el) return;
+    items.forEach(function(p){
+      var s = document.createElement('button'); s.className='s'; s.type='button'; s.style.background = p[1];
+      s.innerHTML = '<span>'+p[0]+'</span>'; s.title = p[2]+' · '+p[1];
+      s.setAttribute('aria-label', 'Copy ' + p[2] + ' ' + p[1]);
+      s.addEventListener('click', function(){ copy(p[1], p[2] + ' · ' + p[1]); });
+      el.appendChild(s);
+    });
+  }
+  buildRamp($('#nocheRamp'), [
+    ['noche','#160a28','--noche'],['noche-2','#1f0f38','--noche-2'],['noche-3','#2a164e','--noche-3'],
+    ['line','rgba(247,237,216,.12)','--line'],['ink-dim','#d8bdcf','--ink-dim'],['masa','#f7edd8','--masa']
+  ]);
+  buildRamp($('#sandRamp'), [
+    ['50','#faf6ee','--sand-50'],['100','#f3ece0','--sand-100'],['200','#e7dccb','--sand-200'],['300','#d4c6b0','--sand-300'],['400','#b3a48b','--sand-400'],
+    ['500','#8c7d66','--sand-500'],['600','#6b5d49','--sand-600'],['700','#4d4234','--sand-700'],['800','#2e271d','--sand-800'],['900','#1c1711','--sand-900']
+  ]);
+
+  /* type scale */
+  var typeRows = [
+    ['display · 5rem','Run for it','var(--font-display)',800,'42px','-0.03em','none','var(--masa)'],
+    ['h1 · 3rem','Headline','var(--font-display)',800,'34px','-0.02em','none','var(--masa)'],
+    ['h2 · 2.25rem','Section title','var(--font-display)',700,'28px','-0.01em','none','var(--ink)'],
+    ['h3 · 1.5rem','Ring the bell','var(--font-display)',700,'22px','0','none','var(--ink)'],
+    ['title · 1.25rem','Card title','var(--font-display)',700,'20px','0','none','var(--ink)'],
+    ['body · 1rem','Body copy you actually read.','var(--font-ui)',400,'16px','0','none','var(--ink-dim)'],
+    ['small · 0.875rem','Secondary detail','var(--font-ui)',400,'14px','0','none','var(--ink-dim)'],
+    ['caption · 0.75rem','order #1995 · 99¢','var(--font-data)',400,'12px','0','none','var(--ink-faint)']
+  ];
+  var ts = $('#typeScale');
+  if (ts) typeRows.forEach(function(r){
+    var row = document.createElement('div'); row.className='doc-scale-row';
+    row.innerHTML = '<span class="tk">'+r[0]+'</span><span style="font-family:'+r[2]+';font-weight:'+r[3]+';font-size:'+r[4]+';letter-spacing:'+r[5]+';text-transform:'+r[6]+';color:'+r[7]+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>';
+    row.lastChild.textContent = r[1];
+    ts.appendChild(row);
+  });
+
+  /* spacing scale */
+  var spaces = [['1','4'],['2','8'],['3','12'],['4','16'],['5','24'],['6','32'],['7','48'],['8','64']];
+  var sc = $('#spaceScale');
+  if (sc) spaces.forEach(function(p){
+    var row = document.createElement('div'); row.className='doc-space-row';
+    row.innerHTML = '<span class="tk">--sp-'+p[0]+'</span><span class="bar" style="width:'+p[1]+'px"></span><span class="small">'+p[1]+'px</span>';
+    sc.appendChild(row);
+  });
+
+  /* copy install — the full token block from the Getting started example */
+  var tokenBlock = $('#install .doc-snippet');
+  var installText = tokenBlock ? dedent(decode(tokenBlock.textContent)) : '';
+  var ci = $('#copyInstall');
+  if (ci) ci.addEventListener('click', function(){ copy(installText, 'sonora tokens'); });
+
+  /* THEME toggle (Sonora's analog of Nebula's now/2001) — the time-of-day sky retint.
+     Wired to the real <body data-time> attribute used across the whole page. */
+  function setTime(t){
+    document.body.setAttribute('data-time', t);
+    $all('.doc-themetoggle .doc-chip').forEach(function(c){ c.setAttribute('aria-pressed', c.getAttribute('data-time') === t ? 'true' : 'false'); });
+  }
+  $all('.doc-themetoggle .doc-chip').forEach(function(c){
+    c.addEventListener('click', function(){ setTime(c.getAttribute('data-time')); });
+  });
+  /* the three sky preview boxes in #color also flip the time of day */
+  $all('.skybox[data-time]').forEach(function(b){
+    b.addEventListener('click', function(){ setTime(b.getAttribute('data-time')); });
+  });
+
+  /* reveal on scroll */
+  $all('.doc-section, .pat, .doc-face, .doc-card, .doc-node, .skybox, .reg, .doc-dd').forEach(function(s){ s.classList.add('doc-reveal'); });
+  if (!reduce && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('is-in'); io.unobserve(e.target); } }); }, { threshold: 0.06 });
+    $all('.doc-reveal').forEach(function(s){ io.observe(s); });
+  } else { $all('.doc-reveal').forEach(function(s){ s.classList.add('is-in'); }); }
+
+  /* mark ready so the looping ambient animations start */
+  requestAnimationFrame(function(){ document.body.classList.add('ready'); });
+
+  /* scrollspy for sidebar */
+  var links = $all('.doc-side a');
+  var byId = {}; links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window){
+    var spy = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (e.isIntersecting){
+          links.forEach(function(a){ a.classList.remove('is-active'); });
+          var a = byId[e.target.id]; if (a) a.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-72px 0px -70% 0px', threshold: 0 });
+    $all('.doc-section').forEach(function(s){ if (s.id) spy.observe(s); });
+  }
+
+  /* ---- ring the bell: tone + wobble + confetti burst ---- */
+  var actx;
+  function tone () {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      var now = actx.currentTime;
+      var master = actx.createGain(); master.connect(actx.destination);
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.5, now + 0.005);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+      [[1,1],[2.0,0.5],[2.76,0.32],[5.4,0.16]].forEach(function (p) {
+        var o = actx.createOscillator(); o.type = 'sine'; o.frequency.value = 660 * p[0];
+        var g = actx.createGain(); g.gain.value = p[1];
+        o.connect(g); g.connect(master); o.start(now); o.stop(now + 2.2);
+      });
+    } catch (err) {}
+  }
+  function burst (x, y) {
+    if (reduce) return;
+    var cols = ['--fuego', '--grape', '--turquesa', '--sol', '--masa'];
+    for (var i = 0; i < 20; i++) {
+      var s = document.createElement('span'); s.className = 'spark';
+      var a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 110;
+      s.style.setProperty('--tx', (Math.cos(a) * d) + 'px');
+      s.style.setProperty('--ty', (Math.sin(a) * d - 30) + 'px');
+      s.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+      s.style.left = x + 'px'; s.style.top = y + 'px';
+      s.style.background = 'var(' + cols[i % cols.length] + ')';
+      if (i % 3 === 0) s.style.borderRadius = '50%';
+      document.body.appendChild(s);
+      s.addEventListener('animationend', function () { this.remove(); });
+    }
+  }
+  function swing (el) { el.classList.remove('ring-anim'); void el.getBoundingClientRect(); el.classList.add('ring-anim'); }
+  function fx (el) { var b = el.getBoundingClientRect(); burst(b.left + b.width / 2, b.top + b.height / 2); tone(); }
+
+  var heroSign = document.getElementById('heroSign');
+  if (heroSign) heroSign.addEventListener('click', function () {
+    var sw = heroSign.querySelector('.bell-swing'); swing(sw); fx(sw);
+  });
+  /* delegate to any .bell-demo, including the one injected into the live example */
+  document.addEventListener('click', function (ev) {
+    var el = ev.target.closest ? ev.target.closest('.bell-demo') : null;
+    if (el) { swing(el); fx(el); }
+  });
+
+  /* pattern shuffle: re-angle the confetti band */
+  var band = document.getElementById('patBand');
+  var angles = [45, 115, 0, 90, 135, 70], ai = 0;
+  var shuffleBtn = document.getElementById('shuffle');
+  if (shuffleBtn && band) shuffleBtn.addEventListener('click', function () {
+    ai = (ai + 1) % angles.length;
+    band.style.background = 'repeating-linear-gradient(' + angles[ai] + 'deg, var(--fuego) 0 16px, var(--grape) 16px 32px, var(--turquesa) 32px 48px, var(--sol) 48px 64px)';
+  });
+
+  /* product demo: light/dark theme toggle */
+  var appToggle = document.getElementById('appToggle');
+  var appDemo = document.getElementById('appDemo');
+  if (appToggle && appDemo) {
+    appToggle.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        appToggle.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+        b.classList.add('on');
+        appDemo.setAttribute('data-theme', b.getAttribute('data-theme'));
+      });
+    });
+  }
+
+  /* switches (delegated so injected demos work too) */
+  document.addEventListener('click', function (ev) {
+    var s = ev.target.closest ? ev.target.closest('[data-switch]') : null;
+    if (s) s.classList.toggle('on');
+  });
+
+  /* tabs */
+  document.querySelectorAll('.ui-tabs').forEach(function (group) {
+    group.querySelectorAll('.ui-tab').forEach(function (t) {
+      t.addEventListener('click', function () {
+        group.querySelectorAll('.ui-tab').forEach(function (x) { x.classList.remove('on'); });
+        t.classList.add('on');
+      });
+    });
+  });
+
+  /* segmented toggles inside live demos */
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest ? ev.target.closest('.seg button') : null;
+    if (b) { b.parentElement.querySelectorAll('button').forEach(function (x){ x.classList.remove('on'); }); b.classList.add('on'); }
+  });
+
+  /* dev-facing credit */
+  try {
+    console.log('%cSONORA v1.0.0', 'color:#ec1c7d;font-family:sans-serif;font-size:18px;font-weight:800');
+    console.log('%cA loud, warm design language — neon dusk, Memphis confetti, adobe ground.\nTokens: --fuego --grape --turquesa --sol --clay --masa · semantic roles flip with data-theme.\nA design study after Taco Bell\'s 1990s rebrand (1990–1999). Not affiliated with Taco Bell or Yum! Brands.',
+      'color:#d8bdcf;font-family:monospace;font-size:12px;line-height:1.6');
+  } catch(e){}
+})();
+</script>
+</body>
+</html>

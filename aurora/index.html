@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA — Design Language</title>
+<meta name="description" content="Aurora is a glass interface language of translucent, light-bending chrome and flowing color — a mature homage to Windows Vista and the Aero era of Frutiger optimism. Edition 02.">
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@layer aurora {
+  /* ============================================================
+     AURORA — design tokens · edition 02
+     Three switches theme the whole language from one place:
+       [data-au-accent]  — the glass tint (personalization, not place)
+       [data-au-theme]     — dark | light  (the night base vs. Frutiger bright)
+       .au-reduce-transparency     — Reduce transparency: glass becomes opaque
+     Set them on <body> for the system, or any subtree for one pane.
+     ============================================================ */
+  :root {
+    /* ---- night sky: the dark base the aurora glows against ---- */
+    --au-night-0: #05080f;   /* page base */
+    --au-night-1: #0a0f1a;   /* surface */
+    --au-night-2: #111a2b;   /* raised */
+    --au-night-3: rgba(255,255,255,0.03);
+    --au-surface-solid: #0e1726;   /* the opaque stand-in when glass is off */
+
+    /* ---- text on dark ---- */
+    --au-ink:       #eef4ff;
+    --au-ink-dim:   #b6c6dc;
+    --au-ink-faint: rgba(238,244,255,0.52);
+    --au-ink-ghost: rgba(238,244,255,0.32);
+
+    /* ---- hairline chrome ---- */
+    --au-line:        rgba(255,255,255,0.12);
+    --au-line-strong: rgba(255,255,255,0.22);
+
+    /* ---- THE GLASS — the material of the whole language ----
+       A pane is: translucent body + accent tint wash + a wet gloss
+       across the top + a bright specular top edge + frost grain +
+       an inner shadow + a soft drop. One recipe, used everywhere. */
+    --au-glass-bg:    rgba(255,255,255,0.10);
+    --au-glass-bg-2:  rgba(255,255,255,0.20);
+    --au-glass-line:  rgba(255,255,255,0.20);
+    --au-glass-edge:  rgba(255,255,255,0.62);   /* specular top border */
+    --au-glass-noise: 0.04;                      /* frost grain opacity */
+    --au-glass-shadow: 0 24px 60px rgba(0,0,0,0.50), 0 4px 14px rgba(0,0,0,0.34);
+    --au-glass-inner: inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -34px 54px rgba(0,0,0,0.28);
+
+    /* ---- blur scale ---- */
+    --au-blur-sm: 8px; --au-blur-md: 18px; --au-blur-lg: 28px;
+    --au-glass-blur: var(--au-blur-md);
+
+    /* ---- opacity scale (text + chrome) ---- */
+    --au-o-ghost: 0.32; --au-o-faint: 0.52; --au-o-dim: 0.72; --au-o-full: 1;
+
+    /* ---- the five glass tints — Vista's personalization ---- */
+    --au-tint-blue:     #3a9bf0;
+    --au-tint-green:    #54c95a;
+    --au-tint-violet:   #9b73f0;
+    --au-tint-amber:    #f0a93a;
+    --au-tint-graphite: #9fb2c6;
+
+    /* ---- semantic ---- */
+    --au-ok:    var(--au-tint-green);
+    --au-info:  var(--au-tint-blue);
+    --au-warn:  var(--au-tint-amber);
+    --au-danger:#ef5f63;
+
+    /* ---- spacing scale (4px base) ---- */
+    --au-s1: 4px;  --au-s2: 8px;  --au-s3: 12px; --au-s4: 16px;
+    --au-s5: 24px; --au-s6: 32px; --au-s7: 48px; --au-s8: 64px;
+
+    /* ---- radii — softly rounded, never sharp ---- */
+    --au-r-sm: 4px; --au-r-md: 8px; --au-r-lg: 14px; --au-r-xl: 22px; --au-r-pill: 999px;
+
+    /* ---- elevation ---- */
+    --au-e1: 0 1px 0 rgba(255,255,255,0.05), 0 2px 10px rgba(0,0,0,0.32);
+    --au-e2: 0 10px 30px rgba(0,0,0,0.42);
+    --au-e3: 0 28px 64px rgba(0,0,0,0.52);
+
+    /* ---- z-index layers ---- */
+    --au-z-base: 0; --au-z-raised: 10; --au-z-sticky: 60; --au-z-toast: 80; --au-z-overlay: 90; --au-z-flash: 100;
+
+    /* ---- type — Segoe UI where present (Vista's face), else Open Sans;
+            both are Steve Matteson humanist sans, so the voice is seamless ---- */
+    --au-font-display: 'Segoe UI', 'Open Sans', system-ui, -apple-system, sans-serif;
+    --au-font-ui:      'Open Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --au-font-data:    'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+    /* ---- motion — Aero never snapped ---- */
+    --au-ease-aero:  cubic-bezier(0.25, 0.1, 0.25, 1);   /* calm default */
+    --au-ease-glide: cubic-bezier(0.16, 1, 0.3, 1);      /* the flip / settle */
+    --au-dur-tap:    150ms;
+    --au-dur-move:   280ms;
+    --au-dur-flip:   460ms;
+    --au-dur-ambient: 30s;
+
+    --au-maxw: 1120px;
+  }
+
+  /* ---- the tint maps: accent + aurora ribbons from one attribute ---- */
+  [data-au-accent="blue"]{
+    --au-accent:#3a9bf0; --au-accent-bright:#9fd0ff; --au-accent-deep:#0b3a66;
+    --au-accent-tint:rgba(58,155,240,0.16); --au-accent-line:rgba(58,155,240,0.5); --au-accent-glow:rgba(58,155,240,0.55);
+    --au-aur-1:#39c6f5; --au-aur-2:#3a7bf0; --au-aur-3:#36e0c4; --au-aur-4:#5a9bff;
+  }
+  [data-au-accent="green"]{
+    --au-accent:#54c95a; --au-accent-bright:#b6f5ad; --au-accent-deep:#11521a;
+    --au-accent-tint:rgba(84,201,90,0.16); --au-accent-line:rgba(84,201,90,0.5); --au-accent-glow:rgba(84,201,90,0.55);
+    --au-aur-1:#8ef06a; --au-aur-2:#2fd07a; --au-aur-3:#39e0c4; --au-aur-4:#bff06a;
+  }
+  [data-au-accent="violet"]{
+    --au-accent:#9b73f0; --au-accent-bright:#d9c4ff; --au-accent-deep:#3a1f66;
+    --au-accent-tint:rgba(155,115,240,0.16); --au-accent-line:rgba(155,115,240,0.5); --au-accent-glow:rgba(155,115,240,0.55);
+    --au-aur-1:#b06ff5; --au-aur-2:#6f7bf0; --au-aur-3:#e06fd0; --au-aur-4:#9b8cff;
+  }
+  [data-au-accent="amber"]{
+    --au-accent:#f0a93a; --au-accent-bright:#ffe0a6; --au-accent-deep:#6b4209;
+    --au-accent-tint:rgba(240,169,58,0.16); --au-accent-line:rgba(240,169,58,0.5); --au-accent-glow:rgba(240,169,58,0.55);
+    --au-aur-1:#f5c45a; --au-aur-2:#f0807b; --au-aur-3:#e06fd0; --au-aur-4:#ffcf6a;
+  }
+  [data-au-accent="graphite"]{
+    --au-accent:#9fb2c6; --au-accent-bright:#e0e9f2; --au-accent-deep:#3a4654;
+    --au-accent-tint:rgba(159,178,198,0.16); --au-accent-line:rgba(159,178,198,0.5); --au-accent-glow:rgba(159,178,198,0.5);
+    --au-aur-1:#a9c0d6; --au-aur-2:#7f93a8; --au-aur-3:#6fb0c4; --au-aur-4:#c0d0e0;
+  }
+
+  /* ---- DAY sky: the Frutiger Aero bright variant. A toggle, not default. ---- */
+  body[data-au-theme="light"]{
+    --au-night-0:#cfe8fb; --au-night-1:#e8f4fe; --au-night-2:#ffffff; --au-night-3:rgba(0,0,0,0.03);
+    --au-surface-solid:#f4f8fd;
+    --au-ink:#10243a; --au-ink-dim:#3a5670; --au-ink-faint:rgba(16,36,58,0.55); --au-ink-ghost:rgba(16,36,58,0.32);
+    --au-line:rgba(16,36,58,0.14); --au-line-strong:rgba(16,36,58,0.24);
+    --au-glass-bg:rgba(255,255,255,0.42); --au-glass-bg-2:rgba(255,255,255,0.66);
+    --au-glass-line:rgba(255,255,255,0.7); --au-glass-edge:rgba(255,255,255,0.95);
+    --au-glass-noise:0.025;
+    --au-glass-shadow:0 24px 50px rgba(40,90,140,0.28), 0 4px 12px rgba(40,90,140,0.18);
+    --au-glass-inner:inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -34px 54px rgba(120,170,210,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--au-night-0);
+    color: var(--au-ink);
+    font-family: var(--au-font-ui);
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background var(--au-dur-move) var(--au-ease-aero), color var(--au-dur-move) var(--au-ease-aero);
+  }
+  ::selection { background: var(--au-accent); color: #fff; }
+
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--au-accent); outline-offset: 2px; border-radius: var(--au-r-sm); }
+
+  a { color: var(--au-accent); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---- glossy Aero scrollbar ---- */
+  *::-webkit-scrollbar { width: 14px; height: 14px; }
+  *::-webkit-scrollbar-track { background: rgba(0,0,0,0.22); }
+  *::-webkit-scrollbar-thumb { border: 3px solid transparent; background-clip: padding-box; border-radius: 999px; background-color: rgba(255,255,255,0.18); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); }
+  *::-webkit-scrollbar-thumb:hover { background-color: var(--au-accent); }
+  html { scrollbar-color: rgba(255,255,255,0.25) rgba(0,0,0,0.22); }
+
+  .wrap { max-width: var(--au-maxw); margin: 0 auto; padding: 0 28px; }
+
+  .eyebrow { font-family: var(--au-font-data); font-size: 11px; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; color: var(--au-accent); transition: color var(--au-dur-move) var(--au-ease-aero); }
+
+  /* ============================================================
+     THE GLASS — reusable Aero material
+     ============================================================ */
+  .glass {
+    position: relative;
+    background:
+      linear-gradient(180deg, var(--au-accent-tint), transparent 60%),
+      linear-gradient(180deg, var(--au-glass-bg-2), var(--au-glass-bg) 46%, var(--au-glass-bg));
+    border: 1px solid var(--au-glass-line);
+    border-top-color: var(--au-glass-edge);
+    border-radius: var(--au-r-lg);
+    backdrop-filter: blur(var(--au-glass-blur)) saturate(1.4);
+    -webkit-backdrop-filter: blur(var(--au-glass-blur)) saturate(1.4);
+    box-shadow: var(--au-glass-inner), var(--au-glass-shadow);
+    overflow: hidden;
+    transition: background var(--au-dur-move) var(--au-ease-aero), box-shadow var(--au-dur-tap) var(--au-ease-aero), border-color var(--au-dur-tap) var(--au-ease-aero), transform var(--au-dur-tap) var(--au-ease-aero);
+  }
+  /* the wet gloss across the top half — the signature Aero sheen */
+  .glass::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.0)); pointer-events: none; z-index: 1; }
+  /* frost grain — the subtle texture of real frosted glass */
+  .glass::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: var(--au-glass-noise);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+  /* the active-window colored glow border — Aero's "this window has focus" cue */
+  .glass--glow { box-shadow: 0 0 0 1px var(--au-accent-line), 0 0 34px -8px var(--au-accent-glow), var(--au-glass-inner), var(--au-glass-shadow); }
+
+  /* ---- Reduce transparency: glass becomes a clean opaque surface ---- */
+  .au-reduce-transparency .glass, .au-reduce-transparency .frost {
+    background: var(--au-surface-solid) !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  }
+  .au-reduce-transparency .glass::after, .au-reduce-transparency .frost::after { display: none; }
+  .au-reduce-transparency .glass::before, .au-reduce-transparency .frost::before { opacity: 0.4; }
+  .au-reduce-transparency .aurora { opacity: 0.4; }
+  .au-reduce-transparency .stars { opacity: 0.5; }
+
+  /* ---- Graceful fallback where backdrop-filter is unsupported ---- */
+  @supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    .glass, .frost { background: var(--au-surface-solid); }
+    .glass::after, .frost::after { display: none; }
+  }
+  /* ---- Honor the OS-level setting automatically ---- */
+  @media (prefers-reduced-transparency: reduce) {
+    .glass, .frost { background: var(--au-surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .glass::after, .frost::after { display: none; }
+    .aurora { opacity: 0.4; }
+  }
+
+  /* ============ right-edge section dots ============ */
+  .dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 13px; z-index: var(--au-z-sticky); }
+  @media (max-width: 980px){ .dots { display: none; } }
+  .dots a { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--au-line-strong); background: transparent; transition: all var(--au-dur-tap) var(--au-ease-aero); position: relative; }
+  .dots a::after { content: attr(data-label); position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-family: var(--au-font-data); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--au-ink-faint); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity var(--au-dur-tap) var(--au-ease-aero); }
+  .dots a:hover { background: var(--au-accent); border-color: var(--au-accent); }
+  .dots a:hover::after { opacity: 1; }
+  .dots a.active { background: var(--au-accent); border-color: var(--au-accent); box-shadow: 0 0 10px var(--au-accent-glow); }
+
+  /* ============================================================
+     THE AURORA FIELD + STARFIELD — signature backgrounds
+     ============================================================ */
+  .stars { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      radial-gradient(1.4px 1.4px at 12% 18%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1.2px 1.2px at 28% 64%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1.6px 1.6px at 44% 30%, rgba(255,255,255,0.85), transparent),
+      radial-gradient(1px 1px at 60% 78%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1.5px 1.5px at 73% 22%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1.1px 1.1px at 84% 56%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1.3px 1.3px at 92% 84%, rgba(255,255,255,0.8), transparent),
+      radial-gradient(1px 1px at 36% 88%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1.2px 1.2px at 52% 50%, rgba(255,255,255,0.7), transparent);
+    animation: twinkle 7s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: 0.5; } to { opacity: 0.9; } }
+  body[data-au-theme="light"] .stars { display: none; }
+
+  .aurora { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+  .aurora .rib { position: absolute; border-radius: 50%; filter: blur(64px); opacity: 0.66; mix-blend-mode: screen; transition: background var(--au-dur-move) var(--au-ease-aero); will-change: transform; }
+  .aurora .r1 { width: 68vw; height: 46vh; left: -8vw; top: 4vh;  background: radial-gradient(closest-side, var(--au-aur-1), transparent 72%); animation: drift1 26s var(--au-ease-aero) infinite alternate; }
+  .aurora .r2 { width: 62vw; height: 40vh; right: -6vw; top: 20vh; background: radial-gradient(closest-side, var(--au-aur-2), transparent 72%); animation: drift2 32s var(--au-ease-aero) infinite alternate; }
+  .aurora .r3 { width: 78vw; height: 38vh; left: 6vw;  bottom: -8vh; background: radial-gradient(closest-side, var(--au-aur-3), transparent 72%); animation: drift3 38s var(--au-ease-aero) infinite alternate; }
+  .aurora .r4 { width: 46vw; height: 30vh; left: 32vw; top: 40vh; background: radial-gradient(closest-side, var(--au-aur-4), transparent 72%); opacity: 0.4; animation: drift2 44s var(--au-ease-aero) infinite alternate-reverse; }
+  .aurora .veil { position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.014) 0 1px, transparent 1px 3px); mix-blend-mode: overlay; }
+  @keyframes drift1 { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(8vw,4vh,0) rotate(8deg); } }
+  @keyframes drift2 { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(-7vw,6vh,0) rotate(-10deg); } }
+  @keyframes drift3 { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(6vw,-5vh,0) rotate(6deg); } }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero { position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden; background: radial-gradient(140% 100% at 50% -10%, var(--au-night-2), var(--au-night-0) 70%); }
+  .hero-inner { position: relative; z-index: 3; width: 100%; }
+  .hero .pane { max-width: 770px; padding: 44px 48px 40px; }
+  @media (max-width: 620px){ .hero .pane { padding: 30px 26px; } }
+
+  .mark { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .mark .name { font-family: var(--au-font-data); font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--au-ink-dim); font-weight: 500; }
+  .mark .ed { margin-left: auto; font-family: var(--au-font-data); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--au-ink-faint); border: 1px solid var(--au-line-strong); border-radius: var(--au-r-pill); padding: 4px 10px; }
+
+  /* the PEARL — original glossy orb homage to the Start button */
+  .pearl { width: 52px; height: 52px; border-radius: 50%; position: relative; flex: 0 0 auto; cursor: pointer; transition: transform var(--au-dur-tap) var(--au-ease-glide); border: 0; padding: 0; background: transparent; }
+  .pearl::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 38% 28%, rgba(255,255,255,0.95), rgba(255,255,255,0.1) 40%, transparent 60%), conic-gradient(from 210deg, var(--au-aur-1), var(--au-aur-2), var(--au-aur-3), var(--au-aur-1)); box-shadow: inset 0 2px 4px rgba(255,255,255,0.7), inset 0 -8px 16px rgba(0,0,0,0.35), 0 4px 12px rgba(0,0,0,0.4); }
+  .pearl::after { content: ""; position: absolute; left: 16%; right: 16%; top: 8%; height: 34%; border-radius: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.85), transparent); filter: blur(1px); }
+  .pearl:hover { transform: scale(1.06); }
+  .pearl:hover::before { box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 26px 4px var(--au-accent-glow); }
+
+  .hero h1 { font-family: var(--au-font-display); font-weight: 300; font-size: clamp(62px, 13vw, 150px); line-height: 0.92; letter-spacing: -0.02em; }
+  .hero h1 .glint { background: linear-gradient(120deg, var(--au-ink) 30%, var(--au-accent-bright) 50%, var(--au-ink) 70%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero .lede { margin-top: 22px; max-width: 560px; font-size: clamp(16px, 2.4vw, 20px); font-weight: 400; color: var(--au-ink-dim); }
+  .hero .lineage { margin-top: 16px; font-family: var(--au-font-data); font-size: 12.5px; color: var(--au-ink-faint); letter-spacing: 0.02em; }
+
+  .switch { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .switch .label { font-family: var(--au-font-data); font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--au-ink-faint); margin-right: 6px; }
+  .tint-chip { appearance: none; cursor: pointer; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); padding: 0; position: relative; transition: transform var(--au-dur-tap) var(--au-ease-glide), box-shadow var(--au-dur-tap) var(--au-ease-aero); }
+  .tint-chip::after { content: ""; position: absolute; left: 18%; top: 12%; width: 40%; height: 30%; border-radius: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.85), transparent); }
+  .tint-chip:hover { transform: scale(1.12); }
+  .tint-chip[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--au-night-0), 0 0 0 4px currentColor, 0 0 18px currentColor; }
+  .pill-toggle { appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: var(--au-glass-bg); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); color: var(--au-ink-dim); font-family: var(--au-font-data); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 14px; border-radius: var(--au-r-pill); backdrop-filter: blur(8px); transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .pill-toggle:hover { color: var(--au-ink); border-color: var(--au-accent-line); }
+  .pill-toggle[aria-pressed="true"] { color: var(--au-ink); border-color: var(--au-accent-line); box-shadow: 0 0 14px -2px var(--au-accent-glow); }
+  .switch .sep { width: 1px; height: 22px; background: var(--au-line-strong); margin: 0 4px; }
+
+  .scrollcue { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: 3; font-family: var(--au-font-data); font-size: 10.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--au-ink-faint); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .scrollcue .ln { width: 1px; height: 34px; background: linear-gradient(var(--au-ink-faint), transparent); }
+
+  /* ============ generic section scaffold ============ */
+  .section { padding: 108px 0; border-top: 1px solid var(--au-line); position: relative; }
+  .section.tight { padding: 76px 0; }
+  .sec-head { margin-bottom: 50px; max-width: 740px; }
+  .sec-head h2 { font-family: var(--au-font-display); font-weight: 300; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -0.01em; margin-top: 14px; }
+  .sec-head p { margin-top: 18px; color: var(--au-ink-dim); font-size: 16.5px; max-width: 680px; }
+
+  /* ============================================================
+     LIVE: FLIP 3D — the cascading glass window stack, alive
+     ============================================================ */
+  .flip-stage { position: relative; height: 460px; border-radius: var(--au-r-lg); border: 1px solid var(--au-line); overflow: hidden; background: radial-gradient(120% 120% at 50% 120%, var(--au-night-2), var(--au-night-0) 70%); perspective: 1600px; }
+  @media (max-width: 620px){ .flip-stage { height: 380px; } }
+  .flip-deck { position: absolute; inset: 0; z-index: 2; transform-style: preserve-3d; display: grid; place-items: center; }
+  .win { position: absolute; width: min(440px, 78%); height: 280px; border-radius: var(--au-r-lg); overflow: hidden; background: linear-gradient(180deg, var(--au-accent-tint), transparent 50%), linear-gradient(180deg, var(--au-glass-bg-2), var(--au-glass-bg) 50%); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); backdrop-filter: blur(var(--au-glass-blur)) saturate(1.4); -webkit-backdrop-filter: blur(var(--au-glass-blur)) saturate(1.4); box-shadow: var(--au-glass-inner), var(--au-glass-shadow); transition: transform var(--au-dur-flip) var(--au-ease-glide), opacity var(--au-dur-flip) var(--au-ease-aero), filter var(--au-dur-flip) var(--au-ease-aero); }
+  .au-reduce-transparency .win { background: var(--au-surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  @media (max-width: 620px){ .win { height: 220px; } }
+  .win .titlebar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.14); background: linear-gradient(180deg, rgba(255,255,255,0.16), transparent); }
+  .win .titlebar .wt { font-size: 13px; font-weight: 600; color: var(--au-ink); }
+  .win .titlebar .wctl { margin-left: auto; display: flex; gap: 7px; }
+  .win .titlebar .wctl i { width: 13px; height: 13px; border-radius: 4px; display: block; border: 1px solid rgba(255,255,255,0.3); }
+  .win .titlebar .wctl .c { background: rgba(239,95,99,0.6); }
+  .win .body { padding: 18px 16px; position: relative; z-index: 2; }
+  .win .body .vk { font-family: var(--au-font-data); font-size: 10.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--au-accent); }
+  .win .body h4 { font-family: var(--au-font-display); font-weight: 300; font-size: 26px; margin: 8px 0 8px; color: var(--au-ink); }
+  .win .body p { font-size: 13.5px; color: var(--au-ink-dim); }
+  .win .glyph { margin-top: 14px; width: 44px; height: 44px; color: var(--au-accent); opacity: 0.9; }
+
+  .flip-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; flex-wrap: wrap; }
+  .kbd-hint { display: flex; gap: 16px; font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); letter-spacing: 0.04em; align-items: center; }
+  .kbd-hint b { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 5px; border: 1px solid var(--au-line-strong); margin-right: 6px; font-weight: 500; font-size: 10.5px; color: var(--au-ink-dim); }
+  .sound-toggle { appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: var(--au-glass-bg); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); color: var(--au-ink-dim); font-family: var(--au-font-data); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 14px; border-radius: var(--au-r-pill); backdrop-filter: blur(8px); transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .sound-toggle:hover { color: var(--au-ink); border-color: var(--au-accent-line); }
+  .sound-toggle .wave { width: 16px; height: 16px; color: var(--au-accent); }
+  .sound-toggle[aria-pressed="false"] .wave { color: var(--au-ink-ghost); }
+
+  /* ============ HERITAGE timeline ============ */
+  .timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 8px; }
+  @media (max-width: 860px){ .timeline { grid-template-columns: 1fr 1fr; gap: 28px 0; } }
+  .node { position: relative; padding: 28px 22px 0 0; }
+  .node::before { content: ""; position: absolute; top: 8px; left: 0; right: 0; height: 1px; background: var(--au-line-strong); }
+  .node::after { content: ""; position: absolute; top: 4px; left: 0; width: 9px; height: 9px; border-radius: 50%; background: var(--au-tint-graphite); }
+  .node:nth-child(2)::after { background: var(--au-tint-blue); box-shadow: 0 0 10px var(--au-tint-blue); }
+  .node:nth-child(3)::after { background: var(--au-tint-violet); }
+  .node:nth-child(4)::after { background: var(--au-tint-graphite); }
+  .node:nth-child(5)::after { background: var(--au-accent); box-shadow: 0 0 10px var(--au-accent-glow); }
+  .node .yr { font-family: var(--au-font-data); font-size: 12px; color: var(--au-ink-faint); letter-spacing: 0.08em; }
+  .node .nm { font-weight: 600; font-size: 15.5px; margin: 7px 0 8px; }
+  .node .ds { font-size: 13px; color: var(--au-ink-dim); }
+
+  /* ============ principles ============ */
+  .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 900px){ .principles { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 620px){ .principles { grid-template-columns: 1fr; } }
+  .prin { padding: 28px 26px; }
+  .prin .num { font-family: var(--au-font-data); font-size: 12px; color: var(--au-accent); letter-spacing: 0.1em; position: relative; z-index: 2; }
+  .prin h3 { font-family: var(--au-font-display); font-weight: 400; font-size: 21px; margin: 12px 0 12px; letter-spacing: -0.005em; position: relative; z-index: 2; }
+  .prin p { font-size: 14px; color: var(--au-ink-dim); position: relative; z-index: 2; }
+  .prin .one { color: var(--au-ink); font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+
+  /* ============ FOUNDATIONS ============ */
+  .tint-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 6px 0 14px; }
+  @media (max-width: 620px){ .tint-row { grid-template-columns: repeat(2, 1fr); } }
+  .tcard { padding: 0; cursor: pointer; }
+  .tcard .cap { height: 78px; position: relative; }
+  .tcard .cap::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.4), transparent 55%); }
+  .tcard .meta { padding: 11px 13px; position: relative; z-index: 2; }
+  .tcard .meta .k { font-weight: 600; font-size: 13px; }
+  .tcard .meta .v { font-family: var(--au-font-data); font-size: 11.5px; color: var(--au-ink-faint); }
+
+  .sub-h { font-family: var(--au-font-data); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--au-ink-faint); margin: 40px 0 16px; }
+  .hint { font-size: 13px; color: var(--au-ink-faint); font-family: var(--au-font-data); margin-top: 4px; }
+
+  .ramp { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; }
+  @media (max-width: 620px){ .ramp { grid-template-columns: repeat(3, 1fr); } }
+  .step { padding: 22px 12px 12px; cursor: pointer; transition: background var(--au-dur-tap) var(--au-ease-aero); }
+  .step:hover { background: var(--au-night-3); }
+  .step .sw { height: 34px; border-radius: var(--au-r-sm); margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
+  .step .lab { font-family: var(--au-font-data); font-size: 10.5px; color: var(--au-ink-faint); }
+
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px; }
+  @media (max-width: 760px){ .meta-grid { grid-template-columns: 1fr; } }
+  .tile-card { padding: 24px; }
+  .tile-card > * { position: relative; z-index: 2; }
+  .space-row { display: flex; align-items: center; gap: 14px; padding: 8px 0; }
+  .space-row .bar { height: 14px; background: var(--au-accent-tint); border-left: 2px solid var(--au-accent); border-radius: 2px; }
+  .space-row .lab { font-family: var(--au-font-data); font-size: 11.5px; color: var(--au-ink-faint); min-width: 96px; }
+  .radius-row { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-end; }
+  .radius-demo { text-align: center; }
+  .radius-demo .box { width: 56px; height: 56px; background: var(--au-accent-tint); border: 1px solid var(--au-accent-line); margin-bottom: 8px; }
+  .radius-demo .lab { font-family: var(--au-font-data); font-size: 10.5px; color: var(--au-ink-faint); }
+  .elev-row { display: flex; gap: 22px; flex-wrap: wrap; }
+  .elev-demo { flex: 1 1 110px; min-width: 100px; }
+  .elev-demo .box { height: 74px; border-radius: var(--au-r-md); background: var(--au-night-2); border: 1px solid var(--au-line); margin-bottom: 10px; }
+  .elev-demo .lab { font-family: var(--au-font-data); font-size: 10.5px; color: var(--au-ink-faint); }
+
+  /* token scales reference */
+  .scales { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 760px){ .scales { grid-template-columns: 1fr; } }
+  .scale-card { padding: 22px 24px; }
+  .scale-card > * { position: relative; z-index: 2; }
+  .scale-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .blur-row { display: flex; align-items: center; gap: 14px; padding: 7px 0; }
+  .blur-chip { width: 54px; height: 36px; border-radius: var(--au-r-sm); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); position: relative; overflow: hidden; flex: 0 0 auto; background: linear-gradient(135deg, var(--au-aur-1), var(--au-aur-3)); }
+  .blur-chip span { position: absolute; inset: 0; backdrop-filter: blur(var(--au-b)); -webkit-backdrop-filter: blur(var(--au-b)); background: rgba(255,255,255,0.12); }
+  .blur-row .lab { font-family: var(--au-font-data); font-size: 11.5px; color: var(--au-ink-faint); }
+  .kv { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--au-line); font-size: 13px; }
+  .kv:last-child { border-bottom: 0; }
+  .kv .k { color: var(--au-ink-dim); }
+  .kv .v { font-family: var(--au-font-data); font-size: 11.5px; color: var(--au-accent); }
+  .opacity-row { display: flex; gap: 8px; align-items: flex-end; }
+  .opacity-row .oc { flex: 1; text-align: center; }
+  .opacity-row .oc .b { height: 40px; border-radius: var(--au-r-sm); background: var(--au-accent); margin-bottom: 6px; border: 1px solid var(--au-accent-line); }
+  .opacity-row .oc .lab { font-family: var(--au-font-data); font-size: 10px; color: var(--au-ink-faint); }
+
+  /* ============ type specimen ============ */
+  .spec { display: grid; gap: 16px; }
+  .face { padding: 28px 30px; }
+  .face > * { position: relative; z-index: 2; }
+  .face .role { font-family: var(--au-font-data); font-size: 11px; color: var(--au-accent); letter-spacing: 0.18em; text-transform: uppercase; }
+  .face .fname { font-family: var(--au-font-data); font-size: 12px; color: var(--au-ink-faint); float: right; }
+  .face .big { margin: 18px 0 6px; line-height: 1; color: var(--au-ink); }
+  .face .note { font-size: 13.5px; color: var(--au-ink-dim); max-width: 640px; }
+  .d1 { font-family: var(--au-font-display); font-weight: 300; font-size: clamp(40px, 8vw, 74px); letter-spacing: -0.02em; }
+  .d2 { font-family: var(--au-font-ui); font-weight: 400; font-size: clamp(24px, 5vw, 38px); }
+  .d3 { font-family: var(--au-font-data); font-weight: 500; font-size: clamp(20px, 4vw, 30px); letter-spacing: 0.02em; }
+  .scale { margin-top: 24px; border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; }
+  .scale .sr { display: flex; align-items: baseline; gap: 18px; padding: 14px 22px; border-bottom: 1px solid var(--au-line); }
+  .scale .sr:last-child { border-bottom: 0; }
+  .scale .sr .tk { font-family: var(--au-font-data); font-size: 11.5px; color: var(--au-ink-faint); width: 130px; flex: 0 0 auto; }
+
+  /* ============ the glass anatomy ============ */
+  .glass-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: stretch; }
+  @media (max-width: 820px){ .glass-grid { grid-template-columns: 1fr; } }
+  .glass-demo { position: relative; min-height: 340px; border-radius: var(--au-r-lg); overflow: hidden; display: grid; place-items: center; padding: 30px; border: 1px solid var(--au-line); }
+  .glass-demo .specimen { width: 100%; max-width: 320px; padding: 26px; z-index: 2; }
+  .glass-demo .specimen h4 { font-family: var(--au-font-display); font-weight: 300; font-size: 24px; color: var(--au-ink); position: relative; z-index: 2; }
+  .glass-demo .specimen p { font-size: 13.5px; color: var(--au-ink-dim); margin-top: 8px; position: relative; z-index: 2; }
+  .anatomy { border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; }
+  .arow { display: flex; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--au-line); }
+  .arow:last-child { border-bottom: 0; }
+  .arow .k { font-weight: 600; font-size: 13.5px; min-width: 120px; }
+  .arow .v { font-size: 12.5px; color: var(--au-ink-dim); }
+  .arow .v code { font-family: var(--au-font-data); font-size: 11.5px; color: var(--au-accent); }
+  .tuner { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+  .tuner label { font-family: var(--au-font-data); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--au-ink-faint); display: flex; justify-content: space-between; }
+  .tuner label b { color: var(--au-accent); }
+
+  /* ============ motion ============ */
+  .motion-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: stretch; }
+  @media (max-width: 760px){ .motion-grid { grid-template-columns: 1fr; } }
+  .curve-box { padding: 26px; }
+  .curve-box > * { position: relative; z-index: 2; }
+  .curve-box svg { width: 100%; height: auto; display: block; }
+  .glide { margin-top: 18px; height: 4px; background: var(--au-line); border-radius: 2px; overflow: hidden; position: relative; }
+  .glide i { position: absolute; top: -4px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--au-accent); box-shadow: 0 0 10px var(--au-accent-glow); animation: glide 2.6s var(--au-ease-glide) infinite; }
+  @keyframes glide { 0%,12% { left: 0; } 50% { left: calc(100% - 12px); } 88%,100% { left: calc(100% - 12px); } }
+  .motion-tokens { border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; }
+  .mt { display: flex; justify-content: space-between; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--au-line); }
+  .mt:last-child { border-bottom: 0; }
+  .mt .k { font-weight: 600; font-size: 14px; }
+  .mt .k small { display: block; color: var(--au-ink-faint); font-weight: 400; font-size: 12.5px; }
+  .mt .v { font-family: var(--au-font-data); font-size: 12px; color: var(--au-accent); text-align: right; }
+
+  /* ============================================================
+     THE DESKTOP — a full Vista Explorer window, in situ
+     ============================================================ */
+  .desktop { position: relative; border-radius: var(--au-r-lg); overflow: hidden; border: 1px solid var(--au-line); min-height: 540px; background: radial-gradient(120% 100% at 30% 0%, var(--au-night-2), var(--au-night-0) 75%); padding: 28px; }
+  .desktop .aurora, .desktop .stars { z-index: 0; }
+
+  .xwin { position: relative; z-index: 2; width: min(680px, 100%); border-radius: var(--au-r-lg); overflow: hidden; }
+  .x-titlebar { display: flex; align-items: center; padding: 8px 10px; min-height: 36px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .x-ctl { margin-left: auto; display: flex; gap: 6px; }
+  .x-ctl button { appearance: none; cursor: pointer; width: 30px; height: 22px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.25); background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.05)); color: var(--au-ink); display: grid; place-items: center; transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .x-ctl button svg { width: 11px; height: 11px; }
+  .x-ctl button:hover { background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.12)); box-shadow: 0 0 12px var(--au-accent-glow); }
+  .x-ctl button.close:hover { background: linear-gradient(180deg, rgba(239,95,99,0.7), rgba(239,95,99,0.4)); box-shadow: 0 0 14px rgba(239,95,99,0.6); border-color: rgba(239,95,99,0.6); }
+
+  /* address row: back/forward + breadcrumb + search */
+  .x-addr { display: flex; align-items: center; gap: 10px; padding: 8px 12px; position: relative; z-index: 2; }
+  .navbtn { appearance: none; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--au-line-strong); background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.04)); color: var(--au-accent); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .navbtn svg { width: 14px; height: 14px; }
+  .navbtn:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 0 12px var(--au-accent-glow); }
+  .navbtn.fwd { color: var(--au-ink-ghost); }
+  .crumbs { flex: 1; display: flex; align-items: center; gap: 2px; min-width: 0; height: 30px; padding: 0 10px; border-radius: var(--au-r-sm); border: 1px solid var(--au-line-strong); background: rgba(255,255,255,0.08); box-shadow: inset 0 1px 3px rgba(0,0,0,0.25); overflow: hidden; }
+  .crumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--au-ink-dim); padding: 4px 6px; border-radius: var(--au-r-sm); cursor: pointer; white-space: nowrap; transition: background var(--au-dur-tap) var(--au-ease-aero); }
+  .crumb:hover { background: rgba(255,255,255,0.1); color: var(--au-ink); }
+  .crumb.here { color: var(--au-ink); font-weight: 600; }
+  .crumb svg { width: 13px; height: 13px; opacity: 0.6; }
+  .crumb-sep { color: var(--au-ink-faint); font-size: 12px; }
+  .x-search { width: 150px; height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: var(--au-r-sm); border: 1px solid var(--au-line-strong); background: rgba(255,255,255,0.08); box-shadow: inset 0 1px 3px rgba(0,0,0,0.25); }
+  @media (max-width: 560px){ .x-search { display: none; } }
+  .x-search svg { width: 14px; height: 14px; color: var(--au-ink-faint); }
+  .x-search input { border: 0; background: transparent; outline: none; color: var(--au-ink); font-family: var(--au-font-ui); font-size: 12.5px; width: 100%; }
+  .x-search input::placeholder { color: var(--au-ink-ghost); }
+
+  /* command bar */
+  .x-cmd { display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent); position: relative; z-index: 2; }
+  .cmd { appearance: none; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--au-ink-dim); font-family: var(--au-font-ui); font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: var(--au-r-sm); display: inline-flex; align-items: center; gap: 6px; transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .cmd:hover { background: rgba(255,255,255,0.1); color: var(--au-ink); border-color: var(--au-glass-line); }
+  .cmd .car { font-size: 9px; opacity: 0.7; }
+
+  /* body: nav pane | content */
+  .x-main { display: grid; grid-template-columns: 184px 1fr; min-height: 300px; position: relative; z-index: 2; }
+  @media (max-width: 620px){ .x-main { grid-template-columns: 1fr; } }
+  .x-tree { padding: 12px 8px; border-right: 1px solid rgba(255,255,255,0.08); }
+  @media (max-width: 620px){ .x-tree { display: none; } }
+  .tgroup { font-family: var(--au-font-data); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--au-ink-faint); padding: 12px 10px 6px; }
+  .titem { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: var(--au-r-sm); font-size: 13px; color: var(--au-ink-dim); cursor: pointer; transition: background var(--au-dur-tap) var(--au-ease-aero); }
+  .titem svg { width: 15px; height: 15px; color: var(--au-accent); opacity: 0.85; flex: 0 0 auto; }
+  .titem:hover { background: rgba(255,255,255,0.07); color: var(--au-ink); }
+  .titem.on { background: var(--au-accent-tint); color: var(--au-ink); box-shadow: inset 0 0 0 1px var(--au-accent-line); }
+  .x-content { padding: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; align-content: start; }
+  .ftile { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 6px; border-radius: var(--au-r-md); border: 1px solid transparent; cursor: pointer; text-align: center; transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .ftile:hover { background: rgba(255,255,255,0.08); border-color: var(--au-glass-line); }
+  .ftile.sel { background: var(--au-accent-tint); border-color: var(--au-accent-line); box-shadow: 0 0 16px -6px var(--au-accent-glow); }
+  .ftile .fi { width: 42px; height: 42px; color: var(--au-accent); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35)); }
+  .ftile .fn { font-size: 12px; color: var(--au-ink); line-height: 1.25; }
+  .ftile .thumb { width: 48px; height: 38px; border-radius: 4px; background: linear-gradient(135deg, var(--au-aur-1), var(--au-aur-3)); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4), 0 4px 8px rgba(0,0,0,0.4); }
+
+  /* status bar */
+  .x-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 14px; border-top: 1px solid rgba(255,255,255,0.1); background: linear-gradient(180deg, transparent, rgba(0,0,0,0.12)); font-size: 12px; color: var(--au-ink-dim); position: relative; z-index: 2; }
+  .x-status .meta { font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); }
+
+  /* gadgets */
+  .gadget { position: absolute; z-index: 3; padding: 16px; text-align: center; }
+  .gadget.clock-g { right: 28px; top: 28px; width: 142px; }
+  .gadget.cpu-g { right: 28px; top: 196px; width: 142px; }
+  @media (max-width: 860px){ .gadget { display: none; } }
+  .gadget > * { position: relative; z-index: 2; }
+  .gadget .clock { font-family: var(--au-font-display); font-weight: 300; font-size: 34px; color: var(--au-ink); }
+  .gadget .date { font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); letter-spacing: 0.08em; margin-top: 2px; }
+  .gadget .glabel { font-family: var(--au-font-data); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--au-ink-faint); }
+  .meter { height: 8px; border-radius: var(--au-r-pill); background: rgba(0,0,0,0.3); box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); overflow: hidden; margin: 10px 0 4px; }
+  .meter i { display: block; height: 100%; border-radius: var(--au-r-pill); background: linear-gradient(90deg, var(--au-accent), var(--au-accent-bright)); box-shadow: 0 0 8px var(--au-accent-glow); transition: width 1.2s var(--au-ease-aero); }
+  .gadget .pct { font-family: var(--au-font-data); font-size: 12px; color: var(--au-ink-dim); }
+
+  /* taskbar + Aero Peek */
+  .taskbar { position: absolute; z-index: 4; left: 14px; right: 14px; bottom: 14px; height: 52px; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 8px; border-radius: var(--au-r-md); }
+  .taskbar .tb-pearl { width: 38px; height: 38px; flex: 0 0 auto; }
+  .tb-task { position: relative; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: var(--au-r-sm); font-size: 13px; color: var(--au-ink-dim); border: 1px solid transparent; cursor: pointer; transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .tb-task svg { width: 15px; height: 15px; color: var(--au-accent); }
+  .tb-task:hover { background: rgba(255,255,255,0.1); color: var(--au-ink); border-color: var(--au-glass-line); }
+  .tb-task.on { background: rgba(255,255,255,0.14); color: var(--au-ink); border-color: var(--au-glass-edge); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); }
+  /* Aero Peek live thumbnail */
+  .peek { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%) translateY(6px); width: 180px; border-radius: var(--au-r-md); padding: 8px; opacity: 0; pointer-events: none; transition: opacity var(--au-dur-tap) var(--au-ease-aero), transform var(--au-dur-tap) var(--au-ease-aero); z-index: 5; }
+  .tb-task:hover .peek, .tb-task:focus-within .peek { opacity: 1; transform: translateX(-50%); }
+  .peek .pk-title { font-size: 11px; color: var(--au-ink-dim); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; position: relative; z-index: 2; }
+  .peek .pk-shot { height: 86px; border-radius: 5px; border: 1px solid var(--au-glass-line); background: linear-gradient(160deg, var(--au-aur-2), var(--au-aur-3)); position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  .peek .pk-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent 40%); }
+  .taskbar .tb-clock { margin-left: auto; font-family: var(--au-font-data); font-size: 12px; color: var(--au-ink-dim); text-align: right; line-height: 1.3; padding-right: 6px; }
+
+  /* ============================================================
+     COMPONENT KIT
+     ============================================================ */
+  .kit { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  @media (max-width: 820px){ .kit { grid-template-columns: 1fr; } }
+  .card { border-radius: var(--au-r-lg); overflow: visible; }
+  .card .ct { display: flex; justify-content: space-between; align-items: center; padding: 15px 22px; border-bottom: 1px solid rgba(255,255,255,0.12); background: linear-gradient(180deg, rgba(255,255,255,0.12), transparent); border-radius: var(--au-r-lg) var(--au-r-lg) 0 0; position: relative; z-index: 2; }
+  .card .ct .name { font-family: var(--au-font-data); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--au-ink-faint); }
+  .card .ct .tag2 { font-family: var(--au-font-data); font-size: 10.5px; color: var(--au-ink-ghost); }
+  .card .stage { padding: 28px 22px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; position: relative; z-index: 2; }
+  .card.full { grid-column: 1 / -1; }
+
+  /* --- buttons: glossy Aero --- */
+  .btn { appearance: none; cursor: pointer; font-family: var(--au-font-ui); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 9px; padding: 10px 20px; border-radius: var(--au-r-md); border: 1px solid var(--au-line-strong); color: var(--au-ink); position: relative; background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); transition: transform var(--au-dur-tap) var(--au-ease-aero), background var(--au-dur-tap) var(--au-ease-aero), box-shadow var(--au-dur-tap) var(--au-ease-aero), border-color var(--au-dur-tap) var(--au-ease-aero); }
+  .btn:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 0 16px var(--au-accent-glow); border-color: var(--au-accent-line); }
+  .btn:active { transform: translateY(1px); box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); }
+  .btn .gl { width: 16px; height: 16px; }
+  .btn--solid { background: linear-gradient(180deg, var(--au-accent-bright), var(--au-accent) 48%, var(--au-accent-deep)); border-color: var(--au-accent-line); color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+  .btn--solid:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 0 22px var(--au-accent-glow); }
+  .btn--ghost { background: transparent; box-shadow: none; color: var(--au-ink-dim); }
+  .btn--ghost:hover { color: var(--au-ink); background: rgba(255,255,255,0.06); }
+  .btn--danger { background: linear-gradient(180deg, rgba(239,95,99,0.4), rgba(239,95,99,0.12)); border-color: rgba(239,95,99,0.5); color: #ffd9da; }
+  .btn--danger:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 0 16px rgba(239,95,99,0.5); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn--icon { padding: 10px; width: 42px; height: 42px; justify-content: center; }
+
+  /* --- form fields --- */
+  .field { display: flex; flex-direction: column; gap: 7px; width: 100%; max-width: 280px; }
+  .field label { font-size: 12.5px; color: var(--au-ink-dim); }
+  .input, .select { appearance: none; width: 100%; font-family: var(--au-font-ui); font-size: 14px; color: var(--au-ink); background: rgba(255,255,255,0.08); border: 1px solid var(--au-line-strong); border-radius: var(--au-r-md); padding: 11px 14px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.25); transition: border-color var(--au-dur-tap) var(--au-ease-aero), box-shadow var(--au-dur-tap) var(--au-ease-aero), background var(--au-dur-tap) var(--au-ease-aero); }
+  .input::placeholder { color: var(--au-ink-ghost); }
+  .input:hover, .select:hover { border-color: var(--au-ink-faint); }
+  .input:focus-visible, .select:focus-visible { outline: none; border-color: var(--au-accent); box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), 0 0 0 3px var(--au-accent-tint), 0 0 14px var(--au-accent-glow); background: rgba(255,255,255,0.12); }
+  .select { background-image: linear-gradient(45deg, transparent 50%, var(--au-ink-faint) 50%), linear-gradient(135deg, var(--au-ink-faint) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
+
+  /* --- toggle switch --- */
+  .switch-ctrl { display: inline-flex; align-items: center; gap: 11px; cursor: pointer; user-select: none; }
+  .switch-ctrl .track { width: 48px; height: 26px; border-radius: var(--au-r-pill); background: rgba(0,0,0,0.3); border: 1px solid var(--au-line-strong); box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); position: relative; transition: background var(--au-dur-move) var(--au-ease-aero), border-color var(--au-dur-move) var(--au-ease-aero); }
+  .switch-ctrl .knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(180deg, #fff, #d4dce6); box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.9); transition: transform var(--au-dur-move) var(--au-ease-glide); }
+  .switch-ctrl[aria-checked="true"] .track { background: linear-gradient(180deg, var(--au-accent-bright), var(--au-accent)); border-color: var(--au-accent-line); box-shadow: inset 0 1px 2px rgba(255,255,255,0.4), 0 0 12px var(--au-accent-glow); }
+  .switch-ctrl[aria-checked="true"] .knob { transform: translateX(22px); }
+  .switch-ctrl .lbl { font-size: 14px; color: var(--au-ink-dim); }
+
+  /* --- checkbox + radio --- */
+  .opt { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: var(--au-ink-dim); }
+  .opt .box { width: 20px; height: 20px; border: 1px solid var(--au-line-strong); border-radius: var(--au-r-sm); background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(0,0,0,0.1)); box-shadow: inset 0 1px 2px rgba(0,0,0,0.25); display: grid; place-items: center; transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .opt .box.round { border-radius: 50%; }
+  .opt[aria-checked="true"] .box { background: linear-gradient(180deg, var(--au-accent-bright), var(--au-accent)); border-color: var(--au-accent-line); box-shadow: 0 0 10px var(--au-accent-glow); }
+  .opt .box svg { width: 13px; height: 13px; color: #fff; opacity: 0; transform: scale(0.6); transition: all var(--au-dur-tap) var(--au-ease-glide); }
+  .opt[aria-checked="true"] .box svg { opacity: 1; transform: none; }
+  .opt[aria-checked="true"] .box.round svg { display: none; }
+  .opt[aria-checked="true"] .box.round { box-shadow: inset 0 0 0 4px #fff, 0 0 10px var(--au-accent-glow); }
+
+  /* --- slider --- */
+  .slider { width: 100%; max-width: 260px; }
+  .slider input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--au-accent) var(--au-pct,50%), rgba(255,255,255,0.14) var(--au-pct,50%)); box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); outline: none; }
+  .slider input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg, #fff, var(--au-accent-bright)); border: 1px solid var(--au-accent-line); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4), 0 0 10px var(--au-accent-glow); }
+  .slider input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg, #fff, var(--au-accent-bright)); border: 1px solid var(--au-accent-line); cursor: pointer; }
+
+  /* --- segmented control --- */
+  .segmented { display: inline-flex; background: rgba(0,0,0,0.28); border: 1px solid var(--au-line-strong); border-radius: var(--au-r-pill); padding: 3px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.35); }
+  .segmented button { appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--au-ink-faint); font-family: var(--au-font-ui); font-weight: 600; font-size: 13px; padding: 8px 16px; border-radius: var(--au-r-pill); transition: color var(--au-dur-tap) var(--au-ease-aero), background var(--au-dur-tap) var(--au-ease-aero); }
+  .segmented button[aria-pressed="true"] { background: linear-gradient(180deg, var(--au-accent-bright), var(--au-accent)); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 0 12px var(--au-accent-glow); }
+
+  /* --- tabs --- */
+  .tabs { width: 100%; }
+  .tablist { display: flex; gap: 2px; border-bottom: 1px solid var(--au-line-strong); }
+  .tab { appearance: none; cursor: pointer; border: 1px solid transparent; border-bottom: 0; background: transparent; color: var(--au-ink-dim); font-family: var(--au-font-ui); font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: var(--au-r-sm) var(--au-r-sm) 0 0; position: relative; top: 1px; transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .tab:hover { color: var(--au-ink); background: rgba(255,255,255,0.05); }
+  .tab[aria-selected="true"] { color: var(--au-ink); background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)); border-color: var(--au-line-strong); box-shadow: inset 0 2px 0 var(--au-accent); }
+  .tabpanel { padding: 18px 4px 2px; font-size: 14px; color: var(--au-ink-dim); }
+  .tabpanel[hidden] { display: none; }
+
+  /* --- breadcrumb (standalone) --- */
+  .breadcrumb { display: inline-flex; align-items: center; gap: 2px; padding: 6px 8px; border-radius: var(--au-r-sm); border: 1px solid var(--au-line-strong); background: rgba(255,255,255,0.06); box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); flex-wrap: wrap; }
+
+  /* --- menu / context menu (frosted) --- */
+  .menu-host { position: relative; }
+  .menu { position: absolute; top: calc(100% + 8px); left: 0; min-width: 220px; border-radius: var(--au-r-md); padding: 6px; z-index: var(--au-z-raised); opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity var(--au-dur-tap) var(--au-ease-aero), transform var(--au-dur-tap) var(--au-ease-aero); }
+  .menu.open { opacity: 1; transform: none; pointer-events: auto; }
+  .mi { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: var(--au-r-sm); font-size: 13.5px; color: var(--au-ink-dim); cursor: pointer; position: relative; z-index: 2; transition: background var(--au-dur-tap) var(--au-ease-aero), color var(--au-dur-tap) var(--au-ease-aero); }
+  .mi svg { width: 15px; height: 15px; color: var(--au-accent); flex: 0 0 auto; }
+  .mi:hover, .mi:focus-visible { background: var(--au-accent-tint); color: var(--au-ink); outline: none; box-shadow: inset 0 0 0 1px var(--au-accent-line); }
+  .mi .sc { margin-left: auto; font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); }
+  .mi.danger { color: var(--au-danger); } .mi.danger svg { color: var(--au-danger); }
+  .msep { height: 1px; background: var(--au-line); margin: 5px 8px; }
+
+  /* --- list rows --- */
+  .listbox { width: 100%; border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; }
+  .lrow { display: flex; align-items: center; gap: 13px; padding: 13px 16px; border-bottom: 1px solid var(--au-line); cursor: pointer; transition: background var(--au-dur-tap) var(--au-ease-aero); }
+  .lrow:last-child { border-bottom: 0; }
+  .lrow:hover { background: rgba(255,255,255,0.06); }
+  .lrow[aria-selected="true"] { background: var(--au-accent-tint); box-shadow: inset 0 0 0 1px var(--au-accent-line); }
+  .lrow .ic { width: 16px; height: 16px; flex: 0 0 auto; color: var(--au-accent); }
+  .lrow .t { font-size: 14px; }
+  .lrow .meta2 { margin-left: auto; font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); }
+
+  /* --- data table --- */
+  .table-wrap { width: 100%; border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data thead th { text-align: left; font-weight: 600; color: var(--au-ink-dim); padding: 11px 14px; background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03)); border-bottom: 1px solid var(--au-line-strong); cursor: pointer; white-space: nowrap; }
+  table.data thead th:hover { color: var(--au-ink); }
+  table.data thead th .ar { font-size: 9px; color: var(--au-accent); margin-left: 5px; }
+  table.data tbody td { padding: 10px 14px; border-bottom: 1px solid var(--au-line); color: var(--au-ink); }
+  table.data tbody tr:nth-child(even) { background: rgba(255,255,255,0.025); }
+  table.data tbody tr { cursor: pointer; transition: background var(--au-dur-tap) var(--au-ease-aero); }
+  table.data tbody tr:hover { background: rgba(255,255,255,0.07); }
+  table.data tbody tr[aria-selected="true"] { background: var(--au-accent-tint); box-shadow: inset 2px 0 0 var(--au-accent); }
+  table.data td .fc { display: inline-flex; align-items: center; gap: 9px; }
+  table.data td .fc svg { width: 16px; height: 16px; color: var(--au-accent); }
+  table.data tbody tr:last-child td { border-bottom: 0; }
+
+  /* --- accordion / expander --- */
+  .accordion { width: 100%; border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; }
+  .acc { border-bottom: 1px solid var(--au-line); }
+  .acc:last-child { border-bottom: 0; }
+  .acc-head { width: 100%; appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--au-ink); font-family: var(--au-font-ui); font-size: 14px; font-weight: 600; text-align: left; padding: 14px 16px; display: flex; align-items: center; gap: 11px; transition: background var(--au-dur-tap) var(--au-ease-aero); }
+  .acc-head:hover { background: rgba(255,255,255,0.05); }
+  .acc-head .chev { width: 14px; height: 14px; color: var(--au-accent); transition: transform var(--au-dur-move) var(--au-ease-glide); }
+  .acc-head[aria-expanded="true"] .chev { transform: rotate(90deg); }
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height var(--au-dur-move) var(--au-ease-aero); }
+  .acc-body .inner { padding: 0 16px 16px; font-size: 13.5px; color: var(--au-ink-dim); }
+
+  /* --- badges / status --- */
+  .badge { display: inline-flex; align-items: center; gap: 7px; font-family: var(--au-font-data); font-size: 11px; letter-spacing: 0.04em; padding: 5px 11px; border-radius: var(--au-r-pill); border: 1px solid var(--au-line-strong); color: var(--au-ink-dim); background: rgba(255,255,255,0.05); }
+  .badge .sd { width: 7px; height: 7px; border-radius: 50%; }
+  .badge.ok { color: var(--au-ok); border-color: rgba(84,201,90,0.4); } .badge.ok .sd { background: var(--au-ok); box-shadow: 0 0 8px var(--au-ok); }
+  .badge.info { color: var(--au-info); border-color: rgba(58,155,240,0.4); } .badge.info .sd { background: var(--au-info); }
+  .badge.warn { color: var(--au-warn); border-color: rgba(240,169,58,0.4); } .badge.warn .sd { background: var(--au-warn); }
+  .badge.danger { color: var(--au-danger); border-color: rgba(239,95,99,0.4); } .badge.danger .sd { background: var(--au-danger); }
+
+  /* --- profile chip --- */
+  .pchip { display: inline-flex; align-items: center; gap: 11px; }
+  .pchip .tl { width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 38% 30%, rgba(255,255,255,0.9), transparent 45%), conic-gradient(from 30deg, var(--au-aur-1), var(--au-aur-2), var(--au-aur-3), var(--au-aur-1)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.3); }
+  .pchip .nm b { font-size: 13.5px; font-weight: 600; }
+  .pchip .nm small { display: block; font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); }
+
+  /* --- tooltip --- */
+  .tt { position: relative; display: inline-block; }
+  .tt .tip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(4px); background: var(--au-glass-bg-2); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); backdrop-filter: blur(12px); color: var(--au-ink); font-size: 12px; padding: 7px 12px; border-radius: var(--au-r-md); white-space: nowrap; opacity: 0; pointer-events: none; box-shadow: var(--au-e2); transition: opacity var(--au-dur-tap) var(--au-ease-aero), transform var(--au-dur-tap) var(--au-ease-aero); z-index: var(--au-z-raised); }
+  .au-reduce-transparency .tt .tip { background: var(--au-surface-solid); backdrop-filter: none; }
+  .tt:hover .tip, .tt:focus-within .tip { opacity: 1; transform: translateX(-50%); }
+
+  /* --- progress --- */
+  .progress { width: 100%; max-width: 260px; }
+  .progress .bar { height: 12px; border-radius: var(--au-r-pill); background: rgba(0,0,0,0.3); box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); overflow: hidden; }
+  .progress .bar i { display: block; height: 100%; width: 62%; border-radius: var(--au-r-pill); background: linear-gradient(180deg, var(--au-accent-bright), var(--au-accent)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); position: relative; overflow: hidden; }
+  .progress .bar i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(120deg, rgba(255,255,255,0.22) 0 12px, transparent 12px 24px); animation: stripe 1.1s linear infinite; }
+  @keyframes stripe { to { transform: translateX(24px); } }
+  .spinner { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.12); border-top-color: var(--au-accent); animation: spin 0.8s linear infinite; box-shadow: 0 0 10px var(--au-accent-glow); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* --- tray balloon --- */
+  .balloon { width: 100%; max-width: 320px; border-radius: var(--au-r-md); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .balloon > * { position: relative; z-index: 2; }
+  .balloon .bi { width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; background: linear-gradient(180deg, var(--au-accent-bright), var(--au-accent)); box-shadow: 0 0 12px var(--au-accent-glow); }
+  .balloon .bi svg { width: 16px; height: 16px; color: #fff; }
+  .balloon .bt b { font-size: 13.5px; display: block; }
+  .balloon .bt p { font-size: 12.5px; color: var(--au-ink-dim); margin-top: 3px; }
+  .balloon .bx { margin-left: auto; cursor: pointer; color: var(--au-ink-faint); background: none; border: 0; font-size: 16px; line-height: 1; padding: 2px; }
+  .balloon .bx:hover { color: var(--au-ink); }
+  .balloon.out { opacity: 0; transform: translateY(8px); transition: opacity var(--au-dur-move) var(--au-ease-aero), transform var(--au-dur-move) var(--au-ease-aero); }
+
+  /* --- toast --- */
+  .toast-wrap { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: var(--au-z-toast); display: flex; flex-direction: column; gap: 10px; align-items: center; pointer-events: none; }
+  .toast { display: flex; align-items: center; gap: 12px; background: var(--au-glass-bg-2); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); backdrop-filter: blur(14px) saturate(1.4); border-radius: var(--au-r-md); padding: 13px 18px; box-shadow: var(--au-e3); font-size: 14px; color: var(--au-ink); min-width: 280px; pointer-events: auto; animation: toastIn var(--au-dur-move) var(--au-ease-glide); }
+  .au-reduce-transparency .toast { background: var(--au-surface-solid); backdrop-filter: none; }
+  .toast .ti { color: var(--au-accent); width: 18px; height: 18px; flex: 0 0 auto; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .toast.out { animation: toastOut var(--au-dur-move) var(--au-ease-aero) forwards; }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(10px); } }
+
+  /* --- modal: a glass dialog --- */
+  .overlay { position: fixed; inset: 0; z-index: var(--au-z-overlay); display: grid; place-items: center; padding: 24px; background: rgba(5,8,15,0.5); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity var(--au-dur-move) var(--au-ease-aero); }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .modal { width: min(440px, 100%); border-radius: var(--au-r-lg); overflow: hidden; box-shadow: 0 0 0 1px var(--au-accent-line), 0 0 40px -8px var(--au-accent-glow), var(--au-e3); background: linear-gradient(180deg, var(--au-accent-tint), transparent 40%), linear-gradient(180deg, var(--au-glass-bg-2), var(--au-glass-bg) 46%); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); backdrop-filter: blur(18px) saturate(1.4); transform: translateY(14px) scale(0.98); transition: transform var(--au-dur-move) var(--au-ease-glide); }
+  .au-reduce-transparency .modal { background: var(--au-surface-solid); backdrop-filter: none; }
+  .overlay.open .modal { transform: none; }
+  .modal .mtitle { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid rgba(255,255,255,0.14); background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent); }
+  .modal .mtitle .dt-icon { width: 16px; height: 16px; color: var(--au-accent); }
+  .modal .mtitle b { font-size: 13.5px; }
+  .modal .mb { padding: 22px 20px 8px; color: var(--au-ink-dim); font-size: 14.5px; }
+  .modal .mb h3 { font-family: var(--au-font-display); font-weight: 300; font-size: 22px; color: var(--au-ink); margin-bottom: 10px; }
+  .modal .mf { padding: 18px 20px 22px; display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ============ do / don't ============ */
+  .dd { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 720px){ .dd { grid-template-columns: 1fr; } }
+  .dd-col { padding: 26px 28px; }
+  .dd-col > * { position: relative; z-index: 2; }
+  .dd-col h4 { font-family: var(--au-font-data); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 18px; }
+  .dd-col.do h4 { color: var(--au-ok); }
+  .dd-col.dont h4 { color: var(--au-warn); }
+  .dd-col ul { list-style: none; }
+  .dd-col li { padding: 11px 0; border-bottom: 1px solid var(--au-line); font-size: 14px; color: var(--au-ink-dim); display: flex; gap: 12px; }
+  .dd-col li:last-child { border-bottom: 0; }
+  .dd-col li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; margin-top: 8px; flex: 0 0 auto; }
+  .dd-col.do li::before { background: var(--au-ok); }
+  .dd-col.dont li::before { background: var(--au-warn); }
+
+  /* ============ accessibility ============ */
+  .a11y { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+  @media (max-width: 760px){ .a11y { grid-template-columns: 1fr; } }
+  .a11y .it { padding: 28px; }
+  .a11y .it > * { position: relative; z-index: 2; }
+  .a11y .it .ic { width: 26px; height: 26px; color: var(--au-accent); margin-bottom: 16px; }
+  .a11y .it h4 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .a11y .it p { font-size: 13.5px; color: var(--au-ink-dim); }
+  .a11y .it code { font-family: var(--au-font-data); font-size: 12px; color: var(--au-accent); }
+
+  /* ============ footer ============ */
+  footer { padding: 70px 0 90px; border-top: 1px solid var(--au-line); }
+  footer .ft { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 18px; align-items: flex-end; }
+  footer .ft .big { font-family: var(--au-font-display); font-weight: 300; font-size: clamp(34px, 7vw, 64px); letter-spacing: -0.02em; line-height: 0.95; }
+  footer .ft .meta { font-family: var(--au-font-data); font-size: 12px; color: var(--au-ink-faint); text-align: right; line-height: 1.9; }
+
+  /* copy feedback */
+  .copied-flash { position: fixed; z-index: var(--au-z-flash); font-family: var(--au-font-data); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--au-accent); padding: 5px 10px; border-radius: var(--au-r-sm); pointer-events: none; transform: translate(-50%, -140%); animation: flashUp 900ms var(--au-ease-aero) forwards; box-shadow: 0 0 14px var(--au-accent-glow); }
+  @keyframes flashUp { 0% { opacity: 0; transform: translate(-50%, -120%); } 18% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -220%); } }
+
+  /* entrance choreography */
+  .reveal { opacity: 0; transform: translateY(16px); }
+  body.ready .hero .reveal { opacity: 1; transform: none; transition: opacity 760ms var(--au-ease-aero), transform 760ms var(--au-ease-aero); }
+  body.ready .hero .reveal:nth-child(1){ transition-delay: 120ms; }
+  body.ready .hero .reveal:nth-child(2){ transition-delay: 220ms; }
+  body.ready .hero .reveal:nth-child(3){ transition-delay: 320ms; }
+  body.ready .hero .reveal:nth-child(4){ transition-delay: 410ms; }
+  body.ready .hero .reveal:nth-child(5){ transition-delay: 500ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .aurora .rib, .stars { animation: none !important; }
+  }
+}
+</style>
+<style>
+  /* ============ docs-only chrome (NOT part of the language) ============
+     Remapped from Nebula's docs chrome onto Aurora's --au-* tokens, fonts,
+     radii and the translucent night/aurora palette. */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  .doc-skip { position: fixed; left: -999px; top: 8px; z-index: 9000; }
+  .doc-skip:focus { left: 8px; }
+
+  /* top bar — a frosted glass chrome bar */
+  .doc-topbar {
+    position: sticky; top: 0; z-index: var(--au-z-sticky);
+    display: flex; align-items: center; gap: var(--au-s4);
+    height: 58px; padding: 0 var(--au-s5);
+    background: linear-gradient(180deg, rgba(5,8,15,0.88), rgba(5,8,15,0.60));
+    -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom: 1px solid var(--au-line);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    transition: background var(--au-dur-move) var(--au-ease-aero), border-color var(--au-dur-move) var(--au-ease-aero);
+  }
+  body[data-au-theme="light"] .doc-topbar { background: linear-gradient(180deg, rgba(232,244,254,0.92), rgba(232,244,254,0.66)); }
+  .doc-brand { display: inline-flex; align-items: center; gap: 11px; flex: 0 0 auto; text-decoration: none; }
+  .doc-brand .glyph { width: 24px; height: 24px; border-radius: 50%; flex: 0 0 auto; position: relative; }
+  .doc-brand .glyph::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 38% 28%, rgba(255,255,255,0.95), rgba(255,255,255,0.1) 40%, transparent 60%), conic-gradient(from 210deg, var(--au-aur-1), var(--au-aur-2), var(--au-aur-3), var(--au-aur-1)); box-shadow: inset 0 1px 2px rgba(255,255,255,0.7), inset 0 -4px 8px rgba(0,0,0,0.35), 0 0 12px -2px var(--au-accent-glow); }
+  .doc-brand b { font-family: var(--au-font-data); font-weight: 500; font-size: 13px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--au-ink); }
+  .doc-ver { font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); border: 1px solid var(--au-line-strong); padding: 2px 8px; border-radius: var(--au-r-pill); }
+  .doc-topbar .spacer { flex: 1; }
+  .doc-themetoggle { display: flex; align-items: center; gap: 6px; }
+  .doc-themetoggle .lbl { font-family: var(--au-font-data); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--au-ink-faint); margin-right: 2px; }
+  @media (max-width: 600px){ .doc-themetoggle .lbl { display: none; } }
+  .doc-toggle { appearance: none; cursor: pointer; background: var(--au-glass-bg); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); color: var(--au-ink-dim); font-family: var(--au-font-data); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 12px; border-radius: var(--au-r-pill); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: all var(--au-dur-tap) var(--au-ease-aero); }
+  .doc-toggle:hover { color: var(--au-ink); border-color: var(--au-accent-line); }
+  .doc-toggle[aria-pressed="true"] { color: var(--au-ink); border-color: var(--au-accent-line); box-shadow: 0 0 14px -2px var(--au-accent-glow); }
+
+  /* shell: sidebar + content */
+  .doc-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 0; max-width: 1300px; margin: 0 auto; position: relative; z-index: 2; }
+  .doc-side {
+    position: sticky; top: 58px; align-self: start; height: calc(100vh - 58px);
+    overflow-y: auto; padding: var(--au-s6) var(--au-s4) var(--au-s8) var(--au-s5);
+    border-right: 1px solid var(--au-line);
+  }
+  .doc-side h4 { font-family: var(--au-font-data); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--au-ink-faint); margin: var(--au-s5) 0 var(--au-s2); }
+  .doc-side h4:first-child { margin-top: 0; }
+  .doc-side a { display: block; font-family: var(--au-font-ui); font-size: 13.5px; color: var(--au-ink-dim); text-decoration: none; padding: 5px 11px; border-radius: var(--au-r-sm); border-left: 2px solid transparent; }
+  .doc-side a:hover { color: var(--au-ink); background: var(--au-accent-tint); text-decoration: none; }
+  .doc-side a.is-active { color: var(--au-ink); border-left-color: var(--au-accent); background: var(--au-accent-tint); }
+
+  .doc-main { padding: var(--au-s7) clamp(var(--au-s5), 4vw, 4rem) 6rem; min-width: 0; }
+  @media (max-width: 920px) {
+    .doc-shell { grid-template-columns: 1fr; }
+    .doc-side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--au-line); display: flex; gap: 4px; flex-wrap: wrap; padding: var(--au-s3) var(--au-s5); }
+    .doc-side h4 { display: none; }
+    .doc-side a { border-left: 0; }
+  }
+
+  .doc-section { padding-top: var(--au-s7); scroll-margin-top: 74px; }
+  .doc-section:first-child { padding-top: var(--au-s5); }
+  .doc-section > h2 { font-family: var(--au-font-display); font-weight: 300; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 var(--au-s3); color: var(--au-ink); }
+  .doc-section > .lede { color: var(--au-ink-dim); font-size: 16.5px; max-width: 62ch; margin: 0 0 var(--au-s6); }
+  .doc-sub { font-family: var(--au-font-data); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--au-ink-faint); margin: var(--au-s6) 0 var(--au-s4); }
+  .doc-main code, .doc-main .mono { font-family: var(--au-font-data); font-size: 0.9em; color: var(--au-accent); }
+
+  /* hero */
+  .doc-hero { position: relative; padding: var(--au-s8) 0 var(--au-s7); overflow: visible; }
+  .doc-hero .row { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: var(--au-s6); align-items: center; }
+  @media (max-width: 780px){ .doc-hero .row { grid-template-columns: 1fr; } .doc-hero .art { display: none; } }
+  .doc-hero h1 { font-family: var(--au-font-display); font-weight: 300; font-size: clamp(56px, 11vw, 120px); line-height: 0.92; letter-spacing: -0.02em; margin: 14px 0 0; }
+  .doc-hero h1 .glint { background: linear-gradient(120deg, var(--au-ink) 30%, var(--au-accent-bright) 50%, var(--au-ink) 70%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .doc-hero p.lede { color: var(--au-ink-dim); font-size: 18px; max-width: 54ch; margin: var(--au-s4) 0 var(--au-s3); }
+  .doc-hero .lineage { font-family: var(--au-font-data); font-size: 12.5px; color: var(--au-ink-faint); margin: 0 0 var(--au-s5); letter-spacing: 0.02em; }
+  .doc-hero .cta { display: flex; gap: var(--au-s3); flex-wrap: wrap; align-items: center; }
+  .doc-hero .art { display: grid; place-items: center; }
+  .doc-hero .heroglass { width: 100%; max-width: 320px; padding: 26px; }
+  .doc-hero .heroglass .vk { font-family: var(--au-font-data); font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--au-accent); position: relative; z-index: 2; }
+  .doc-hero .heroglass h4 { font-family: var(--au-font-display); font-weight: 300; font-size: 24px; color: var(--au-ink); margin: 8px 0 6px; position: relative; z-index: 2; }
+  .doc-hero .heroglass p { font-size: 13px; color: var(--au-ink-dim); position: relative; z-index: 2; }
+
+  /* example: live demo + code */
+  .doc-example { border: 1px solid var(--au-line); border-radius: var(--au-r-lg); overflow: visible; margin: var(--au-s3) 0 var(--au-s6); background: var(--au-night-1); box-shadow: var(--au-e2); }
+  .doc-demo { padding: var(--au-s6); display: flex; flex-wrap: wrap; gap: var(--au-s4); align-items: center; position: relative;
+    background: radial-gradient(90% 130% at 50% 0%, var(--au-accent-tint), transparent 70%), var(--au-night-2); border-radius: var(--au-r-lg) var(--au-r-lg) 0 0; }
+  .doc-demo.col { flex-direction: column; align-items: stretch; }
+  .doc-codewrap { position: relative; border-top: 1px solid var(--au-line); }
+  .doc-code { margin: 0; padding: var(--au-s4) var(--au-s5); overflow-x: auto; background: rgba(0,0,0,0.30); border-radius: 0 0 var(--au-r-lg) var(--au-r-lg); }
+  body[data-au-theme="light"] .doc-code { background: rgba(255,255,255,0.5); }
+  .doc-code code { font-family: var(--au-font-data); font-size: 12.5px; line-height: 1.7; color: var(--au-ink-dim); white-space: pre; }
+  .doc-copy { position: absolute; top: 8px; right: 8px; z-index: 3; }
+
+  /* token grids */
+  .doc-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--au-s3); }
+  .doc-swatch { text-align: left; cursor: copy; border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; background: var(--au-night-1); font: inherit; color: inherit; padding: 0; }
+  .doc-swatch:hover { border-color: var(--au-accent-line); }
+  .doc-swatch .cap { display:block; height: 54px; border-bottom: 1px solid var(--au-line); }
+  .doc-swatch .m { display:block; padding: 9px 11px; }
+  .doc-swatch .m .k { display:block; font-size: 12.5px; font-weight: 600; }
+  .doc-swatch .m .v { display:block; font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); margin-top: 2px; }
+
+  .doc-ramp { display: grid; grid-template-columns: repeat(6, 1fr); border: 1px solid var(--au-line); border-radius: var(--au-r-md); overflow: hidden; }
+  @media (max-width: 620px){ .doc-ramp { grid-template-columns: repeat(3,1fr); } }
+  .doc-ramp .s { height: 62px; position: relative; cursor: copy; border: 0; padding: 0; }
+  .doc-ramp .s span { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--au-font-data); font-size: 9px; text-align: center; padding: 2px 0; color: #fff; background: rgba(0,0,0,0.4); }
+
+  .doc-scale-row { display: flex; align-items: baseline; gap: var(--au-s5); padding: 14px 0; border-bottom: 1px solid var(--au-line); }
+  .doc-scale-row .tk { font-family: var(--au-font-data); font-size: 11.5px; color: var(--au-ink-faint); width: 140px; flex: 0 0 auto; }
+
+  .doc-space-row { display: flex; align-items: center; gap: var(--au-s4); padding: 8px 0; }
+  .doc-space-row .tk { font-family: var(--au-font-data); font-size: 11.5px; color: var(--au-ink-faint); width: 130px; flex: 0 0 auto; }
+  .doc-space-row .bar { height: 14px; background: var(--au-accent-tint); border-left: 2px solid var(--au-accent); border-radius: 2px; }
+
+  .doc-grid { display: grid; gap: var(--au-s4); }
+  .doc-grid.two { grid-template-columns: 1fr 1fr; }
+  .doc-grid.three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 760px){ .doc-grid.two, .doc-grid.three { grid-template-columns: 1fr; } }
+
+  .doc-facecard { padding: 28px 30px; }
+  .doc-facecard > * { position: relative; z-index: 2; }
+  .doc-facecard .role { font-family: var(--au-font-data); font-size: 11px; color: var(--au-accent); letter-spacing: 0.18em; text-transform: uppercase; }
+  .doc-facecard .fname { font-family: var(--au-font-data); font-size: 12px; color: var(--au-ink-faint); float: right; }
+  .doc-facecard .big { margin: 18px 0 8px; line-height: 1; color: var(--au-ink); }
+  .doc-facecard .note { font-size: 13.5px; color: var(--au-ink-dim); }
+
+  .doc-radius-demo { height: 88px; border: 1px solid var(--au-accent-line); background: var(--au-accent-tint); display: grid; place-items: end center; padding-bottom: 8px; font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-dim); }
+  .doc-elev-demo { height: 88px; border-radius: var(--au-r-md); background: var(--au-night-2); border: 1px solid var(--au-line); display: grid; place-items: center; font-family: var(--au-font-data); font-size: 11px; color: var(--au-ink-faint); }
+  .doc-blur-demo { height: 88px; border-radius: var(--au-r-md); position: relative; overflow: hidden; display: grid; place-items: center; font-family: var(--au-font-data); font-size: 11px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); background: linear-gradient(135deg, var(--au-aur-1), var(--au-aur-3)); border: 1px solid var(--au-glass-line); }
+  .doc-blur-demo span { position: absolute; inset: 0; background: rgba(255,255,255,0.10); display: grid; place-items: center; }
+
+  /* a small fact table (anatomy / motion tokens) */
+  .doc-facts { border: 1px solid var(--au-line); border-radius: var(--au-r-lg); overflow: hidden; background: var(--au-night-1); }
+  .doc-facts .fr { display: flex; justify-content: space-between; gap: 14px; padding: 13px 18px; border-bottom: 1px solid var(--au-line); }
+  .doc-facts .fr:last-child { border-bottom: 0; }
+  .doc-facts .fr b { font-size: 13.5px; }
+  .doc-facts .fr small { display: block; color: var(--au-ink-dim); font-weight: 400; font-size: 12px; }
+  .doc-facts .fr .v { font-family: var(--au-font-data); font-size: 11px; color: var(--au-accent); text-align: right; white-space: nowrap; }
+  .doc-facts .fr .v code { color: var(--au-accent); }
+
+  /* principles / cards */
+  .doc-prin { padding: 24px 24px; }
+  .doc-prin > * { position: relative; z-index: 2; }
+  .doc-prin .num { font-family: var(--au-font-data); font-size: 12px; color: var(--au-accent); letter-spacing: 0.1em; }
+  .doc-prin h3 { font-family: var(--au-font-display); font-weight: 400; font-size: 20px; margin: 10px 0 10px; letter-spacing: -0.005em; }
+  .doc-prin .one { color: var(--au-ink); font-weight: 600; margin: 0 0 9px; font-size: 14.5px; }
+  .doc-prin p { font-size: 13.5px; color: var(--au-ink-dim); margin: 0; }
+
+  /* do / don't */
+  .doc-dd { padding: 26px 28px; }
+  .doc-dd > * { position: relative; z-index: 2; }
+  .doc-dd h4 { font-family: var(--au-font-data); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0 0 16px; }
+  .doc-dd.do h4 { color: var(--au-ok); }
+  .doc-dd.dont h4 { color: var(--au-warn); }
+  .doc-dd ul { list-style: none; margin: 0; padding: 0; }
+  .doc-dd li { padding: 10px 0; border-bottom: 1px solid var(--au-line); font-size: 14px; color: var(--au-ink-dim); display: flex; gap: 12px; }
+  .doc-dd li:last-child { border-bottom: 0; }
+  .doc-dd li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; margin-top: 8px; flex: 0 0 auto; }
+  .doc-dd.do li::before { background: var(--au-ok); }
+  .doc-dd.dont li::before { background: var(--au-warn); }
+
+  /* a11y cards */
+  .doc-a11y { padding: 28px; }
+  .doc-a11y > * { position: relative; z-index: 2; }
+  .doc-a11y .ic { width: 26px; height: 26px; color: var(--au-accent); margin-bottom: 14px; }
+  .doc-a11y h4 { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
+  .doc-a11y p { font-size: 13.5px; color: var(--au-ink-dim); margin: 0; }
+
+  /* heritage timeline */
+  .doc-timeline { display: grid; grid-template-columns: repeat(5,1fr); gap: 0; }
+  @media (max-width: 860px){ .doc-timeline { grid-template-columns: 1fr 1fr; gap: 28px 0; } }
+  .doc-node { position: relative; padding: 26px 20px 0 0; }
+  .doc-node::before { content:""; position:absolute; top:8px; left:0; right:0; height:1px; background: var(--au-line-strong); }
+  .doc-node::after { content:""; position:absolute; top:3px; left:0; width:11px; height:11px; border-radius:50%; background: var(--au-tint-graphite); }
+  .doc-node:nth-child(2)::after { background: var(--au-tint-blue); box-shadow: 0 0 10px var(--au-tint-blue); }
+  .doc-node:nth-child(3)::after { background: var(--au-tint-violet); }
+  .doc-node.now::after { background: var(--au-accent); box-shadow: 0 0 12px var(--au-accent-glow); }
+  .doc-node .y { font-family: var(--au-font-data); font-size: 12px; color: var(--au-ink-faint); letter-spacing: 0.08em; }
+  .doc-node .n { font-weight: 600; font-size: 15px; margin: 7px 0 8px; }
+  .doc-node .d { font-size: 13px; color: var(--au-ink-dim); }
+
+  .doc-foot { margin-top: var(--au-s7); padding-top: var(--au-s6); border-top: 1px solid var(--au-line); font-family: var(--au-font-data); font-size: 12px; color: var(--au-ink-faint); line-height: 1.95; }
+  .doc-foot a { color: var(--au-accent); }
+
+  /* toast live region */
+  .doc-toasts { position: fixed; left: 0; right: 0; bottom: 24px; z-index: var(--au-z-toast); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .doc-toast { pointer-events: auto; background: var(--au-glass-bg-2); border: 1px solid var(--au-glass-line); border-top-color: var(--au-glass-edge); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); border-radius: var(--au-r-md); padding: 11px 17px; font-size: 13px; color: var(--au-ink); box-shadow: var(--au-e3); opacity: 0; transform: translateY(10px); transition: opacity .26s var(--au-ease-aero), transform .26s var(--au-ease-glide); }
+  .au-reduce-transparency .doc-toast { background: var(--au-surface-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .doc-toast.show { opacity: 1; transform: none; }
+  .doc-toast b { color: var(--au-accent); }
+
+  /* reveal on scroll */
+  .doc-reveal { opacity: 0; transform: translateY(16px); }
+  .doc-reveal.is-in { opacity: 1; transform: none; transition: opacity .6s var(--au-ease-aero), transform .6s var(--au-ease-aero); }
+  @media (prefers-reduced-motion: reduce){ .doc-reveal, .doc-reveal.is-in { opacity: 1; transform: none; transition: none; } }
+
+  /* keep the ambient aurora behind the whole shell */
+  .doc-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .doc-bg .aurora, .doc-bg .stars { position: absolute; inset: 0; }
+</style>
+</head>
+<body data-au-accent="blue" data-au-theme="dark">
+
+  <a class="doc-skip btn" href="#overview">Skip to content</a>
+
+  <!-- ambient aurora field behind the whole page -->
+  <div class="doc-bg" aria-hidden="true">
+    <div class="stars"></div>
+    <div class="aurora">
+      <div class="rib r1"></div><div class="rib r2"></div><div class="rib r3"></div><div class="rib r4"></div>
+      <div class="veil"></div>
+    </div>
+  </div>
+
+  <!-- ================= TOP BAR ================= -->
+  <header class="doc-topbar">
+    <a class="doc-brand" href="#overview" aria-label="Aurora home">
+      <span class="glyph" aria-hidden="true"></span>
+      <b>Aurora</b>
+    </a>
+    <span class="doc-ver">v1.0.0</span>
+    <span class="spacer"></span>
+    <div class="doc-themetoggle" role="group" aria-label="Personalize">
+      <span class="lbl">Tint</span>
+      <button class="doc-toggle au-tint" type="button" data-au-accent="blue"     aria-pressed="true"  style="color:#3a9bf0">blue</button>
+      <button class="doc-toggle au-tint" type="button" data-au-accent="green"    aria-pressed="false" style="color:#54c95a">green</button>
+      <button class="doc-toggle au-tint" type="button" data-au-accent="violet"   aria-pressed="false" style="color:#9b73f0">violet</button>
+      <button class="doc-toggle au-tint" type="button" data-au-accent="amber"    aria-pressed="false" style="color:#f0a93a">amber</button>
+      <button class="doc-toggle au-tint" type="button" data-au-accent="graphite" aria-pressed="false" style="color:#9fb2c6">graphite</button>
+      <button class="doc-toggle" type="button" id="skyToggle"   aria-pressed="false">&#9788; day</button>
+      <button class="doc-toggle" type="button" id="solidToggle" aria-pressed="false">&#9632; solid</button>
+    </div>
+  </header>
+
+  <div class="doc-shell">
+    <!-- sidebar -->
+    <nav class="doc-side" aria-label="Sections">
+      <h4>Start</h4>
+      <a href="#overview" class="is-active">Overview</a>
+      <a href="#install">Getting started</a>
+      <h4>Foundations</h4>
+      <a href="#color">Color</a>
+      <a href="#type">Typography</a>
+      <a href="#space">Spacing &amp; radius</a>
+      <a href="#elevation">Elevation &amp; motion</a>
+      <a href="#glass">The glass</a>
+      <h4>Components</h4>
+      <a href="#flip">Flip 3D</a>
+      <a href="#buttons">Buttons &amp; controls</a>
+      <a href="#forms">Forms &amp; choices</a>
+      <a href="#containers">Tabs &amp; menus</a>
+      <a href="#status">Status &amp; feedback</a>
+      <a href="#data">Lists &amp; tables</a>
+      <a href="#desktop">The desktop</a>
+      <h4>Guidance</h4>
+      <a href="#principles">Principles</a>
+      <a href="#a11y">Accessibility</a>
+      <a href="#heritage">Heritage</a>
+    </nav>
+
+    <main class="doc-main">
+
+    <!-- ================= OVERVIEW / HERO ================= -->
+    <section class="doc-section doc-hero" id="overview">
+      <div class="row">
+        <div>
+          <span class="eyebrow">Glass interface language &middot; edition 02</span>
+          <h1><span class="glint">Aurora</span></h1>
+          <p class="lede">A glass interface language of translucent, light-bending chrome over flowing color. Surfaces you can see through, lit with a wet gloss and a tint that's yours — descended from <strong style="color:var(--au-ink)">Windows Vista and the Aero era</strong>, re-tokenized, hardened, and made graceful enough to ship today.</p>
+          <p class="lineage">Luna / XP 2001 &rsaquo; Windows Aero 2006&ndash;2007 &rsaquo; Frutiger Aero &rsaquo; the flat years &rsaquo; resurfacing now. Authentic, Energetic, Reflective, Open.</p>
+          <div class="cta">
+            <a class="btn btn--solid" href="#install">Get started</a>
+            <a class="btn" href="#buttons">Components</a>
+            <button class="pearl" id="heroPearl" aria-label="The pearl — play the glass chime" style="width:42px;height:42px"></button>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="glass glass--glow heroglass">
+            <div class="vk">frosted pane</div>
+            <h4>Light is wet</h4>
+            <p>A translucent body, a wash of the active tint, a wet gloss across the top, and a soft drop beneath. One recipe, used everywhere.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= GETTING STARTED ================= -->
+    <section class="doc-section" id="install">
+      <h2>Getting started</h2>
+      <p class="lede">Three switches theme the whole language from one place. Aurora is namespaced (<code>--au-*</code> tokens, <code>.glass</code> / component classes), ships an opaque fallback, and degrades gracefully where <code>backdrop-filter</code> is unsupported — so it drops in without collisions.</p>
+
+      <div class="doc-example doc-reveal" data-static>
+        <div class="doc-demo col">
+          <p style="margin:0;font-size:13.5px;color:var(--au-ink-dim)">1 &middot; Set the three theming attributes on <code>&lt;body&gt;</code> (or any subtree). &nbsp; 2 &middot; Use the <code>.glass</code> material and components. &nbsp; 3 &middot; Reference <code>--au-*</code> tokens in your own CSS.</p>
+        </div>
+        <div class="doc-codewrap">
+          <pre class="doc-code"><code></code></pre>
+          <script type="text/plain" class="doc-snippet">
+&lt;link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"&gt;
+
+&lt;!-- three switches theme everything --&gt;
+&lt;body data-au-accent="blue" data-au-theme="dark"&gt;
+  &lt;div class="glass glass--glow" style="padding:24px"&gt;
+    &lt;button class="btn btn--solid"&gt;OK&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+
+/* your own components, on Aurora's tokens */
+.my-pane { background: var(--au-glass-bg); border: 1px solid var(--au-glass-line);
+  border-top-color: var(--au-glass-edge); border-radius: var(--au-r-lg);
+  backdrop-filter: blur(var(--au-glass-blur)) saturate(1.4); }
+          </script>
+        </div>
+      </div>
+
+      <p style="font-size:13px;color:var(--au-ink-faint);font-family:var(--au-font-data)">Add <code>.au-reduce-transparency</code> to any scope to make glass opaque, or <code>data-au-theme="light"</code> for the Frutiger bright variant. The OS-level <code>prefers-reduced-transparency</code> and <code>prefers-reduced-motion</code> are honored automatically.</p>
+    </section>
+    <!-- ================= COLOR ================= -->
+    <section class="doc-section" id="color">
+      <h2>Color</h2>
+      <p class="lede">The accent is one swappable token. Change it and the glass tint, the aurora ribbons, every glow, and the focus ring all move together — personalization, not wayfinding. Click any swatch or token to copy it.</p>
+
+      <h3 class="doc-sub">Glass tints — personalization, not place</h3>
+      <p style="margin:0 0 14px;font-size:13.5px;color:var(--au-ink-dim)">Tint is a setting, not a rebuild. Switch live with the tint buttons in the top bar — the whole page retints from one attribute. Click a card to apply it.</p>
+      <div class="doc-grid three">
+        <button class="glass doc-facecard doc-reveal au-pick" type="button" data-au-accent="blue" style="cursor:pointer;text-align:left;padding:0">
+          <div style="height:30px;background:linear-gradient(180deg,#9fd0ff,#3a9bf0 50%,#0b3a66)"></div>
+          <div style="padding:13px 16px"><b>Aero blue</b> <span class="mono" style="color:var(--au-ink-faint)">#3a9bf0</span><br><span style="font-size:12.5px;color:var(--au-ink-faint)">the default &middot; click to apply</span></div>
+        </button>
+        <button class="glass doc-facecard doc-reveal au-pick" type="button" data-au-accent="green" style="cursor:pointer;text-align:left;padding:0">
+          <div style="height:30px;background:linear-gradient(180deg,#b6f5ad,#54c95a 50%,#11521a)"></div>
+          <div style="padding:13px 16px"><b>Frutiger green</b> <span class="mono" style="color:var(--au-ink-faint)">#54c95a</span><br><span style="font-size:12.5px;color:var(--au-ink-faint)">click to apply</span></div>
+        </button>
+        <button class="glass doc-facecard doc-reveal au-pick" type="button" data-au-accent="violet" style="cursor:pointer;text-align:left;padding:0">
+          <div style="height:30px;background:linear-gradient(180deg,#d9c4ff,#9b73f0 50%,#3a1f66)"></div>
+          <div style="padding:13px 16px"><b>Twilight violet</b> <span class="mono" style="color:var(--au-ink-faint)">#9b73f0</span><br><span style="font-size:12.5px;color:var(--au-ink-faint)">click to apply</span></div>
+        </button>
+        <button class="glass doc-facecard doc-reveal au-pick" type="button" data-au-accent="amber" style="cursor:pointer;text-align:left;padding:0">
+          <div style="height:30px;background:linear-gradient(180deg,#ffe0a6,#f0a93a 50%,#6b4209)"></div>
+          <div style="padding:13px 16px"><b>Sunset amber</b> <span class="mono" style="color:var(--au-ink-faint)">#f0a93a</span><br><span style="font-size:12.5px;color:var(--au-ink-faint)">click to apply</span></div>
+        </button>
+        <button class="glass doc-facecard doc-reveal au-pick" type="button" data-au-accent="graphite" style="cursor:pointer;text-align:left;padding:0">
+          <div style="height:30px;background:linear-gradient(180deg,#e0e9f2,#9fb2c6 50%,#3a4654)"></div>
+          <div style="padding:13px 16px"><b>Graphite</b> <span class="mono" style="color:var(--au-ink-faint)">#9fb2c6</span><br><span style="font-size:12.5px;color:var(--au-ink-faint)">click to apply</span></div>
+        </button>
+      </div>
+
+      <h3 class="doc-sub">Semantic roles</h3>
+      <div class="doc-swatches" id="semanticSwatches">
+        <button class="doc-swatch" data-token="--au-accent"><span class="cap" style="background:var(--au-accent)"></span><span class="m"><span class="k">accent</span><span class="v">--au-accent</span></span></button>
+        <button class="doc-swatch" data-token="--au-accent-bright"><span class="cap" style="background:var(--au-accent-bright)"></span><span class="m"><span class="k">accent bright</span><span class="v">--au-accent-bright</span></span></button>
+        <button class="doc-swatch" data-token="--au-accent-deep"><span class="cap" style="background:var(--au-accent-deep)"></span><span class="m"><span class="k">accent deep</span><span class="v">--au-accent-deep</span></span></button>
+        <button class="doc-swatch" data-token="--au-ok"><span class="cap" style="background:var(--au-ok)"></span><span class="m"><span class="k">ok</span><span class="v">--au-ok</span></span></button>
+        <button class="doc-swatch" data-token="--au-info"><span class="cap" style="background:var(--au-info)"></span><span class="m"><span class="k">info</span><span class="v">--au-info</span></span></button>
+        <button class="doc-swatch" data-token="--au-warn"><span class="cap" style="background:var(--au-warn)"></span><span class="m"><span class="k">warn</span><span class="v">--au-warn</span></span></button>
+        <button class="doc-swatch" data-token="--au-danger"><span class="cap" style="background:var(--au-danger)"></span><span class="m"><span class="k">danger</span><span class="v">--au-danger</span></span></button>
+        <button class="doc-swatch" data-token="--au-night-1"><span class="cap" style="background:var(--au-night-1)"></span><span class="m"><span class="k">surface</span><span class="v">--au-night-1</span></span></button>
+        <button class="doc-swatch" data-token="--au-night-2"><span class="cap" style="background:var(--au-night-2)"></span><span class="m"><span class="k">raised</span><span class="v">--au-night-2</span></span></button>
+        <button class="doc-swatch" data-token="--au-ink"><span class="cap" style="background:var(--au-ink)"></span><span class="m"><span class="k">ink / text</span><span class="v">--au-ink</span></span></button>
+        <button class="doc-swatch" data-token="--au-ink-dim"><span class="cap" style="background:var(--au-ink-dim)"></span><span class="m"><span class="k">ink dim</span><span class="v">--au-ink-dim</span></span></button>
+      </div>
+
+      <h3 class="doc-sub">Night ramp — base to ink</h3>
+      <div class="doc-ramp" id="nightRamp"></div>
+
+      <h3 class="doc-sub">Aurora ribbons — the four drifting lights</h3>
+      <div class="doc-ramp" id="auroraRamp" style="grid-template-columns:repeat(4,1fr)"></div>
+
+      <p style="margin-top:var(--au-s4);font-size:13px;color:var(--au-ink-faint);font-family:var(--au-font-data)">The night base <code>#05080f</code> is the dark the aurora glows against; the four ribbon hues (<code>--au-aur-1..4</code>) move with the active tint. Click any swatch to copy its token.</p>
+    </section>
+
+    <!-- ================= TYPOGRAPHY ================= -->
+    <section class="doc-section" id="type">
+      <h2>Typography</h2>
+      <p class="lede">Vista introduced Segoe UI as the system face. Aurora uses it where it's present, and falls back to <strong style="color:var(--au-ink)">Open Sans</strong> everywhere else — both are humanist sans-serifs drawn by Steve Matteson, so the voice stays consistent from Windows to the web. A monospace handles data and tokens.</p>
+      <div class="doc-grid three">
+        <div class="glass doc-facecard doc-reveal"><span class="fname">Segoe UI / Open Sans</span><div class="role">Display &middot; 300</div><div class="big" style="font-family:var(--au-font-display);font-weight:300;font-size:clamp(36px,7vw,58px);letter-spacing:-0.02em">authentic</div><div class="note">Light weight at large sizes — the calm, confident Vista title voice.</div></div>
+        <div class="glass doc-facecard doc-reveal"><span class="fname">Open Sans</span><div class="role">Interface &middot; 400 / 600</div><div class="big" style="font-family:var(--au-font-ui);font-weight:400;font-size:clamp(22px,4vw,34px)">documents &middot; music</div><div class="note">The working voice. Open, warm, highly readable. Matteson drew both faces, so the fallback is seamless.</div></div>
+        <div class="glass doc-facecard doc-reveal"><span class="fname">JetBrains Mono</span><div class="role">Data &middot; 400 / 500</div><div class="big" style="font-family:var(--au-font-data);font-weight:500;font-size:clamp(18px,3.5vw,28px);letter-spacing:0.02em">--au-glass-blur</div><div class="note">For tokens, hex, captions, and any value the eye must scan precisely.</div></div>
+      </div>
+      <h3 class="doc-sub">Scale</h3>
+      <div id="typeScale"></div>
+    </section>
+
+    <!-- ================= SPACING & RADIUS ================= -->
+    <section class="doc-section" id="space">
+      <h2>Spacing &amp; radius</h2>
+      <p class="lede">A 4px spacing base and a softly-rounded radius scale — Aurora is never sharp — keep rhythm consistent across panes and controls.</p>
+      <div class="doc-grid two">
+        <div>
+          <h3 class="doc-sub">Spacing &middot; 4px base</h3>
+          <div id="spaceScale"></div>
+        </div>
+        <div>
+          <h3 class="doc-sub">Radius</h3>
+          <div class="doc-grid two" style="gap:var(--au-s3)">
+            <div class="doc-radius-demo" style="border-radius:var(--au-r-sm)">sm &middot; 4px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--au-r-md)">md &middot; 8px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--au-r-lg)">lg &middot; 14px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--au-r-xl)">xl &middot; 22px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--au-r-pill)">pill &middot; 999</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ELEVATION & MOTION ================= -->
+    <section class="doc-section" id="elevation">
+      <h2>Elevation &amp; motion</h2>
+      <p class="lede">Soft shadows lift glass off the night; the backdrop blur is hierarchy — sharper is nearer. Motion drifts and blooms; Aero never snapped.</p>
+
+      <h3 class="doc-sub">Elevation</h3>
+      <div class="doc-grid three">
+        <div class="doc-elev-demo" style="box-shadow:var(--au-e1)">--au-e1 / resting</div>
+        <div class="doc-elev-demo" style="box-shadow:var(--au-e2)">--au-e2 / lifted</div>
+        <div class="doc-elev-demo" style="box-shadow:var(--au-e3)">--au-e3 / floating</div>
+      </div>
+
+      <h3 class="doc-sub">Blur scale — depth is layer order</h3>
+      <div class="doc-grid three">
+        <div class="doc-blur-demo">--au-blur-sm &middot; 8px<span style="-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)"></span></div>
+        <div class="doc-blur-demo">--au-blur-md &middot; 18px<span style="-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)"></span></div>
+        <div class="doc-blur-demo">--au-blur-lg &middot; 28px<span style="-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px)"></span></div>
+      </div>
+
+      <h3 class="doc-sub">Motion &amp; the rest of the scales</h3>
+      <div class="doc-grid two">
+        <div class="doc-facts doc-reveal">
+          <div class="fr"><div><b>Window flip</b><small>front to back &middot; --au-dur-flip</small></div><div class="v">460ms<br>ease-glide</div></div>
+          <div class="fr"><div><b>Tint recolor</b><small>accent crossfade &middot; --au-dur-move</small></div><div class="v">280ms<br>ease-aero</div></div>
+          <div class="fr"><div><b>Control bloom</b><small>hover / focus glow &middot; --au-dur-tap</small></div><div class="v">150ms<br>ease-aero</div></div>
+          <div class="fr"><div><b>Aurora drift</b><small>ambient ribbons &middot; --au-dur-ambient</small></div><div class="v">26&ndash;44s<br>ease-aero</div></div>
+        </div>
+        <div class="doc-facts doc-reveal">
+          <div class="fr"><div><b>Opacity scale</b><small>ghost / faint / dim / full</small></div><div class="v">.32 .52<br>.72 1</div></div>
+          <div class="fr"><div><b>raised</b><small>menus, tooltips</small></div><div class="v">z 10</div></div>
+          <div class="fr"><div><b>sticky</b><small>top bar</small></div><div class="v">z 60</div></div>
+          <div class="fr"><div><b>toast</b><small></small></div><div class="v">z 80</div></div>
+          <div class="fr"><div><b>overlay / flash</b><small>modal &middot; copy cue</small></div><div class="v">z 90 / 100</div></div>
+        </div>
+      </div>
+      <p style="margin-top:var(--au-s4);font-size:13px;color:var(--au-ink-faint);font-family:var(--au-font-data)">Two curves do the work: <code>--au-ease-aero</code> (calm default) and <code>--au-ease-glide</code> (the flip / settle). All motion collapses under <code>prefers-reduced-motion</code>.</p>
+    </section>
+
+    <!-- ================= THE GLASS ================= -->
+    <section class="doc-section" id="glass">
+      <h2>The glass</h2>
+      <p class="lede">One material carries the entire language. A pane is a translucent body, a wash of the active tint, a wet gloss across the top, a bright specular edge, a faint frost grain, an inner shadow that hollows it, and a soft drop beneath. Tune it live, then read the recipe — and note how it degrades when transparency is off.</p>
+      <div class="doc-grid two">
+        <div class="glass glass--glow doc-reveal" id="glassSpecimen" style="position:relative;min-height:300px;display:grid;place-items:center;padding:30px;overflow:hidden">
+          <div class="aurora" aria-hidden="true" style="z-index:0"><div class="rib r1"></div><div class="rib r2"></div><div class="rib r3"></div></div>
+          <div style="position:relative;z-index:2;max-width:300px"><h4 style="font-family:var(--au-font-display);font-weight:300;font-size:24px;color:var(--au-ink)">Frosted pane</h4><p style="font-size:13.5px;color:var(--au-ink-dim);margin-top:8px">Drag the sliders — blur and tint update this live specimen against the aurora behind it. Flip <em>solid</em> in the top bar to watch it fall back to a clean opaque surface.</p></div>
+        </div>
+        <div>
+          <div class="doc-facts doc-reveal">
+            <div class="fr"><div><b>Body</b><small>translucent white, top-lighter to bottom-darker</small></div><div class="v"><code>rgba .10&ndash;.20</code></div></div>
+            <div class="fr"><div><b>Tint</b><small>a wash of the accent over the top</small></div><div class="v"><code>--au-accent-tint</code></div></div>
+            <div class="fr"><div><b>Gloss</b><small>highlight across the top 50% — the wet sheen</small></div><div class="v"><code>::before</code></div></div>
+            <div class="fr"><div><b>Grain</b><small>faint fractal-noise so frost reads as frost</small></div><div class="v"><code>::after</code></div></div>
+            <div class="fr"><div><b>Edge</b><small>a bright 1px specular top border</small></div><div class="v"><code>--au-glass-edge</code></div></div>
+            <div class="fr"><div><b>Blur</b><small>backdrop blur + saturate lifts color from behind</small></div><div class="v"><code>--au-glass-blur</code></div></div>
+            <div class="fr"><div><b>Glow</b><small>focused windows gain an accent ring</small></div><div class="v"><code>.glass--glow</code></div></div>
+          </div>
+          <div class="tuner doc-reveal" style="display:flex;flex-direction:column;gap:12px;margin-top:18px">
+            <label for="tBlur" style="font-family:var(--au-font-data);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--au-ink-faint);display:flex;justify-content:space-between">backdrop blur <b id="tBlurV" style="color:var(--au-accent)">18px</b></label>
+            <input id="tBlur" type="range" min="0" max="40" value="18">
+            <label for="tTint" style="font-family:var(--au-font-data);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--au-ink-faint);display:flex;justify-content:space-between">tint strength <b id="tTintV" style="color:var(--au-accent)">16%</b></label>
+            <input id="tTint" type="range" min="0" max="60" value="16">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FLIP 3D ================= -->
+    <section class="doc-section" id="flip">
+      <h2>Flip 3D</h2>
+      <p class="lede">Aurora's core gesture, alive: a cascade of glass windows in real space. Click the deck, or focus it and press <code>&larr;</code> <code>&rarr;</code> / <code>Space</code> to flip. The front pane is sharp and lit; the ones behind recede into blur and perspective, exactly as Vista's Win+Tab did. A soft glass chime confirms each flip.</p>
+      <div class="flip-stage doc-reveal" id="flipStage" tabindex="0" role="group" aria-label="Flip 3D window deck — use arrow keys to flip" style="position:relative;height:420px;border-radius:var(--au-r-lg);border:1px solid var(--au-line);overflow:hidden;background:radial-gradient(120% 120% at 50% 120%, var(--au-night-2), var(--au-night-0) 70%);perspective:1600px">
+        <div class="aurora" aria-hidden="true" style="z-index:0"><div class="rib r1"></div><div class="rib r2"></div><div class="rib r3"></div></div>
+        <div class="flip-deck" id="flipDeck" aria-live="polite"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;flex-wrap:wrap">
+        <div class="kbd-hint"><span><b>&larr;</b><b>&rarr;</b>flip</span><span><b>Space</b>next</span><span><b>click</b>cycle</span></div>
+        <button class="sound-toggle" id="soundToggle" aria-pressed="true" aria-label="Toggle glass chime sound">
+          <svg class="wave" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+          <span>chime</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= BUTTONS & CONTROLS ================= -->
+    <section class="doc-section" id="buttons">
+      <h2>Buttons &amp; controls</h2>
+      <p class="lede">Glossy Aero buttons with a bright top bevel and a glow on hover. The solid carries the accent gradient; everything else is glass or quiet. Plus the toggle switch, checkbox, radio, segmented control, slider, and badges — every part keyboard-operable and tint-aware.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="btn btn--solid"&gt;OK&lt;/button&gt;
+&lt;button class="btn"&gt;Continue&lt;/button&gt;
+&lt;button class="btn btn--ghost"&gt;Cancel&lt;/button&gt;
+&lt;button class="btn btn--danger"&gt;Delete&lt;/button&gt;
+&lt;button class="btn" disabled&gt;Disabled&lt;/button&gt;
+&lt;button class="btn btn--icon" aria-label="More"&gt;
+  &lt;svg class="gl" viewBox="0 0 24 24" fill="currentColor"&gt;&lt;circle cx="5" cy="12" r="1.6"/&gt;&lt;circle cx="12" cy="12" r="1.6"/&gt;&lt;circle cx="19" cy="12" r="1.6"/&gt;&lt;/svg&gt;
+&lt;/button&gt;
+        </script></div>
+      </div>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="switch-ctrl" role="switch" aria-checked="true" tabindex="0"&gt;
+  &lt;span class="track"&gt;&lt;span class="knob"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="lbl"&gt;Aero glass&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;div class="opt" role="checkbox" aria-checked="true" tabindex="0"&gt;
+  &lt;span class="box"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"&gt;&lt;path d="M5 12l5 5L20 6"/&gt;&lt;/svg&gt;&lt;/span&gt;Transparency
+&lt;/div&gt;
+
+&lt;div class="segmented" role="group" aria-label="View"&gt;
+  &lt;button aria-pressed="true"&gt;Tiles&lt;/button&gt;
+  &lt;button aria-pressed="false"&gt;List&lt;/button&gt;
+  &lt;button aria-pressed="false"&gt;Details&lt;/button&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- ================= FORMS & CHOICES ================= -->
+    <section class="doc-section" id="forms">
+      <h2>Forms &amp; choices</h2>
+      <p class="lede">Sunken Aero fields with an inset shadow and an accent focus ring that blooms. Inputs, selects, a slider, and the radio group — all on the active tint.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col" style="max-width:460px"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="field"&gt;
+  &lt;label for="cn"&gt;Computer name&lt;/label&gt;
+  &lt;input class="input" id="cn" type="text" placeholder="AURORA-PC"&gt;
+&lt;/div&gt;
+
+&lt;div class="field"&gt;
+  &lt;label for="cs"&gt;Color scheme&lt;/label&gt;
+  &lt;select class="select" id="cs"&gt;
+    &lt;option&gt;Aero glass&lt;/option&gt;&lt;option&gt;Standard&lt;/option&gt;&lt;option&gt;Classic&lt;/option&gt;
+  &lt;/select&gt;
+&lt;/div&gt;
+
+&lt;div class="slider"&gt;&lt;input type="range" min="0" max="100" value="62"&gt;&lt;/div&gt;
+
+&lt;div role="radiogroup" aria-label="Theme" style="display:flex;gap:22px"&gt;
+  &lt;div class="opt" role="radio" aria-checked="true" tabindex="0"&gt;&lt;span class="box round"&gt;&lt;/span&gt;Glass&lt;/div&gt;
+  &lt;div class="opt" role="radio" aria-checked="false" tabindex="-1"&gt;&lt;span class="box round"&gt;&lt;/span&gt;Classic&lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- ================= TABS & MENUS ================= -->
+    <section class="doc-section" id="containers">
+      <h2>Tabs &amp; menus</h2>
+      <p class="lede">The Aero property-sheet tabs (roving-tabindex, arrow-navigable), a frosted dropdown menu with keyboard support, a breadcrumb, and an accordion. The menu and tooltip are glass too, and fall back to opaque under reduce-transparency.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col" style="overflow:visible"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="tabs"&gt;
+  &lt;div class="tablist" role="tablist" aria-label="Properties"&gt;
+    &lt;button class="tab" role="tab" aria-selected="true"  id="t1" aria-controls="pp1"&gt;General&lt;/button&gt;
+    &lt;button class="tab" role="tab" aria-selected="false" id="t2" aria-controls="pp2" tabindex="-1"&gt;Sharing&lt;/button&gt;
+    &lt;button class="tab" role="tab" aria-selected="false" id="t3" aria-controls="pp3" tabindex="-1"&gt;Security&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class="tabpanel" role="tabpanel" id="pp1" aria-labelledby="t1"&gt;General settings live here — name, type, and location.&lt;/div&gt;
+  &lt;div class="tabpanel" role="tabpanel" id="pp2" aria-labelledby="t2" hidden&gt;Sharing controls who on the network can reach this folder.&lt;/div&gt;
+  &lt;div class="tabpanel" role="tabpanel" id="pp3" aria-labelledby="t3" hidden&gt;Security lists the permissions each user has.&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="accordion"&gt;
+  &lt;div class="acc"&gt;
+    &lt;button class="acc-head" aria-expanded="true"&gt;&lt;svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"&gt;&lt;path d="M9 6l6 6-6 6"/&gt;&lt;/svg&gt;Appearance&lt;/button&gt;
+    &lt;div class="acc-body"&gt;&lt;div class="inner"&gt;Window color, transparency, and the glass blur radius live here.&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- ================= STATUS & FEEDBACK ================= -->
+    <section class="doc-section" id="status">
+      <h2>Status &amp; feedback</h2>
+      <p class="lede">Badges pair a colored dot with a label so meaning survives any color-vision difference. Plus the striped progress bar, a spinner, a glass tooltip, and overlays — a toast, a tray balloon, and a focus-trapping modal dialog.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;span class="badge ok"&gt;&lt;span class="sd"&gt;&lt;/span&gt;connected&lt;/span&gt;
+&lt;span class="badge info"&gt;&lt;span class="sd"&gt;&lt;/span&gt;syncing&lt;/span&gt;
+&lt;span class="badge warn"&gt;&lt;span class="sd"&gt;&lt;/span&gt;update&lt;/span&gt;
+&lt;span class="badge danger"&gt;&lt;span class="sd"&gt;&lt;/span&gt;offline&lt;/span&gt;
+
+&lt;div class="progress"&gt;&lt;div class="bar"&gt;&lt;i&gt;&lt;/i&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;span class="spinner" aria-label="Working"&gt;&lt;/span&gt;
+
+&lt;span class="tt"&gt;&lt;button class="btn btn--ghost"&gt;Hover me&lt;/button&gt;
+  &lt;span class="tip" role="tooltip"&gt;Tooltips are glass too&lt;/span&gt;&lt;/span&gt;
+        </script></div>
+      </div>
+      <div class="doc-example doc-reveal" data-static>
+        <div class="doc-demo">
+          <button class="btn" id="toastBtn">Show toast</button>
+          <button class="btn" id="balloonBtn">Tray balloon</button>
+          <button class="btn btn--solid" id="modalBtn">Open dialog</button>
+        </div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;!-- a glass toast, a tray balloon, and a focus-trapping dialog --&gt;
+&lt;button class="btn" data-toast&gt;Show toast&lt;/button&gt;
+&lt;button class="btn btn--solid" data-open-dialog&gt;Open dialog&lt;/button&gt;
+
+&lt;div class="overlay" role="dialog" aria-modal="true"&gt;
+  &lt;div class="modal"&gt; … glass dialog, Esc / backdrop to close … &lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- ================= LISTS & TABLES ================= -->
+    <section class="doc-section" id="data">
+      <h2>Lists &amp; tables</h2>
+      <p class="lede">A sortable, selectable data table with the active-row accent bar — the kind of dense, scannable surface Explorer was built on. Click a header to sort, a row to select.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col" style="padding:0"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="table-wrap"&gt;
+  &lt;table class="data" aria-label="Files"&gt;
+    &lt;thead&gt;&lt;tr&gt;&lt;th data-sort&gt;Name &lt;span class="ar"&gt;&#9650;&lt;/span&gt;&lt;/th&gt;&lt;th data-sort&gt;Date modified&lt;/th&gt;&lt;th data-sort&gt;Type&lt;/th&gt;&lt;th data-sort&gt;Size&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr aria-selected="true"&gt;&lt;td&gt;aurora.jpg&lt;/td&gt;&lt;td&gt;6/20/2026&lt;/td&gt;&lt;td&gt;JPEG Image&lt;/td&gt;&lt;td&gt;2.4 MB&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td&gt;Wallpapers&lt;/td&gt;&lt;td&gt;6/18/2026&lt;/td&gt;&lt;td&gt;File folder&lt;/td&gt;&lt;td&gt;&#8212;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td&gt;readme.txt&lt;/td&gt;&lt;td&gt;6/15/2026&lt;/td&gt;&lt;td&gt;Text Document&lt;/td&gt;&lt;td&gt;4 KB&lt;/td&gt;&lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- ================= THE DESKTOP ================= -->
+    <section class="doc-section" id="desktop">
+      <h2>The desktop</h2>
+      <p class="lede">The material assembled into the real thing: a full Explorer window with a frosted title bar, a breadcrumb address bar, a command bar, a navigation tree, and a status bar — plus floating gadgets and a glass taskbar anchored by the pearl. Hover a taskbar item for an Aero Peek thumbnail. Everything here is built from the tokens above and respects the reduce-transparency switch.</p>
+      <div class="desktop doc-reveal">
+        <div class="stars" aria-hidden="true"></div>
+        <div class="aurora" aria-hidden="true"><div class="rib r1"></div><div class="rib r2"></div><div class="rib r3"></div></div>
+
+        <div class="xwin glass glass--glow">
+          <div class="x-titlebar">
+            <div class="x-ctl">
+              <button aria-label="Minimize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 19h14"/></svg></button>
+              <button aria-label="Maximize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="1"/></svg></button>
+              <button class="close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            </div>
+          </div>
+          <div class="x-addr">
+            <button class="navbtn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <button class="navbtn fwd" aria-label="Forward"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+            <div class="crumbs">
+              <span class="crumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>Computer</span>
+              <span class="crumb-sep">&rsaquo;</span>
+              <span class="crumb">OS (C:)</span>
+              <span class="crumb-sep">&rsaquo;</span>
+              <span class="crumb">Users</span>
+              <span class="crumb-sep">&rsaquo;</span>
+              <span class="crumb here">Aurora</span>
+            </div>
+            <div class="x-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input type="text" placeholder="Search Aurora" aria-label="Search"></div>
+          </div>
+          <div class="x-cmd">
+            <div class="menu-host">
+              <button class="cmd" id="orgBtn" aria-haspopup="true" aria-expanded="false">Organize <span class="car">&#9662;</span></button>
+              <div class="menu glass" id="orgMenu" role="menu" aria-label="Organize">
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Cut<span class="sc">Ctrl X</span></div>
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy<span class="sc">Ctrl C</span></div>
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>Paste<span class="sc">Ctrl V</span></div>
+                <div class="msep" role="separator"></div>
+                <div class="mi danger" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete<span class="sc">Del</span></div>
+              </div>
+            </div>
+            <button class="cmd">Views <span class="car">&#9662;</span></button>
+            <button class="cmd">Slideshow</button>
+            <button class="cmd">Burn</button>
+          </div>
+          <div class="x-main">
+            <div class="x-tree">
+              <div class="tgroup">Favorites</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Desktop</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Downloads</div>
+              <div class="tgroup">Libraries</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>Documents</div>
+              <div class="titem on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 21"/></svg>Pictures</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Music</div>
+              <div class="tgroup">Computer</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>OS (C:)</div>
+            </div>
+            <div class="x-content" id="xContent">
+              <div class="ftile sel"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H3z"/></svg><span class="fn">Camera Roll</span></div>
+              <div class="ftile"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H3z"/></svg><span class="fn">Wallpapers</span></div>
+              <div class="ftile"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H3z"/></svg><span class="fn">Screenshots</span></div>
+              <div class="ftile"><span class="thumb"></span><span class="fn">aurora.jpg</span></div>
+              <div class="ftile"><span class="thumb" style="background:linear-gradient(135deg,var(--au-aur-2),var(--au-aur-4))"></span><span class="fn">glass.png</span></div>
+              <div class="ftile"><span class="thumb" style="background:linear-gradient(135deg,var(--au-aur-4),var(--au-aur-1))"></span><span class="fn">peek.png</span></div>
+            </div>
+          </div>
+          <div class="x-status">
+            <span id="xCount">1 item selected</span>
+            <span class="meta">3.4 GB free of 119 GB</span>
+          </div>
+        </div>
+
+        <div class="gadget clock-g glass">
+          <div class="clock" id="gadgetClock">10:24</div>
+          <div class="date" id="gadgetDate">FRI &middot; JUN 20</div>
+        </div>
+        <div class="gadget cpu-g glass">
+          <div class="glabel">CPU</div>
+          <div class="meter"><i id="cpuBar" style="width:38%"></i></div>
+          <div class="pct" id="cpuPct">38%</div>
+        </div>
+
+        <div class="taskbar glass">
+          <button class="pearl tb-pearl" aria-label="Start"></button>
+          <div class="tb-task on" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>Computer
+            <div class="peek glass"><div class="pk-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l9-4 9 4-9 4-9-4z"/></svg>Computer</div><div class="pk-shot"></div></div>
+          </div>
+          <div class="tb-task" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 21"/></svg>Photos
+            <div class="peek glass"><div class="pk-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Photos</div><div class="pk-shot" style="background:linear-gradient(160deg,var(--au-aur-1),var(--au-aur-4))"></div></div>
+          </div>
+          <div class="tb-task" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Media
+            <div class="peek glass"><div class="pk-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18V5l12-2v13"/></svg>Media Player</div><div class="pk-shot" style="background:linear-gradient(160deg,var(--au-aur-4),var(--au-aur-2))"></div></div>
+          </div>
+          <div class="tb-clock" id="taskClock">10:24<br>6/20/2026</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PRINCIPLES ================= -->
+    <section class="doc-section" id="principles">
+      <h2>Principles</h2>
+      <p class="lede">Six rules, each lifted from something Aero actually did — then stated as a rule you can hold a design against.</p>
+      <div class="doc-grid three">
+        <div class="glass doc-prin doc-reveal"><div class="num">01</div><h3>Glass over solid</h3><p class="one">Chrome is translucent; the world shows through it.</p><p>Surfaces are frosted, not painted. Blurring the context behind a pane keeps the user oriented while pushing it back in space.</p></div>
+        <div class="glass doc-prin doc-reveal"><div class="num">02</div><h3>Light is wet</h3><p class="one">Every surface has a gloss and a specular edge.</p><p>A highlight across the top half, a bright top border, and a faint frost grain make the material read as polished glass.</p></div>
+        <div class="glass doc-prin doc-reveal"><div class="num">03</div><h3>Depth through blur</h3><p class="one">Blur is hierarchy. Sharper is nearer.</p><p>Focus comes forward and sharpens; everything else softens and recedes. The amount of blur tells you the layer order.</p></div>
+        <div class="glass doc-prin doc-reveal"><div class="num">04</div><h3>Tint is yours</h3><p class="one">One accent colors the whole system's glass.</p><p>Personalization, not wayfinding. Pick a tint and every pane, control, and glow inherits it — the interface becomes the user's.</p></div>
+        <div class="glass doc-prin doc-reveal"><div class="num">05</div><h3>Glow is feedback</h3><p class="one">Controls answer with a soft bloom of light.</p><p>Hover, focus, and active states bloom rather than snap. The response is warm and physical, never a hard flip.</p></div>
+        <div class="glass doc-prin doc-reveal"><div class="num">06</div><h3>Glass is optional</h3><p class="one">The whole system survives without transparency.</p><p>Reduce transparency, no backdrop-filter, or a low-end GPU all degrade to clean opaque surfaces. Beauty is never load-bearing.</p></div>
+      </div>
+
+      <h3 class="doc-sub">Do, and do not</h3>
+      <div class="doc-grid two">
+        <div class="glass doc-dd do doc-reveal">
+          <h4>Do</h4>
+          <ul>
+            <li>Let glass be translucent — blur real context behind every pane.</li>
+            <li>Give each surface a gloss, a bright specular edge, and a touch of frost grain.</li>
+            <li>Use blur amount to signal layer order: sharper is nearer.</li>
+            <li>Drive the whole system from one accent tint the user picks.</li>
+            <li>Answer interaction with a soft glow that blooms, not a hard flip.</li>
+            <li>Always ship the opaque fallback — test the whole app with glass off.</li>
+          </ul>
+        </div>
+        <div class="glass doc-dd dont doc-reveal">
+          <h4>Do not</h4>
+          <ul>
+            <li>Fake glass with a flat semi-opaque fill — without blur it's just a tint.</li>
+            <li>Stack many heavy blurs at once; legibility and performance both suffer.</li>
+            <li>Use the tint for wayfinding — it's personalization, so it can't mean "place."</li>
+            <li>Put low-contrast text on raw frosted glass; add a scrim or inner shadow first.</li>
+            <li>Pile on gloss until controls look wet and unreadable.</li>
+            <li>Let the design break when transparency is unavailable or switched off.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================= ACCESSIBILITY ================= -->
+    <section class="doc-section" id="a11y">
+      <h2>Accessibility</h2>
+      <p class="lede">Glass is gorgeous and easy to get wrong. Aurora carries its weight here: contrast survives the blur, the whole language has an opaque mode, motion is optional, and every control is reachable and operable from the keyboard.</p>
+      <div class="doc-grid two">
+        <div class="glass doc-a11y doc-reveal">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+          <h4>Built in</h4>
+          <p>The top bar's <code>solid</code> switch sets <code>.au-reduce-transparency</code>, swapping every pane for an opaque surface and dropping the grain — and the OS-level <code>prefers-reduced-transparency</code> is honored automatically. Where <code>backdrop-filter</code> is unsupported, an <code>@supports</code> fallback paints solid surfaces instead of failing to transparent. Accent-on-night text meets contrast at body sizes, and every interactive part shows a 2px accent <code>:focus-visible</code> ring.</p>
+        </div>
+        <div class="glass doc-a11y doc-reveal">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M7 14h10"/></svg>
+          <h4>Your part</h4>
+          <p>Flip 3D, tabs, menus, and the accordion are real focusable widgets — arrows, <code>Space</code>, <code>Enter</code>, and <code>Esc</code> all behave, and the dialog traps focus and restores it on close. Everything respects <code>prefers-reduced-motion</code>: the aurora and stars stop, flips become instant, the spinner settles. The glass chime is off-able and never plays without a gesture. Keep the layout and contrast off the blur — reserve the tint for chrome and emphasis, and never place body text on raw frosted glass.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= HERITAGE ================= -->
+    <section class="doc-section" id="heritage">
+      <h2>Heritage</h2>
+      <p class="lede">Windows Vista's Aero was the first mainstream interface composited entirely on the GPU: every window's title bar became real-time frosted glass, blurring and tinting whatever sat behind it. It was glossy, optimistic, and a little utopian — the centerpiece of the broader Frutiger Aero look of bubbles, water, clean skies, and humanist type. The industry abandoned it for flat design a few years later; the instincts — translucency as hierarchy, glass as material, light as feedback — are exactly what Acrylic, vibrancy, and Liquid Glass reach for now.</p>
+      <div class="doc-timeline">
+        <div class="doc-node doc-reveal"><div class="y">2001</div><div class="n">Luna (XP)</div><div class="d">Plastic, candy-colored, opaque. Friendly but flat — the warm-up for what composition could do.</div></div>
+        <div class="doc-node doc-reveal"><div class="y">2006</div><div class="n">Windows Aero</div><div class="d">DWM composites everything. Live frosted glass, the Start pearl, Flip 3D, gadgets, soft glows.</div></div>
+        <div class="doc-node doc-reveal"><div class="y">2009</div><div class="n">Aero Peek (7)</div><div class="d">The glass matured: live thumbnails, Peek-to-desktop, snapping. Aero at its most refined.</div></div>
+        <div class="doc-node doc-reveal"><div class="y">2012</div><div class="n">The flat years</div><div class="d">Metro and the industry strip the glass away. Depth and gloss declared decadent, removed wholesale.</div></div>
+        <div class="doc-node now doc-reveal"><div class="y">Now</div><div class="n">Aurora</div><div class="d">The glass returns, re-tokenized: translucency you can theme, with the gloss and optimism intact — and a graceful way to turn it off.</div></div>
+      </div>
+
+      <div class="doc-foot">
+        Translucent &middot; glossy &middot; optimistic &middot; resilient. A design study and homage, <strong style="color:var(--au-ink-dim)">not affiliated with Microsoft or Windows</strong>. "Windows Vista," "Aero," and "Frutiger Aero" are referenced descriptively; marks shown are original homage glyphs. The lineage runs Luna / XP 2001 &rsaquo; Windows Aero 2006&ndash;2007 &rsaquo; Aero Peek 2009 &rsaquo; the flat years &rsaquo; resurfacing now.<br>
+        AURORA &middot; Edition 02 &middot; v1.0.0 &middot; derived from Windows Vista &amp; the Aero era, 2006&ndash;2009.
+      </div>
+    </section>
+
+    </main>
+  </div>
+
+  <!-- toast + modal mounts -->
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="modal">
+      <div class="mtitle"><svg class="dt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><b>Confirm</b></div>
+      <div class="mb"><h3 id="modalTitle">Turn off Aero glass?</h3>Transparency and the aurora will be disabled. You can switch back any time from Personalization.</div>
+      <div class="mf"><button class="btn btn--ghost" data-close>Keep glass</button><button class="btn btn--solid" data-close>Turn off</button></div>
+    </div>
+  </div>
+
+  <div class="doc-toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(s, c){ return (c||document).querySelector(s); }
+  function $all(s, c){ return Array.prototype.slice.call((c||document).querySelectorAll(s)); }
+
+  /* ---------- toast (copy feedback) ---------- */
+  var toasts = $('#toasts');
+  function toast(html){
+    if (!toasts) return;
+    var t = document.createElement('div'); t.className = 'doc-toast'; t.innerHTML = html;
+    toasts.appendChild(t); requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.remove(); }, 320); }, 2400);
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch(e){} ta.remove();
+  }
+  function copy(text, label){
+    var done = function(){ toast('Copied <b>' + (label || 'snippet') + '</b>'); };
+    if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); }); }
+    else { fallbackCopy(text); done(); }
+  }
+
+  /* snippets are stored HTML-escaped inside <script type="text/plain">; decode for the live demo */
+  function decode(s){ var d = document.createElement('textarea'); d.innerHTML = s; return d.value; }
+  function dedent(s){
+    s = s.replace(/^\n+/, '').replace(/\s+$/, '');
+    var lines = s.split('\n');
+    var indent = lines.reduce(function(min, l){ if (!l.trim()) return min; var m = l.match(/^\s*/)[0].length; return Math.min(min, m); }, Infinity);
+    if (!isFinite(indent)) indent = 0;
+    return lines.map(function(l){ return l.slice(indent); }).join('\n');
+  }
+
+  /* render each example: snippet -> code block (+copy) and, unless [data-static], a live demo */
+  $all('.doc-example').forEach(function(ex){
+    var src = $('.doc-snippet', ex); if (!src) return;
+    var decoded = decode(dedent(src.textContent));
+    var codeEl = $('.doc-code code', ex);
+    if (codeEl) codeEl.textContent = decoded;      // textContent re-escapes for safe display
+    var demo = $('.doc-demo', ex);
+    if (demo && !demo.children.length && !ex.hasAttribute('data-static')) {
+      try { demo.innerHTML = decoded; } catch(e){}
+    }
+    var wrap = $('.doc-codewrap', ex);
+    if (wrap){
+      var btn = document.createElement('button');
+      btn.className = 'btn btn--ghost doc-copy'; btn.style.padding = '6px 12px'; btn.style.fontSize = '12px';
+      btn.type = 'button'; btn.textContent = 'copy';
+      btn.addEventListener('click', function(){ copy(decoded, 'code'); });
+      wrap.appendChild(btn);
+    }
+  });
+
+  /* ---------- color ramps ---------- */
+  var nights = [['night-0','#05080f','base'],['night-1','#0a0f1a','surface'],['night-2','#111a2b','raised'],['line','rgba(255,255,255,0.12)','hairline'],['ink-dim','#b6c6dc','ink dim'],['ink','#eef4ff','ink']];
+  var nightEl = $('#nightRamp');
+  if (nightEl) nights.forEach(function(p){
+    var s = document.createElement('button'); s.className='s'; s.style.background = p[1];
+    s.innerHTML = '<span>'+p[2]+'</span>'; s.title = p[0]+' · '+p[1];
+    s.addEventListener('click', function(){ copy(p[1], p[0]); });
+    nightEl.appendChild(s);
+  });
+  var auroraEl = $('#auroraRamp');
+  if (auroraEl) ['--au-aur-1','--au-aur-2','--au-aur-3','--au-aur-4'].forEach(function(tk){
+    var val = getComputedStyle(document.body).getPropertyValue(tk).trim();
+    var s = document.createElement('button'); s.className='s'; s.style.background = val;
+    s.innerHTML = '<span>'+tk.replace('--au-','')+'</span>'; s.title = tk+' · '+val;
+    s.addEventListener('click', function(){ copy('var('+tk+')', tk); });
+    auroraEl.appendChild(s);
+  });
+
+  /* ---------- semantic swatches copy ---------- */
+  $all('#semanticSwatches .doc-swatch').forEach(function(b){
+    b.addEventListener('click', function(){ var t=b.getAttribute('data-token'); copy('var('+t+')', t); });
+  });
+
+  /* ---------- type scale ---------- */
+  var typeRows = [
+    ['display / clamp','Aurora','var(--au-font-display)',300,'42px'],
+    ['h2 / 46','Six principles','var(--au-font-display)',300,'34px'],
+    ['h3 / 21','Glass over solid','var(--au-font-ui)',600,'21px'],
+    ['lede / 18','A glass interface language.','var(--au-font-ui)',400,'18px'],
+    ['body / 16','Chrome is translucent; the world shows through it.','var(--au-font-ui)',400,'16px'],
+    ['label / 14','Personalize','var(--au-font-ui)',600,'14px'],
+    ['data / 11.5','blur(18px) saturate(1.4)','var(--au-font-data)',500,'12px']
+  ];
+  var ts = $('#typeScale');
+  if (ts) typeRows.forEach(function(r){
+    var row = document.createElement('div'); row.className='doc-scale-row';
+    row.innerHTML = '<span class="tk">'+r[0]+'</span><span style="font-family:'+r[2]+';font-weight:'+r[3]+';font-size:'+r[4]+';color:var(--au-ink)"></span>';
+    row.lastChild.textContent = r[1];
+    ts.appendChild(row);
+  });
+
+  /* ---------- spacing scale ---------- */
+  var spaces = [['s1','4'],['s2','8'],['s3','12'],['s4','16'],['s5','24'],['s6','32'],['s7','48'],['s8','64']];
+  var sc = $('#spaceScale');
+  if (sc) spaces.forEach(function(p){
+    var row = document.createElement('div'); row.className='doc-space-row';
+    row.innerHTML = '<span class="tk">--au-'+p[0]+'</span><span class="bar" style="width:'+p[1]+'px"></span><span style="font-family:var(--au-font-data);font-size:11.5px;color:var(--au-ink-faint)">'+p[1]+'px</span>';
+    sc.appendChild(row);
+  });
+
+  /* ---------- tint (accent) toggle in top bar + color cards ---------- */
+  var tintBtns = $all('.doc-themetoggle .au-tint');
+  function applyTint(name){
+    document.body.setAttribute('data-au-accent', name);
+    tintBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-au-accent') === name)); });
+  }
+  tintBtns.forEach(function(b){ b.addEventListener('click', function(){ applyTint(b.getAttribute('data-au-accent')); }); });
+  $all('.au-pick').forEach(function(b){ b.addEventListener('click', function(){ applyTint(b.getAttribute('data-au-accent')); }); });
+
+  /* ---------- light / dark theme (day sky) ---------- */
+  var skyBtn = $('#skyToggle');
+  if (skyBtn) skyBtn.addEventListener('click', function () {
+    var light = document.body.getAttribute('data-au-theme') === 'light';
+    document.body.setAttribute('data-au-theme', light ? 'dark' : 'light');
+    skyBtn.setAttribute('aria-pressed', String(!light));
+    skyBtn.innerHTML = light ? '☀ day' : '☾ night';
+  });
+
+  /* ---------- reduce transparency ---------- */
+  var solidBtn = $('#solidToggle');
+  if (solidBtn) solidBtn.addEventListener('click', function () {
+    var on = document.body.classList.toggle('au-reduce-transparency');
+    solidBtn.setAttribute('aria-pressed', String(on));
+    solidBtn.innerHTML = on ? '▣ glass' : '■ solid';
+  });
+
+  /* ---------- glass chime (synthesized, no asset) ---------- */
+  var audioOn = true, actx = null;
+  function ensureCtx() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { actx = null; } } return actx; }
+  function chime() {
+    if (!audioOn || reduce) return;
+    var ctx = ensureCtx(); if (!ctx) return;
+    var t = ctx.currentTime;
+    [ [880, 0], [1320, 0.05] ].forEach(function (pair) {
+      var o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = pair[0];
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t + pair[1]);
+      g.gain.exponentialRampToValueAtTime(0.10, t + pair[1] + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + pair[1] + 0.5);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t + pair[1]); o.stop(t + pair[1] + 0.55);
+    });
+  }
+  var st = $('#soundToggle');
+  if (st) st.addEventListener('click', function () {
+    audioOn = !audioOn; st.setAttribute('aria-pressed', String(audioOn));
+    if (audioOn) { ensureCtx(); chime(); }
+  });
+  var pearl = $('#heroPearl');
+  if (pearl) pearl.addEventListener('click', function () { ensureCtx(); chime(); });
+
+  /* ---------- FLIP 3D ---------- */
+  var deckData = [
+    { vk: 'documents', t: 'Documents', p: 'Everything you are working on, in one frosted pane.', g: '<path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/>' },
+    { vk: 'pictures',  t: 'Pictures',  p: 'Photos and screenshots, lit by the aurora behind.',    g: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 21"/>' },
+    { vk: 'music',     t: 'Music',     p: 'Albums and playlists, glass deep.',                     g: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>' },
+    { vk: 'computer',  t: 'Computer',  p: 'Drives, devices, and the network at a glance.',         g: '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/>' },
+    { vk: 'network',   t: 'Network',   p: 'Who is connected and what is shared.',                  g: '<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-6 5M12 12l6 5"/>' }
+  ];
+  var deck = $('#flipDeck');
+  var front = 0, wins = [];
+  if (deck) {
+    deckData.forEach(function (d) {
+      var w = document.createElement('div'); w.className = 'win';
+      w.innerHTML = '<div class="titlebar"><span class="wt">' + d.t + '</span><span class="wctl"><i></i><i></i><i class="c"></i></span></div>' +
+        '<div class="body"><div class="vk">' + d.vk + '</div><h4>' + d.t + '</h4><p>' + d.p + '</p>' +
+        '<svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' + d.g + '</svg></div>';
+      deck.appendChild(w);
+    });
+    wins = Array.prototype.slice.call(deck.querySelectorAll('.win'));
+  }
+  function layout() {
+    var n = wins.length; if (!n) return;
+    wins.forEach(function (w, i) {
+      var rel = (i - front + n) % n;
+      var x = rel * 30, y = -rel * 26, z = -rel * 160;
+      var rot = rel === 0 ? 0 : -26;
+      var blur = rel === 0 ? 0 : Math.min(1 + rel * 1.6, 6);
+      var op = rel === 0 ? 1 : Math.max(0.9 - rel * 0.16, 0.32);
+      w.style.transform = 'translate3d(' + x + 'px,' + y + 'px,' + z + 'px) rotateY(' + rot + 'deg)';
+      w.style.filter = blur ? 'blur(' + blur + 'px)' : 'none';
+      w.style.opacity = op; w.style.zIndex = String(n - rel);
+    });
+  }
+  function flip(dir) { if (!wins.length) return; front = (front + dir + wins.length) % wins.length; layout(); chime(); if (deck) deck.setAttribute('aria-label', deckData[front].t + ' is in front'); }
+  layout();
+  var stage = $('#flipStage');
+  if (stage) {
+    stage.addEventListener('click', function () { flip(1); });
+    stage.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); flip(1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); flip(-1); }
+    });
+  }
+
+  /* ---------- glass tuner ---------- */
+  var tBlur = $('#tBlur'), tTint = $('#tTint');
+  var spec = $('#glassSpecimen');
+  var tBlurV = $('#tBlurV'), tTintV = $('#tTintV');
+  function hexA(hex, a) {
+    hex = hex.replace('#', ''); if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+    return 'rgba(' + parseInt(hex.substr(0,2),16) + ',' + parseInt(hex.substr(2,2),16) + ',' + parseInt(hex.substr(4,2),16) + ',' + a + ')';
+  }
+  function tune() {
+    if (!tBlur || !tTint || !spec) return;
+    var b = tBlur.value, tn = tTint.value;
+    spec.style.backdropFilter = 'blur(' + b + 'px) saturate(1.4)';
+    spec.style.webkitBackdropFilter = 'blur(' + b + 'px) saturate(1.4)';
+    var rgb = getComputedStyle(document.body).getPropertyValue('--au-accent').trim();
+    spec.style.background = 'linear-gradient(180deg, ' + hexA(rgb, tn / 100) + ', transparent 60%), linear-gradient(180deg, var(--au-glass-bg-2), var(--au-glass-bg) 46%, var(--au-glass-bg))';
+    tBlurV.textContent = b + 'px'; tTintV.textContent = tn + '%';
+  }
+  [tBlur, tTint].forEach(function (s) { if (s) s.addEventListener('input', tune); });
+  tune();
+
+  /* ---------- toggles / checkboxes / radios (works on injected demos too) ---------- */
+  function bindToggle(sel, group) {
+    $all(sel).forEach(function (el) {
+      if (el.dataset.bound) return; el.dataset.bound = '1';
+      function flipState() {
+        if (group) {
+          $all(sel, el.parentElement).forEach(function (s) { s.setAttribute('aria-checked', 'false'); s.tabIndex = -1; });
+          el.setAttribute('aria-checked', 'true'); el.tabIndex = 0;
+        } else { el.setAttribute('aria-checked', el.getAttribute('aria-checked') === 'true' ? 'false' : 'true'); }
+      }
+      el.addEventListener('click', flipState);
+      el.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipState(); } });
+    });
+  }
+  bindToggle('[role="switch"]', false);
+  bindToggle('[role="checkbox"]', false);
+  bindToggle('[role="radio"]', true);
+
+  /* ---------- segmented ---------- */
+  $all('.segmented').forEach(function (seg) {
+    if (seg.dataset.bound) return; seg.dataset.bound = '1';
+    $all('button', seg).forEach(function (b) {
+      b.addEventListener('click', function () {
+        $all('button', seg).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+      });
+    });
+  });
+
+  /* ---------- tabs ---------- */
+  $all('.tablist').forEach(function (tl) {
+    if (tl.dataset.bound) return; tl.dataset.bound = '1';
+    var tabs = $all('.tab', tl);
+    function select(tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+        var panel = document.getElementById(t.getAttribute('aria-controls')); if (panel) panel.hidden = !on;
+      });
+      if (focus) tab.focus();
+    }
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener('click', function () { select(tab, false); });
+      tab.addEventListener('keydown', function (e) {
+        var last = tabs.length - 1, next = null;
+        if (e.key === 'ArrowRight') next = tabs[i === last ? 0 : i + 1];
+        else if (e.key === 'ArrowLeft') next = tabs[i === 0 ? last : i - 1];
+        else if (e.key === 'Home') next = tabs[0];
+        else if (e.key === 'End') next = tabs[last];
+        if (next) { e.preventDefault(); select(next, true); }
+      });
+    });
+  });
+
+  /* ---------- data table: select + sort indicator ---------- */
+  $all('table.data').forEach(function (tb) {
+    if (tb.dataset.bound) return; tb.dataset.bound = '1';
+    $all('tbody tr', tb).forEach(function (r) {
+      r.addEventListener('click', function () {
+        $all('tbody tr', tb).forEach(function (x) { x.removeAttribute('aria-selected'); });
+        r.setAttribute('aria-selected', 'true');
+      });
+    });
+    $all('thead th[data-sort]', tb).forEach(function (th) {
+      th.addEventListener('click', function () {
+        var existing = th.querySelector('.ar');
+        var asc = !existing || existing.textContent.indexOf('▲') === -1;
+        $all('thead th .ar', tb).forEach(function (a) { a.remove(); });
+        var s = document.createElement('span'); s.className = 'ar'; s.textContent = asc ? '▲' : '▼';
+        th.appendChild(s);
+      });
+    });
+  });
+
+  /* ---------- accordion ---------- */
+  $all('.acc-head').forEach(function (h) {
+    if (h.dataset.bound) return; h.dataset.bound = '1';
+    h.addEventListener('click', function () {
+      var open = h.getAttribute('aria-expanded') === 'true';
+      h.setAttribute('aria-expanded', String(!open));
+      var body = h.nextElementSibling;
+      body.style.maxHeight = open ? '0px' : (body.firstElementChild.offsetHeight + 'px');
+    });
+  });
+  $all('.acc-head[aria-expanded="true"]').forEach(function (h) {
+    var body = h.nextElementSibling; if (body && body.firstElementChild) body.style.maxHeight = body.firstElementChild.offsetHeight + 'px';
+  });
+
+  /* ---------- menus ---------- */
+  function bindMenu(btnId, menuId) {
+    var btn = document.getElementById(btnId), menu = document.getElementById(menuId);
+    if (!btn || !menu) return;
+    var items = $all('.mi', menu);
+    function open() { menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); if (items[0]) items[0].focus(); }
+    function close(focusBtn) { menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); if (focusBtn) btn.focus(); }
+    btn.addEventListener('click', function (e) { e.stopPropagation(); if (menu.classList.contains('open')) { close(false); } else { open(); } });
+    items.forEach(function (it, i) {
+      it.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); (items[i+1] || items[0]).focus(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); (items[i-1] || items[items.length-1]).focus(); }
+        else if (e.key === 'Escape') { e.preventDefault(); close(true); }
+        else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); close(true); }
+      });
+      it.addEventListener('click', function () { close(true); });
+    });
+    document.addEventListener('click', function (e) { if (!menu.contains(e.target) && e.target !== btn) close(false); });
+  }
+  bindMenu('orgBtn', 'orgMenu');
+
+  /* ---------- explorer tiles + tree select ---------- */
+  var content = $('#xContent');
+  if (content) {
+    var tiles = $all('.ftile', content);
+    tiles.forEach(function (t) {
+      t.addEventListener('click', function () {
+        tiles.forEach(function (x) { x.classList.remove('sel'); });
+        t.classList.add('sel');
+        var xc = $('#xCount'); if (xc) xc.textContent = '1 item selected';
+      });
+    });
+  }
+  $all('.x-tree .titem').forEach(function (it) {
+    it.addEventListener('click', function () {
+      $all('.x-tree .titem').forEach(function (x) { x.classList.remove('on'); });
+      it.classList.add('on');
+    });
+  });
+
+  /* ---------- toast demo (Settings saved) ---------- */
+  var toastWrap = $('#toastWrap');
+  var tBtn = $('#toastBtn');
+  if (tBtn && toastWrap) tBtn.addEventListener('click', function () {
+    var t = document.createElement('div'); t.className = 'toast';
+    t.innerHTML = '<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg><span>Settings saved</span>';
+    toastWrap.appendChild(t);
+    setTimeout(function () { t.classList.add('out'); setTimeout(function () { t.remove(); }, 280); }, 2600);
+  });
+
+  /* ---------- tray balloon ---------- */
+  var bBtn = $('#balloonBtn');
+  if (bBtn) bBtn.addEventListener('click', function () {
+    var b = document.createElement('div'); b.className = 'balloon glass';
+    b.style.position = 'fixed'; b.style.right = '20px'; b.style.bottom = '20px'; b.style.zIndex = '85'; b.style.boxShadow = 'var(--au-e3)';
+    b.innerHTML = '<span class="bi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a7 7 0 0 0-7 7v4l-2 3h18l-2-3v-4a7 7 0 0 0-7-7z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></span>' +
+      '<span class="bt"><b>Updates are ready</b><p>3 updates were installed. Restart when convenient.</p></span>' +
+      '<button class="bx" aria-label="Dismiss">&times;</button>';
+    document.body.appendChild(b);
+    var kill = function () { b.classList.add('out'); setTimeout(function () { b.remove(); }, 300); };
+    b.querySelector('.bx').addEventListener('click', kill);
+    setTimeout(kill, 5200);
+  });
+
+  /* ---------- modal with focus trap ---------- */
+  var overlay = $('#overlay'), modal = $('#modal'), modalBtn = $('#modalBtn');
+  var lastFocus = null;
+  function focusables() { return $all('button, [href], input, select, [tabindex]:not([tabindex="-1"])', modal); }
+  function openModal() { lastFocus = document.activeElement; overlay.classList.add('open'); var f = focusables(); if (f[0]) f[0].focus(); }
+  function closeModal() { overlay.classList.remove('open'); if (lastFocus) lastFocus.focus(); }
+  if (modalBtn && overlay && modal) {
+    modalBtn.addEventListener('click', openModal);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+    $all('[data-close]', overlay).forEach(function (b) { b.addEventListener('click', closeModal); });
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === 'Escape') { closeModal(); return; }
+      if (e.key === 'Tab') {
+        var f = focusables(); if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+  }
+
+  /* ---------- live clock + drifting CPU gadget ---------- */
+  var cpu = 38;
+  function tick() {
+    var d = new Date();
+    var hh = d.getHours(), mm = String(d.getMinutes()).padStart(2, '0');
+    var h12 = ((hh + 11) % 12) + 1;
+    var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    var mons = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    var set = function (id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+    set('gadgetClock', h12 + ':' + mm);
+    set('gadgetDate', days[d.getDay()] + ' · ' + mons[d.getMonth()] + ' ' + d.getDate());
+    var tc = document.getElementById('taskClock'); if (tc) tc.innerHTML = h12 + ':' + mm + '<br>' + (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
+  }
+  function cpuTick() {
+    if (reduce) return;
+    cpu += (Math.sin(Date.now() / 4000) * 8) + (((Date.now() / 1000 | 0) % 7) - 3);
+    cpu = Math.max(8, Math.min(92, cpu));
+    var bar = document.getElementById('cpuBar'), pct = document.getElementById('cpuPct');
+    if (bar) bar.style.width = cpu.toFixed(0) + '%';
+    if (pct) pct.textContent = cpu.toFixed(0) + '%';
+  }
+  tick(); setInterval(tick, 30000);
+  cpuTick(); setInterval(cpuTick, 2200);
+
+  /* ---------- copy-to-clipboard data-copy ---------- */
+  $all('[data-copy]').forEach(function (el) {
+    el.style.cursor = 'copy';
+    el.addEventListener('click', function () {
+      var val = el.getAttribute('data-copy'); copy(val, val);
+    });
+  });
+
+  /* ---------- reveal on scroll ---------- */
+  var reveals = $all('.doc-reveal');
+  if (!reduce && 'IntersectionObserver' in window){
+    var rio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('is-in'); rio.unobserve(e.target); } }); }, { threshold: 0.08 });
+    reveals.forEach(function(s){ rio.observe(s); });
+  } else { reveals.forEach(function(s){ s.classList.add('is-in'); }); }
+
+  /* ---------- scrollspy for sidebar ---------- */
+  var links = $all('.doc-side a');
+  var byId = {}; links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window){
+    var spy = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (e.isIntersecting){
+          links.forEach(function(a){ a.classList.remove('is-active'); });
+          var a = byId[e.target.id]; if (a) a.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-64px 0px -70% 0px', threshold: 0 });
+    $all('.doc-section').forEach(function(s){ if (s.id) spy.observe(s); });
+  }
+
+  /* ---------- dev-facing credit ---------- */
+  try {
+    console.log('%cAURORA · Edition 02 · v1.0.0', 'color:#3a9bf0;font-size:18px;font-weight:700');
+    console.log('%cA glass interface language. Tokens: --au-*  Material: .glass\nHomage to Windows Vista & the Aero era (2006-2009). Not affiliated with Microsoft/Windows.',
+      'color:#b6c6dc;font-family:monospace;font-size:12px;line-height:1.6');
+  } catch(e){}
+})();
+</script>
+</body>
+</html>

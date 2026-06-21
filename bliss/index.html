@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLISS · Design Language</title>
+<meta name="description" content="BLISS — a glossy, optimistic design system descended from the Windows XP 'Luna' visual style. Tokens, components, motion, and the three Luna schemes — blue, olive, silver.">
+<!-- the system under test: dogfooded by these docs -->
+<link rel="stylesheet" href="bliss.css">
+<script src="bliss.js" defer></script>
+<style>
+  /* ============ docs-only chrome (NOT part of the library) ============
+     Remapped from Nebula's docs chrome onto Bliss's --bl-* tokens, fonts,
+     radii and the warm, light Luna palette. */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  .doc-skip { position: fixed; left: -999px; top: 8px; z-index: 9000; }
+  .doc-skip:focus { left: 8px; }
+
+  /* top bar — a light glossy chrome bar */
+  .doc-topbar {
+    position: sticky; top: 0; z-index: 500;
+    display: flex; align-items: center; gap: var(--bl-space-4);
+    height: 56px; padding: 0 var(--bl-space-5);
+    background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.74));
+    -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3);
+    border-bottom: 1px solid var(--bl-line);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .doc-brand { display: inline-flex; align-items: center; gap: 9px; flex: 0 0 auto; text-decoration: none; }
+  .doc-brand svg { width: 26px; height: 26px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.28)); }
+  .doc-brand b { font-family: var(--bl-font-title); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; color: var(--bl-ink); }
+  .doc-ver { font-family: var(--bl-font-mono); font-size: 11px; color: var(--bl-ink-faint); border: 1px solid var(--bl-line); padding: 2px 7px; border-radius: var(--bl-radius-pill); background: var(--bl-white); }
+  .doc-topbar .spacer { flex: 1; }
+  .doc-themetoggle { display: flex; align-items: center; gap: 6px; }
+  .doc-themetoggle .lbl { font-family: var(--bl-font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bl-ink-faint); margin-right: 2px; }
+  @media (max-width: 560px){ .doc-themetoggle .lbl { display: none; } }
+
+  /* shell: sidebar + content */
+  .doc-shell { display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 0; max-width: 1280px; margin: 0 auto; }
+  .doc-side {
+    position: sticky; top: 56px; align-self: start; height: calc(100vh - 56px);
+    overflow-y: auto; padding: var(--bl-space-6) var(--bl-space-4) var(--bl-space-10) var(--bl-space-5);
+    border-right: 1px solid var(--bl-line);
+  }
+  .doc-side h4 { font-family: var(--bl-font-mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bl-ink-faint); margin: var(--bl-space-5) 0 var(--bl-space-2); }
+  .doc-side h4:first-child { margin-top: 0; }
+  .doc-side a { display: block; font-family: var(--bl-font-ui); font-size: 13.5px; color: var(--bl-ink-dim); text-decoration: none; padding: 5px 10px; border-radius: var(--bl-radius-sm); border-left: 2px solid transparent; }
+  .doc-side a:hover { color: var(--bl-ink); background: rgba(var(--bl-accent-rgb),0.08); }
+  .doc-side a.is-active { color: var(--bl-accent-deep); border-left-color: var(--bl-accent); background: rgba(var(--bl-accent-rgb),0.10); font-weight: 700; }
+
+  .doc-main { padding: var(--bl-space-8) clamp(var(--bl-space-5), 4vw, 4rem) 6rem; min-width: 0; }
+  @media (max-width: 900px) {
+    .doc-shell { grid-template-columns: 1fr; }
+    .doc-side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--bl-line); display: flex; gap: 4px; flex-wrap: wrap; padding: var(--bl-space-3) var(--bl-space-5); }
+    .doc-side h4 { display: none; }
+    .doc-side a { border-left: 0; }
+  }
+
+  .doc-section { padding-top: var(--bl-space-8); scroll-margin-top: 70px; }
+  .doc-section:first-child { padding-top: var(--bl-space-5); }
+  .doc-section > h2 { font-family: var(--bl-font-title); font-weight: 700; font-size: var(--bl-text-3xl); line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 var(--bl-space-2); color: var(--bl-ink); }
+  .doc-section > .lede { color: var(--bl-ink-dim); font-size: var(--bl-text-lg); max-width: 62ch; margin: 0 0 var(--bl-space-6); }
+  .doc-sub { font-family: var(--bl-font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bl-ink-faint); margin: var(--bl-space-6) 0 var(--bl-space-3); }
+
+  /* hero */
+  .doc-hero { position: relative; padding: var(--bl-space-10) 0 var(--bl-space-8); overflow: hidden; }
+  .doc-hero .row { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: var(--bl-space-6); align-items: center; }
+  @media (max-width: 760px){ .doc-hero .row { grid-template-columns: 1fr; } .doc-hero .art { display: none; } }
+  .doc-hero h1 { font-family: var(--bl-font-title); font-weight: 700; font-size: clamp(56px, 9vw, 104px); line-height: 0.92; letter-spacing: -0.02em; margin: 12px 0 0; color: var(--bl-ink); }
+  .doc-hero p.lede { color: var(--bl-ink-dim); font-size: var(--bl-text-lg); max-width: 54ch; margin: var(--bl-space-4) 0 var(--bl-space-3); }
+  .doc-hero .lineage { font-family: var(--bl-font-mono); font-size: 12.5px; color: var(--bl-ink-dim); margin: 0 0 var(--bl-space-5); }
+  .doc-hero .cta { display: flex; gap: var(--bl-space-3); flex-wrap: wrap; }
+  .doc-hero .art { display: grid; place-items: center; }
+
+  /* example: live demo + code */
+  .doc-example { border: 1px solid var(--bl-line); border-radius: var(--bl-radius-lg); overflow: hidden; margin: var(--bl-space-3) 0 var(--bl-space-6); background: var(--bl-white); box-shadow: var(--bl-shadow-1); }
+  .doc-demo { padding: var(--bl-space-6); display: flex; flex-wrap: wrap; gap: var(--bl-space-4); align-items: center;
+    background: radial-gradient(80% 120% at 50% 0%, rgba(var(--bl-accent-rgb),0.07), transparent 70%), var(--bl-face-panel); }
+  .doc-demo.col { flex-direction: column; align-items: stretch; }
+  .doc-codewrap { position: relative; border-top: 1px solid var(--bl-line); }
+  .doc-code { margin: 0; padding: var(--bl-space-4) var(--bl-space-5); overflow-x: auto; background: #fbfdff; }
+  .doc-code code { font-family: var(--bl-font-mono); font-size: 12.5px; line-height: 1.7; color: #2a3a2a; white-space: pre; }
+  .doc-copy { position: absolute; top: 8px; right: 8px; }
+
+  /* token grids */
+  .doc-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--bl-space-3); }
+  .doc-swatch { text-align: left; cursor: copy; border: 1px solid var(--bl-line); border-radius: var(--bl-radius-md); overflow: hidden; background: var(--bl-white); font: inherit; color: inherit; padding: 0; box-shadow: var(--bl-shadow-1); }
+  .doc-swatch:hover { border-color: var(--bl-accent); }
+  .doc-swatch .cap { display:block; height: 52px; border-bottom: 1px solid var(--bl-line); }
+  .doc-swatch .m { display:block; padding: 9px 11px; }
+  .doc-swatch .m .k { display:block; font-size: 12.5px; font-weight: 700; }
+  .doc-swatch .m .v { display:block; font-family: var(--bl-font-mono); font-size: 11px; color: var(--bl-ink-faint); margin-top: 2px; }
+
+  .doc-ramp { display: grid; grid-template-columns: repeat(10, 1fr); border: 1px solid var(--bl-line); border-radius: var(--bl-radius-md); overflow: hidden; box-shadow: var(--bl-shadow-1); }
+  @media (max-width: 620px){ .doc-ramp { grid-template-columns: repeat(5,1fr); } }
+  .doc-ramp .s { height: 60px; position: relative; cursor: copy; border: 0; padding: 0; }
+  .doc-ramp .s span { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--bl-font-mono); font-size: 9px; text-align: center; padding: 2px 0; color: rgba(0,0,0,0.62); background: rgba(255,255,255,0.55); }
+
+  .doc-scale-row { display: flex; align-items: baseline; gap: var(--bl-space-5); padding: 13px 0; border-bottom: 1px solid var(--bl-line); }
+  .doc-scale-row .tk { font-family: var(--bl-font-mono); font-size: 11.5px; color: var(--bl-ink-faint); width: 140px; flex: 0 0 auto; }
+
+  .doc-space-row { display: flex; align-items: center; gap: var(--bl-space-4); padding: 8px 0; }
+  .doc-space-row .tk { font-family: var(--bl-font-mono); font-size: 11.5px; color: var(--bl-ink-faint); width: 130px; flex: 0 0 auto; }
+  .doc-space-row .bar { height: 14px; background: linear-gradient(90deg, var(--bl-accent), var(--bl-accent-deep)); border-radius: 2px; }
+
+  .doc-grid { display: grid; gap: var(--bl-space-4); }
+  .doc-grid.two { grid-template-columns: 1fr 1fr; }
+  .doc-grid.three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 760px){ .doc-grid.two, .doc-grid.three { grid-template-columns: 1fr; } }
+
+  .doc-radius-demo { height: 86px; border: 1px solid var(--bl-edge-frame); background: var(--bl-accent-soft); display: grid; place-items: end center; padding-bottom: 8px; font-family: var(--bl-font-mono); font-size: 11px; color: var(--bl-ink-dim); }
+  .doc-elev-demo { height: 86px; border-radius: var(--bl-radius-md); background: var(--bl-white); border: 1px solid var(--bl-line); display: grid; place-items: center; font-family: var(--bl-font-mono); font-size: 11px; color: var(--bl-ink-faint); }
+  .doc-gloss-demo { height: 70px; border-radius: 7px; display: grid; place-items: center; color: #fff; font-family: var(--bl-font-mono); font-size: 11px; text-shadow: 0 1px 2px rgba(0,0,0,0.4); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); }
+
+  /* a small fact table (gloss layers / motion tokens) */
+  .doc-facts { border: 1px solid var(--bl-line); border-radius: var(--bl-radius-lg); overflow: hidden; background: var(--bl-white); box-shadow: var(--bl-shadow-1); }
+  .doc-facts .fr { display: flex; justify-content: space-between; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--bl-line); }
+  .doc-facts .fr:last-child { border-bottom: 0; }
+  .doc-facts .fr b { font-size: 13.5px; }
+  .doc-facts .fr small { display: block; color: var(--bl-ink-dim); font-weight: 400; font-size: 12px; }
+  .doc-facts .fr .v { font-family: var(--bl-font-mono); font-size: 11px; color: var(--bl-accent-deep); text-align: right; white-space: nowrap; }
+
+  /* principles / cards */
+  .doc-prin { padding: 22px 22px; }
+  .doc-prin .num { font-family: var(--bl-font-mono); font-size: 12px; color: var(--bl-accent); }
+  .doc-prin h3 { font-family: var(--bl-font-title); font-weight: 700; font-size: 19px; margin: 9px 0 8px; }
+  .doc-prin .one { color: var(--bl-ink); font-weight: 700; margin: 0 0 8px; font-size: 14px; }
+  .doc-prin p { font-size: 13.5px; color: var(--bl-ink-dim); margin: 0; }
+  .doc-pcard { border-top: 3px solid var(--bl-accent); }
+
+  /* do / don't */
+  .doc-dd h4 { font-family: var(--bl-font-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 14px; }
+  .doc-dd.do h4 { color: var(--bl-ok); }
+  .doc-dd.dont h4 { color: var(--bl-danger); }
+  .doc-dd ul { list-style: none; margin: 0; padding: 0; }
+  .doc-dd li { padding: 9px 0; border-bottom: 1px solid var(--bl-line); font-size: 13.5px; color: var(--bl-ink-dim); display: flex; gap: 11px; }
+  .doc-dd li:last-child { border-bottom: 0; }
+  .doc-dd li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; margin-top: 6px; flex: 0 0 auto; }
+  .doc-dd.do li::before { background: var(--bl-ok); }
+  .doc-dd.dont li::before { background: var(--bl-danger); }
+
+  /* heritage timeline */
+  .doc-timeline { display: grid; grid-template-columns: repeat(5,1fr); gap: 0; }
+  @media (max-width: 820px){ .doc-timeline { grid-template-columns: 1fr 1fr; gap: 26px 14px; } }
+  .doc-node { position: relative; padding: 26px 18px 0 0; }
+  .doc-node::before { content:""; position:absolute; top:8px; left:0; right:0; height:2px; background: linear-gradient(90deg, var(--bl-edge-frame), transparent); }
+  .doc-node::after { content:""; position:absolute; top:3px; left:0; width:12px; height:12px; border-radius:50%; border:1px solid rgba(0,0,0,0.3); background: radial-gradient(circle at 35% 30%, #fff, #9fb0c0); }
+  .doc-node.now::after { background: radial-gradient(circle at 35% 30%, #d9ffd0, var(--bl-green-500)); box-shadow: 0 0 8px rgba(76,163,37,0.6); }
+  .doc-node .y { font-family: var(--bl-font-mono); font-size: 12px; color: var(--bl-ink-faint); }
+  .doc-node .n { font-family: var(--bl-font-title); font-weight: 700; font-size: 15px; margin: 7px 0 7px; }
+  .doc-node .d { font-size: 13px; color: var(--bl-ink-dim); }
+
+  .doc-foot { margin-top: var(--bl-space-8); padding-top: var(--bl-space-6); border-top: 1px solid var(--bl-line); font-family: var(--bl-font-mono); font-size: 12px; color: var(--bl-ink-faint); line-height: 1.95; }
+  .doc-foot a { color: var(--bl-accent); }
+
+  /* a11y live region (visually hidden) */
+  .doc-toasts { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* reveal on scroll — defaults visible, JS opts in */
+  .doc-reveal { opacity: 0; transform: translateY(14px); }
+  .doc-reveal.is-in { opacity: 1; transform: none; transition: opacity .56s var(--bl-ease), transform .56s var(--bl-ease); }
+  @media (prefers-reduced-motion: reduce){ .doc-reveal, .doc-reveal.is-in { opacity: 1; transform: none; transition: none; } }
+</style>
+</head>
+<body class="bl-root" data-bl-theme="blue">
+
+<a class="doc-skip bl-btn bl-btn--sm" href="#overview">Skip to content</a>
+
+<!-- top bar -->
+<header class="doc-topbar bl-on-bar">
+  <a class="doc-brand" href="#overview" aria-label="Bliss home">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><g transform="rotate(-8 24 24)">
+      <path d="M6 10 q10 -4 20 0 q10 4 18 0 v9 q-8 4 -18 0 q-10 -4 -20 0 z" fill="#f24e3a"/>
+      <path d="M6 19 q10 -4 20 0 q10 4 18 0 v9 q-8 4 -18 0 q-10 -4 -20 0 z" fill="#5fb33a"/>
+      <path d="M6 28 q10 -4 20 0 q10 4 18 0 v9 q-8 4 -18 0 q-10 -4 -20 0 z" fill="#2a8de0"/>
+      <path d="M6 37 q10 -4 20 0 q10 4 18 0 v6 q-8 4 -18 0 q-10 -4 -20 0 z" fill="#ffd23a"/>
+    </g></svg>
+    <b>Bliss</b>
+  </a>
+  <span class="doc-ver">v1.0.0</span>
+  <span class="spacer"></span>
+  <div class="doc-themetoggle" role="group" aria-label="Luna scheme">
+    <span class="lbl">Scheme</span>
+    <button class="bl-btn bl-btn--sm bl-btn--default" type="button" data-theme="blue" aria-pressed="true">blue</button>
+    <button class="bl-btn bl-btn--sm" type="button" data-theme="olive" aria-pressed="false">olive</button>
+    <button class="bl-btn bl-btn--sm" type="button" data-theme="silver" aria-pressed="false">silver</button>
+  </div>
+</header>
+
+<div class="doc-shell">
+  <!-- sidebar -->
+  <nav class="doc-side" aria-label="Sections">
+    <h4>Start</h4>
+    <a href="#overview" class="is-active">Overview</a>
+    <a href="#install">Getting started</a>
+    <h4>Foundations</h4>
+    <a href="#color">Color</a>
+    <a href="#type">Typography</a>
+    <a href="#space">Spacing &amp; radius</a>
+    <a href="#elevation">Elevation, gloss &amp; motion</a>
+    <h4>Components</h4>
+    <a href="#buttons">Buttons</a>
+    <a href="#surfaces">Surfaces &amp; cards</a>
+    <a href="#forms">Forms &amp; fields</a>
+    <a href="#choices">Choices</a>
+    <a href="#containers">Tabs &amp; groups</a>
+    <a href="#status">Status &amp; feedback</a>
+    <a href="#window">Window chrome</a>
+    <a href="#dialog">Dialogs</a>
+    <a href="#desktop">Desktop shell</a>
+    <a href="#system">System info</a>
+    <h4>Guidance</h4>
+    <a href="#principles">Principles</a>
+    <a href="#a11y">Accessibility</a>
+    <a href="#heritage">Heritage</a>
+  </nav>
+
+  <main class="doc-main">
+
+    <!-- OVERVIEW / HERO -->
+    <section class="doc-section doc-hero" id="overview">
+      <div class="row">
+        <div>
+          <span class="bl-eyebrow">Glossy · optimistic · tactile</span>
+          <h1>Bliss</h1>
+          <p class="lede">A glossy, optimistic interface language — friendly chrome you can see and want to press. A respectful, modern homage to the Windows&nbsp;XP <strong style="color:var(--bl-ink)">"Luna"</strong> visual style, re-tokenized so you can build with it today.</p>
+          <p class="lineage">Whistler 2000&ndash;2001 &rsaquo; Luna 2001 &rsaquo; the three schemes: Blue, Olive Green, Silver. One spine: computing should feel welcome.</p>
+          <div class="cta">
+            <a class="bl-btn bl-btn--default" href="#install">Get started</a>
+            <a class="bl-btn" href="#buttons">Components</a>
+            <button class="bl-btn bl-btn--cta" id="copyInstall" type="button">Copy &lt;link&gt;</button>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="bl-window" style="width:300px">
+            <div class="bl-titlebar">
+              <svg class="bl-titlebar__icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1" fill="#cfe0f5" stroke="#fff"/></svg>
+              <span class="bl-titlebar__title">Bliss</span>
+              <div class="bl-winbtns"><span class="bl-winbtn">_</span><span class="bl-winbtn">▢</span><span class="bl-winbtn bl-winbtn--close">×</span></div>
+            </div>
+            <div class="bl-window__body bl-bliss" style="height:158px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GETTING STARTED -->
+    <section class="doc-section" id="install">
+      <h2>Getting started</h2>
+      <p class="lede">Two lines to adopt the system. It's namespaced (<code class="bl-mono">--bl-*</code> / <code class="bl-mono">.bl-*</code>), ships <strong style="color:var(--bl-ink)">no global reset</strong>, and styles no bare elements — so it drops into an existing project without collisions.</p>
+
+      <div class="doc-example doc-reveal" data-static>
+        <div class="doc-demo col">
+          <p class="bl-small" style="margin:0">1 · Link the stylesheet (and the optional behavior layer). &nbsp; 2 · Add <code class="bl-mono">.bl-root</code> to opt a region into the Bliss surface. &nbsp; 3 · Set <code class="bl-mono">data-bl-theme</code> and use components.</p>
+        </div>
+        <div class="doc-codewrap">
+          <pre class="doc-code"><code></code></pre>
+          <script type="text/plain" class="doc-snippet">
+&lt;link rel="stylesheet" href="bliss.css"&gt;
+&lt;script src="bliss.js" defer&gt;&lt;/script&gt;
+
+&lt;body class="bl-root" data-bl-theme="blue"&gt;
+  &lt;button class="bl-btn bl-btn--default"&gt;OK&lt;/button&gt;
+&lt;/body&gt;
+          </script>
+        </div>
+      </div>
+
+      <p class="bl-small">Want only the design tokens for your own components? You don't even need <code class="bl-mono">.bl-root</code> — the <code class="bl-mono">--bl-*</code> custom properties live on <code class="bl-mono">:root</code> and are available everywhere. Tooling consumers can read <a class="bl-link" href="bliss.tokens.json">bliss.tokens.json</a>. Bliss uses the real XP faces (Trebuchet&nbsp;MS / Tahoma), which ship on Windows; on other platforms it falls back to <code class="bl-mono">system-ui</code>, so there's nothing to load.</p>
+    </section>
+
+    <!-- COLOR -->
+    <section class="doc-section" id="color">
+      <h2>Color</h2>
+      <p class="lede">The chrome is one glossy gradient, and its hue is a swappable <strong style="color:var(--bl-ink)">scheme</strong>: the same title bar becomes Blue, Olive, or Silver by changing a handful of tokens. Reference the semantic roles in product code — they retint with the theme. Click any swatch to copy its token.</p>
+
+      <h3 class="doc-sub">The three Luna schemes</h3>
+      <p class="bl-small" style="margin:0 0 14px">Color is a setting, not a rebuild. The Bliss field (sky + hill) stays constant; the chrome takes the user's color. Switch live with the toggle in the top bar — the whole page retints from one attribute.</p>
+      <div class="doc-grid three">
+        <button class="bl-card doc-reveal" type="button" data-pick="blue" style="cursor:pointer;text-align:left">
+          <div style="height:30px;background:linear-gradient(180deg,#3f97ff,#0a55cf)"></div>
+          <div class="bl-card__body"><b>Blue</b> <span class="bl-mono" style="color:var(--bl-ink-faint)">#1668e0</span><br><span class="bl-small">the default · click to apply</span></div>
+        </button>
+        <button class="bl-card doc-reveal" type="button" data-pick="olive" style="cursor:pointer;text-align:left">
+          <div style="height:30px;background:linear-gradient(180deg,#a7b97f,#6a7f3d)"></div>
+          <div class="bl-card__body"><b>Olive Green</b> <span class="bl-mono" style="color:var(--bl-ink-faint)">#7f9450</span><br><span class="bl-small">warm · click to apply</span></div>
+        </button>
+        <button class="bl-card doc-reveal" type="button" data-pick="silver" style="cursor:pointer;text-align:left">
+          <div style="height:30px;background:linear-gradient(180deg,#fbfbfe,#9a9aae)"></div>
+          <div class="bl-card__body"><b>Silver</b> <span class="bl-mono" style="color:var(--bl-ink-faint)">#c3c3d2</span><br><span class="bl-small">neutral · click to apply</span></div>
+        </button>
+      </div>
+
+      <h3 class="doc-sub">Semantic roles</h3>
+      <div class="doc-swatches" id="semanticSwatches">
+        <button class="doc-swatch" data-token="--bl-face"><span class="cap" style="background:var(--bl-face)"></span><span class="m"><span class="k">face</span><span class="v">--bl-face</span></span></button>
+        <button class="doc-swatch" data-token="--bl-face-raised"><span class="cap" style="background:var(--bl-face-raised)"></span><span class="m"><span class="k">raised</span><span class="v">--bl-face-raised</span></span></button>
+        <button class="doc-swatch" data-token="--bl-face-panel"><span class="cap" style="background:var(--bl-face-panel)"></span><span class="m"><span class="k">panel</span><span class="v">--bl-face-panel</span></span></button>
+        <button class="doc-swatch" data-token="--bl-accent"><span class="cap" style="background:var(--bl-accent)"></span><span class="m"><span class="k">accent</span><span class="v">--bl-accent</span></span></button>
+        <button class="doc-swatch" data-token="--bl-accent-deep"><span class="cap" style="background:var(--bl-accent-deep)"></span><span class="m"><span class="k">accent deep</span><span class="v">--bl-accent-deep</span></span></button>
+        <button class="doc-swatch" data-token="--bl-accent-soft"><span class="cap" style="background:var(--bl-accent-soft)"></span><span class="m"><span class="k">accent soft</span><span class="v">--bl-accent-soft</span></span></button>
+        <button class="doc-swatch" data-token="--bl-sel"><span class="cap" style="background:var(--bl-sel)"></span><span class="m"><span class="k">selection</span><span class="v">--bl-sel</span></span></button>
+        <button class="doc-swatch" data-token="--bl-ok"><span class="cap" style="background:var(--bl-ok)"></span><span class="m"><span class="k">ok</span><span class="v">--bl-ok</span></span></button>
+        <button class="doc-swatch" data-token="--bl-warn"><span class="cap" style="background:var(--bl-warn)"></span><span class="m"><span class="k">warn</span><span class="v">--bl-warn</span></span></button>
+        <button class="doc-swatch" data-token="--bl-danger"><span class="cap" style="background:var(--bl-danger)"></span><span class="m"><span class="k">danger</span><span class="v">--bl-danger</span></span></button>
+        <button class="doc-swatch" data-token="--bl-info"><span class="cap" style="background:var(--bl-info)"></span><span class="m"><span class="k">info</span><span class="v">--bl-info</span></span></button>
+        <button class="doc-swatch" data-token="--bl-tip-bg"><span class="cap" style="background:var(--bl-tip-bg)"></span><span class="m"><span class="k">tooltip</span><span class="v">--bl-tip-bg</span></span></button>
+      </div>
+
+      <h3 class="doc-sub">Blue ramp — the default scheme</h3>
+      <div class="doc-ramp" id="blueRamp"></div>
+
+      <h3 class="doc-sub">Neutral ramp — the warm Luna greys</h3>
+      <div class="doc-ramp" id="greyRamp" style="grid-template-columns:repeat(9,1fr)"></div>
+
+      <p class="bl-small" style="margin-top:var(--bl-space-4)">The warm grey <code class="bl-mono">#ece9d8</code> is <strong style="color:var(--bl-ink)">the</strong> XP dialog / control face — the surface every panel and button is cut from. Click any swatch to copy its token.</p>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="doc-section" id="type">
+      <h2>Typography</h2>
+      <p class="lede">XP paired two humanist faces and rendered them with ClearType, its new subpixel smoothing. Bliss keeps the real assignment: <strong style="color:var(--bl-ink)">Trebuchet&nbsp;MS</strong> for the confident title voice, <strong style="color:var(--bl-ink)">Tahoma</strong> for the working interface, and a monospace for data and tokens.</p>
+      <div class="doc-grid three">
+        <div class="bl-card doc-reveal"><div class="bl-card__body"><span class="bl-eyebrow">Title · Trebuchet MS</span><div style="font-family:var(--bl-font-title);font-weight:700;font-size:34px;line-height:1.05;margin:14px 0 6px">friendly and sure</div><p class="bl-small" style="margin:0">XP's window-title face. The voice of the chrome.</p></div></div>
+        <div class="bl-card doc-reveal"><div class="bl-card__body"><span class="bl-eyebrow">Interface · Tahoma</span><div style="font-family:var(--bl-font-ui);font-size:24px;margin:14px 0 6px">Start · My Computer</div><p class="bl-small" style="margin:0">Menus, labels, body — what people read while they navigate.</p></div></div>
+        <div class="bl-card doc-reveal"><div class="bl-card__body"><span class="bl-eyebrow">Data · Lucida Console</span><div style="font-family:var(--bl-font-mono);font-size:20px;margin:14px 0 6px">--bl-accent</div><p class="bl-small" style="margin:0">Tokens, hex, captions, hints.</p></div></div>
+      </div>
+      <h3 class="doc-sub">Scale</h3>
+      <div id="typeScale"></div>
+    </section>
+
+    <!-- SPACING & RADIUS -->
+    <section class="doc-section" id="space">
+      <h2>Spacing &amp; radius</h2>
+      <p class="lede">A 4px spacing base and a gently-rounded radius scale — Luna was rounded, never pill-soft — keep rhythm consistent across components.</p>
+      <div class="doc-grid two">
+        <div>
+          <h3 class="doc-sub">Spacing · 4px base</h3>
+          <div id="spaceScale"></div>
+        </div>
+        <div>
+          <h3 class="doc-sub">Radius</h3>
+          <div class="doc-grid two" style="gap:var(--bl-space-3)">
+            <div class="doc-radius-demo" style="border-radius:var(--bl-radius-xs)">xs · 2px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--bl-radius-sm)">sm · 3px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--bl-radius-md)">md · 5px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--bl-radius-lg)">lg · 8px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--bl-radius-xl)">xl · 12px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--bl-radius-pill)">pill · 999</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ELEVATION, GLOSS & MOTION -->
+    <section class="doc-section" id="elevation">
+      <h2>Elevation, gloss &amp; motion</h2>
+      <p class="lede">Soft shadows lift surfaces off the sky. The gloss is the signature material — a bright highlight up top, a quick step into a saturated body, a soft base shadow — and motion stays short, gentle, and reassuring.</p>
+
+      <h3 class="doc-sub">Elevation</h3>
+      <div class="doc-grid three">
+        <div class="doc-elev-demo" style="box-shadow:var(--bl-shadow-1)">--bl-shadow-1</div>
+        <div class="doc-elev-demo" style="box-shadow:var(--bl-shadow-2)">--bl-shadow-2</div>
+        <div class="doc-elev-demo" style="box-shadow:var(--bl-shadow-3)">--bl-shadow-3</div>
+      </div>
+
+      <h3 class="doc-sub">The gloss — three prebuilt sheens</h3>
+      <div class="doc-grid three">
+        <div class="doc-gloss-demo" style="background:var(--bl-gloss-title), linear-gradient(180deg,var(--bl-title-hi),var(--bl-title-low))">--bl-gloss-title</div>
+        <div class="doc-gloss-demo" style="background:var(--bl-gloss-bar), linear-gradient(180deg,var(--bl-bar-hi),var(--bl-bar-low))">--bl-gloss-bar</div>
+        <div class="doc-gloss-demo" style="background:var(--bl-gloss-sheen), linear-gradient(180deg,var(--bl-start-hi),var(--bl-start-low));border:1px solid var(--bl-start-edge)">--bl-gloss-sheen</div>
+      </div>
+      <div class="doc-grid two" style="margin-top:var(--bl-space-4)">
+        <div class="doc-facts doc-reveal">
+          <div class="fr"><div><b>Highlight</b><small>top sheen — the curve catching light</small></div><div class="v">rgba(255,255,255,.55)<br>0&rarr;6%</div></div>
+          <div class="fr"><div><b>Step</b><small>the quick mid break that reads as glass</small></div><div class="v">42% &rarr; 52%</div></div>
+          <div class="fr"><div><b>Body</b><small>the saturated hue, top to bottom</small></div><div class="v">--bl-title-hi &rarr; --bl-title-low</div></div>
+          <div class="fr"><div><b>Base shadow</b><small>weight at the bottom edge</small></div><div class="v">rgba(0,0,0,.13)<br>88%</div></div>
+          <div class="fr"><div><b>Inner light</b><small>1px top edge — the lit lip</small></div><div class="v">inset 0 1px 0 #fff</div></div>
+        </div>
+        <div class="doc-facts doc-reveal">
+          <div class="fr"><div><b>Start menu / dialog<small>pop into view</small></b></div><div class="v">220ms<br>--bl-ease-pop</div></div>
+          <div class="fr"><div><b>Menu / window<small>fade + settle</small></b></div><div class="v">180ms<br>--bl-ease</div></div>
+          <div class="fr"><div><b>Control move<small>knob, tab, check</small></b></div><div class="v">180ms<br>--bl-ease</div></div>
+          <div class="fr"><div><b>Button press<small>tap feedback</small></b></div><div class="v">110ms<br>--bl-ease</div></div>
+          <div class="fr"><div><b>Marching progress<small>friendly green blocks</small></b></div><div class="v">1.4s linear<br>loop</div></div>
+        </div>
+      </div>
+      <div style="margin-top:var(--bl-space-4);max-width:420px">
+        <div class="bl-progress bl-progress--marquee"><div class="bl-progress__fill"></div></div>
+        <p class="bl-small" style="margin-top:8px">The marching-green marquee — <code class="bl-mono">.bl-progress--marquee</code>. All motion collapses under <code class="bl-mono">prefers-reduced-motion</code>.</p>
+      </div>
+
+      <h3 class="doc-sub">Build with the gloss</h3>
+      <div class="doc-example doc-reveal" data-static>
+        <div class="doc-codewrap">
+          <pre class="doc-code"><code></code></pre>
+          <script type="text/plain" class="doc-snippet">
+/* the signature recipe — one token does it */
+.my-bar {
+  background: var(--bl-gloss-title),
+              linear-gradient(180deg, var(--bl-title-hi), var(--bl-title-low));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+  border-radius: 7px 7px 0 0;
+}
+/* highlight up top, saturated body, base shadow,
+   then a thin lit lip at the very bottom. */
+          </script>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUTTONS -->
+    <section class="doc-section" id="buttons">
+      <h2>Buttons</h2>
+      <p class="lede">The classic raised Luna 3D face. The default carries the accent edge; the CTA wears the green "go" orb. Full state coverage, three sizes.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="bl-btn bl-btn--default"&gt;OK&lt;/button&gt;
+&lt;button class="bl-btn"&gt;Cancel&lt;/button&gt;
+&lt;button class="bl-btn bl-btn--cta"&gt;Start&lt;/button&gt;
+&lt;button class="bl-btn bl-btn--ghost"&gt;Ghost&lt;/button&gt;
+&lt;button class="bl-btn" disabled&gt;Disabled&lt;/button&gt;
+        </script></div>
+      </div>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="bl-btn bl-btn--default bl-btn--sm"&gt;Small&lt;/button&gt;
+&lt;button class="bl-btn"&gt;Medium&lt;/button&gt;
+&lt;button class="bl-btn bl-btn--lg"&gt;Large&lt;/button&gt;
+&lt;button class="bl-btn bl-btn--icon" aria-label="Settings"&gt;
+  &lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"&gt;&lt;circle cx="12" cy="12" r="3"/&gt;&lt;path d="M19 12a7 7 0 0 0-.2-1.6"/&gt;&lt;/svg&gt;
+&lt;/button&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- SURFACES -->
+    <section class="doc-section" id="surfaces">
+      <h2>Surfaces &amp; cards</h2>
+      <p class="lede">Bright, roomy surfaces on the warm Luna face. <code class="bl-mono">.bl-panel</code> is the bare surface; <code class="bl-mono">.bl-card</code> adds a header and padded body. The <code class="bl-mono">.bl-bliss</code> helper paints the constant sky-and-hill field.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="bl-card" style="max-width:320px"&gt;
+  &lt;div class="bl-card__head"&gt;Frosted panel&lt;/div&gt;
+  &lt;div class="bl-card__body"&gt;
+    &lt;span class="bl-badge bl-badge--ok"&gt;&lt;span class="bl-badge__dot"&gt;&lt;/span&gt;ready&lt;/span&gt;
+    &lt;p style="margin:10px 0 12px"&gt;A bright top bevel, a glossy sheen, and the warm Luna face. The card is the padded content block.&lt;/p&gt;
+    &lt;button class="bl-btn bl-btn--default bl-btn--sm"&gt;Open&lt;/button&gt;
+    &lt;button class="bl-btn bl-btn--ghost bl-btn--sm"&gt;Dismiss&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- FORMS -->
+    <section class="doc-section" id="forms">
+      <h2>Forms &amp; fields</h2>
+      <p class="lede">Sunken, square-cornered Luna inputs — the authentic blue-grey field border, an inset shadow, and an accent focus ring. Inputs, selects, search, and a numeric spinner wired by <code class="bl-mono">bliss.js</code>.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col" style="max-width:440px"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;label class="bl-field"&gt;
+  &lt;span class="bl-label"&gt;User name&lt;/span&gt;
+  &lt;input class="bl-input" type="text" placeholder="type here"&gt;
+  &lt;span class="bl-help"&gt;Stored on this computer.&lt;/span&gt;
+&lt;/label&gt;
+
+&lt;label class="bl-field"&gt;
+  &lt;span class="bl-label"&gt;Time zone&lt;/span&gt;
+  &lt;select class="bl-select"&gt;
+    &lt;option&gt;(GMT-08:00) Pacific&lt;/option&gt;
+    &lt;option&gt;(GMT-05:00) Eastern&lt;/option&gt;
+    &lt;option&gt;(GMT+00:00) UTC&lt;/option&gt;
+  &lt;/select&gt;
+&lt;/label&gt;
+
+&lt;span class="bl-search"&gt;
+  &lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"&gt;&lt;circle cx="11" cy="11" r="7"/&gt;&lt;path d="M21 21l-4-4"/&gt;&lt;/svg&gt;
+  &lt;input type="search" placeholder="Search"&gt;
+&lt;/span&gt;
+
+&lt;span class="bl-spin" data-bl-min="6" data-bl-max="72"&gt;
+  &lt;input class="bl-input" type="text" value="8" inputmode="numeric" aria-label="Font size"&gt;
+  &lt;span class="bl-spin__btns"&gt;
+    &lt;button class="bl-spin__up" type="button" aria-label="Increase"&gt;▲&lt;/button&gt;
+    &lt;button class="bl-spin__dn" type="button" aria-label="Decrease"&gt;▼&lt;/button&gt;
+  &lt;/span&gt;
+&lt;/span&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- CHOICES -->
+    <section class="doc-section" id="choices">
+      <h2>Choices</h2>
+      <p class="lede">Checkbox, radio, switch, and trackbar — each built on ARIA roles and made live by <code class="bl-mono">bliss.js</code>: keyboard-operable, with the candy-pop check animation and a sliding switch knob.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="bl-check" role="checkbox" aria-checked="true" tabindex="0"&gt;
+  &lt;span class="bl-check__box"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"&gt;&lt;path d="M5 12l5 5L20 6"/&gt;&lt;/svg&gt;&lt;/span&gt;
+  Show the clock
+&lt;/div&gt;
+
+&lt;div role="radiogroup" aria-label="Theme" style="display:flex;gap:22px"&gt;
+  &lt;div class="bl-check" role="radio" aria-checked="true" tabindex="0"&gt;&lt;span class="bl-check__box bl-check__box--round"&gt;&lt;/span&gt;Luna&lt;/div&gt;
+  &lt;div class="bl-check" role="radio" aria-checked="false" tabindex="-1"&gt;&lt;span class="bl-check__box bl-check__box--round"&gt;&lt;/span&gt;Classic&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="bl-switch" role="switch" aria-checked="true" tabindex="0"&gt;
+  &lt;span class="bl-switch__track"&gt;&lt;span class="bl-switch__knob"&gt;&lt;/span&gt;&lt;/span&gt;
+  Ambient sound
+&lt;/div&gt;
+
+&lt;input class="bl-slider" type="range" min="0" max="100" value="58" style="max-width:240px"&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- CONTAINERS -->
+    <section class="doc-section" id="containers">
+      <h2>Tabs &amp; groups</h2>
+      <p class="lede">The classic Luna property sheet: the active tab lifts onto the page face while the others sit a step back. Tabs are roving-tabindex and arrow-key navigable; the group box is a labelled fieldset.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div style="max-width:380px"&gt;
+  &lt;div class="bl-tablist" role="tablist"&gt;
+    &lt;button class="bl-tab" role="tab" id="t1" aria-controls="p1" aria-selected="true"&gt;Themes&lt;/button&gt;
+    &lt;button class="bl-tab" role="tab" id="t2" aria-controls="p2" aria-selected="false"&gt;Desktop&lt;/button&gt;
+    &lt;button class="bl-tab" role="tab" id="t3" aria-controls="p3" aria-selected="false"&gt;Appearance&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class="bl-tabpanel" role="tabpanel" id="p1" aria-labelledby="t1"&gt;The active tab lifts onto the face; the others sit a step back.&lt;/div&gt;
+  &lt;div class="bl-tabpanel" role="tabpanel" id="p2" aria-labelledby="t2" hidden&gt;Desktop settings live here.&lt;/div&gt;
+  &lt;div class="bl-tabpanel" role="tabpanel" id="p3" aria-labelledby="t3" hidden&gt;Appearance settings live here.&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="bl-groupbox" style="max-width:280px"&gt;
+  &lt;span class="bl-groupbox__legend"&gt;Taskbar&lt;/span&gt;
+  &lt;div class="bl-col"&gt;
+    &lt;div class="bl-check" role="checkbox" aria-checked="true" tabindex="0"&gt;&lt;span class="bl-check__box"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"&gt;&lt;path d="M5 12l5 5L20 6"/&gt;&lt;/svg&gt;&lt;/span&gt;Lock the taskbar&lt;/div&gt;
+    &lt;div class="bl-check" role="checkbox" aria-checked="false" tabindex="0"&gt;&lt;span class="bl-check__box"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"&gt;&lt;path d="M5 12l5 5L20 6"/&gt;&lt;/svg&gt;&lt;/span&gt;Auto-hide the taskbar&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- STATUS -->
+    <section class="doc-section" id="status">
+      <h2>Status &amp; feedback</h2>
+      <p class="lede">Badges always pair a colored dot with a label, so meaning survives any color-vision difference. Plus progress, a list view, the XP-yellow tooltip and balloon, and glossy toasts.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;span class="bl-badge bl-badge--ok"&gt;&lt;span class="bl-badge__dot"&gt;&lt;/span&gt;connected&lt;/span&gt;
+&lt;span class="bl-badge bl-badge--info"&gt;&lt;span class="bl-badge__dot"&gt;&lt;/span&gt;copying&lt;/span&gt;
+&lt;span class="bl-badge bl-badge--warn"&gt;&lt;span class="bl-badge__dot"&gt;&lt;/span&gt;updates&lt;/span&gt;
+&lt;span class="bl-badge bl-badge--danger"&gt;&lt;span class="bl-badge__dot"&gt;&lt;/span&gt;offline&lt;/span&gt;
+&lt;span class="bl-tag"&gt;8 KB&lt;/span&gt;
+        </script></div>
+      </div>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col" style="max-width:360px"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="bl-progress"&gt;&lt;div class="bl-progress__fill" style="width:62%"&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class="bl-listview" role="listbox" aria-label="Files"&gt;
+  &lt;div class="bl-listview__item" role="option" aria-selected="true"&gt;&lt;svg viewBox="0 0 24 24"&gt;&lt;path d="M4 7h6l2 2h8v9H4z" fill="#ffe39a" stroke="#c99a2a"/&gt;&lt;/svg&gt;&lt;span&gt;My Documents&lt;/span&gt;&lt;span class="bl-listview__meta"&gt;folder&lt;/span&gt;&lt;/div&gt;
+  &lt;div class="bl-listview__item" role="option" aria-selected="false"&gt;&lt;svg viewBox="0 0 24 24"&gt;&lt;rect x="6" y="3" width="12" height="18" rx="1" fill="#fff" stroke="#7d8a99"/&gt;&lt;/svg&gt;&lt;span&gt;readme.txt&lt;/span&gt;&lt;span class="bl-listview__meta"&gt;2 KB&lt;/span&gt;&lt;/div&gt;
+  &lt;div class="bl-listview__item" role="option" aria-selected="false"&gt;&lt;svg viewBox="0 0 24 24"&gt;&lt;rect x="4" y="5" width="16" height="12" rx="1" fill="#cfe7c4" stroke="#5c8a3a"/&gt;&lt;/svg&gt;&lt;span&gt;bliss.bmp&lt;/span&gt;&lt;span class="bl-listview__meta"&gt;1.4 MB&lt;/span&gt;&lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;span class="bl-tooltip"&gt;
+  &lt;button class="bl-btn"&gt;Hover me&lt;/button&gt;
+  &lt;span class="bl-tooltip__tip" role="tooltip"&gt;Tooltips are XP yellow&lt;/span&gt;
+&lt;/span&gt;
+
+&lt;div class="bl-balloon"&gt;
+  &lt;span class="bl-balloon__close" role="button" aria-label="Close"&gt;×&lt;/span&gt;
+  &lt;div class="bl-balloon__title"&gt;&lt;svg viewBox="0 0 24 24" width="16" height="16"&gt;&lt;circle cx="12" cy="12" r="9" fill="#2a72e0"/&gt;&lt;rect x="11" y="10" width="2" height="7" fill="#fff"/&gt;&lt;rect x="11" y="6.5" width="2" height="2" fill="#fff"/&gt;&lt;/svg&gt; Your scheme is ready&lt;/div&gt;
+  There are three Luna schemes. Open Display Properties to choose one.
+&lt;/div&gt;
+
+&lt;button class="bl-btn bl-btn--default" id="toastDemo"&gt;Show a toast&lt;/button&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- WINDOW CHROME -->
+    <section class="doc-section" id="window">
+      <h2>Window chrome</h2>
+      <p class="lede">The full Luna window: a glossy themed title bar with min/restore/close buttons, a menu bar with real dropdowns, a toolbar, and a status bar. Inactive windows desaturate, exactly as XP did.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="bl-window" style="width:420px"&gt;
+  &lt;div class="bl-titlebar"&gt;
+    &lt;svg class="bl-titlebar__icon" viewBox="0 0 24 24"&gt;&lt;rect x="3" y="4" width="18" height="12" rx="1" fill="#cfe0f5" stroke="#fff"/&gt;&lt;rect x="5" y="6" width="14" height="8" fill="#2a72e0"/&gt;&lt;/svg&gt;
+    &lt;span class="bl-titlebar__title"&gt;My Computer&lt;/span&gt;
+    &lt;div class="bl-winbtns"&gt;&lt;span class="bl-winbtn"&gt;_&lt;/span&gt;&lt;span class="bl-winbtn"&gt;▢&lt;/span&gt;&lt;span class="bl-winbtn bl-winbtn--close"&gt;×&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="bl-window__body"&gt;
+    &lt;div class="bl-menubar"&gt;&lt;span class="bl-menubar__item" data-bl-menu="#fileMenu"&gt;File&lt;/span&gt;&lt;span class="bl-menubar__item" data-bl-menu="#editMenu"&gt;Edit&lt;/span&gt;&lt;span class="bl-menubar__item"&gt;View&lt;/span&gt;&lt;span class="bl-menubar__item"&gt;Help&lt;/span&gt;&lt;/div&gt;
+    &lt;div class="bl-toolbar"&gt;&lt;span class="bl-toolbar__btn"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="#2a72e0" stroke-width="2"&gt;&lt;path d="M14 6l-6 6 6 6"/&gt;&lt;/svg&gt;Back&lt;/span&gt;&lt;span class="bl-toolbar__sep"&gt;&lt;/span&gt;&lt;span class="bl-toolbar__btn"&gt;Folders&lt;/span&gt;&lt;span class="bl-toolbar__btn"&gt;Views&lt;/span&gt;&lt;/div&gt;
+    &lt;div style="padding:14px;background:#fff"&gt;
+      &lt;div class="bl-row"&gt;&lt;svg viewBox="0 0 32 32" width="32" height="32"&gt;&lt;rect x="5" y="9" width="22" height="14" rx="2" fill="#e7edf3" stroke="#7d8a99"/&gt;&lt;circle cx="11" cy="16" r="3" fill="#2a72e0"/&gt;&lt;/svg&gt;&lt;div&gt;&lt;b&gt;Local Disk (C:)&lt;/b&gt;&lt;br&gt;&lt;span class="bl-small"&gt;12.4 GB free of 38 GB&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="bl-statusbar"&gt;&lt;span class="bl-statusbar__panel" style="flex:1"&gt;3 objects&lt;/span&gt;&lt;span class="bl-statusbar__panel"&gt;My Computer&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="bl-menu" id="fileMenu" hidden&gt;
+  &lt;div class="bl-menu__item"&gt;New &lt;span class="bl-kbd"&gt;Ctrl+N&lt;/span&gt;&lt;/div&gt;
+  &lt;div class="bl-menu__item"&gt;Open &lt;span class="bl-kbd"&gt;Ctrl+O&lt;/span&gt;&lt;/div&gt;
+  &lt;div class="bl-menu__sep"&gt;&lt;/div&gt;
+  &lt;div class="bl-menu__item bl-menu__item--disabled"&gt;Exit&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="bl-menu" id="editMenu" hidden&gt;
+  &lt;div class="bl-menu__item"&gt;Cut&lt;/div&gt;&lt;div class="bl-menu__item"&gt;Copy&lt;/div&gt;&lt;div class="bl-menu__item"&gt;Paste&lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- DIALOG -->
+    <section class="doc-section" id="dialog">
+      <h2>Dialogs</h2>
+      <p class="lede">An overlay dialog with the same themed title bar. Open it with a <code class="bl-mono">data-bl-open</code> hook (or <code class="bl-mono">Bliss.openDialog</code>); close it with the backdrop, a <code class="bl-mono">data-bl-close</code> button, or <kbd class="bl-kbd">Esc</kbd>.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="bl-btn bl-btn--default" data-bl-open="#blDemoDialog"&gt;Show dialog…&lt;/button&gt;
+
+&lt;div class="bl-overlay" id="blDemoDialog"&gt;
+  &lt;div class="bl-dialog"&gt;
+    &lt;div class="bl-titlebar"&gt;
+      &lt;svg class="bl-titlebar__icon" viewBox="0 0 24 24"&gt;&lt;circle cx="12" cy="12" r="9" fill="#cfe0f5" stroke="#fff"/&gt;&lt;/svg&gt;
+      &lt;span class="bl-titlebar__title"&gt;Confirm&lt;/span&gt;
+      &lt;div class="bl-winbtns"&gt;&lt;span class="bl-winbtn bl-winbtn--close" data-bl-close aria-label="Close"&gt;×&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="bl-dialog__body"&gt;Built from tokens, themed by the active scheme. Press Esc, click the backdrop, or use a button to close.&lt;/div&gt;
+    &lt;div class="bl-dialog__footer"&gt;
+      &lt;button class="bl-btn bl-btn--default" data-bl-close&gt;OK&lt;/button&gt;
+      &lt;button class="bl-btn" data-bl-close&gt;Cancel&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- DESKTOP -->
+    <section class="doc-section" id="desktop">
+      <h2>Desktop shell</h2>
+      <p class="lede">Bliss's whole thesis in one frame. A window manager activates automatically for any <code class="bl-mono">.bl-desktop</code>: double-click an icon (or use the Start menu) to open a draggable window, focus brings it forward and dims the rest, and the taskbar tracks what's open. The clock ticks live.</p>
+      <div class="doc-example doc-reveal">
+        <div class="doc-demo col" style="padding:var(--bl-space-3)"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="bl-desktop bl-bliss bl-on-bar" style="height:420px;border-radius:8px;border:1px solid rgba(0,0,0,.25);box-shadow:var(--bl-shadow-3)"&gt;
+  &lt;div class="bl-icon" data-bl-open-window="#dwin-mycomp" style="left:16px;top:14px" tabindex="0" role="button" aria-label="My Computer"&gt;
+    &lt;div class="bl-icon__glyph"&gt;&lt;svg viewBox="0 0 32 32" width="34" height="34"&gt;&lt;rect x="5" y="5" width="22" height="15" rx="1.5" fill="#dfe7ef" stroke="#7d8a99"/&gt;&lt;rect x="7" y="7" width="18" height="11" fill="#2a72e0"/&gt;&lt;rect x="10" y="22" width="12" height="4" fill="#c2ccd6" stroke="#7d8a99"/&gt;&lt;/svg&gt;&lt;/div&gt;
+    &lt;div class="bl-icon__label"&gt;My Computer&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="bl-icon" data-bl-open-window="#dwin-readme" style="left:16px;top:104px" tabindex="0" role="button" aria-label="Read Me"&gt;
+    &lt;div class="bl-icon__glyph"&gt;&lt;svg viewBox="0 0 32 32" width="34" height="34"&gt;&lt;rect x="8" y="4" width="16" height="24" rx="1.5" fill="#fff" stroke="#7d8a99"/&gt;&lt;path d="M11 10h10M11 14h10M11 18h7" stroke="#2a72e0" stroke-width="1.4"/&gt;&lt;/svg&gt;&lt;/div&gt;
+    &lt;div class="bl-icon__label"&gt;Read Me&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class="bl-window" id="dwin-mycomp" hidden style="left:130px;top:30px;width:300px"&gt;
+    &lt;div class="bl-titlebar"&gt;&lt;svg class="bl-titlebar__icon" viewBox="0 0 24 24"&gt;&lt;rect x="3" y="4" width="18" height="12" rx="1" fill="#cfe0f5" stroke="#fff"/&gt;&lt;/svg&gt;&lt;span class="bl-titlebar__title"&gt;My Computer&lt;/span&gt;&lt;div class="bl-winbtns"&gt;&lt;span class="bl-winbtn" data-bl-min aria-label="Minimize"&gt;_&lt;/span&gt;&lt;span class="bl-winbtn" data-bl-max aria-label="Maximize"&gt;▢&lt;/span&gt;&lt;span class="bl-winbtn bl-winbtn--close" data-bl-close aria-label="Close"&gt;×&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;div class="bl-window__body"&gt;&lt;div style="padding:14px;background:#fff;min-height:120px"&gt;&lt;p class="bl-small"&gt;Drag me by the title bar. Focus brings a window forward and dims the rest, as XP did.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="bl-window" id="dwin-readme" hidden style="left:180px;top:70px;width:280px"&gt;
+    &lt;div class="bl-titlebar"&gt;&lt;svg class="bl-titlebar__icon" viewBox="0 0 24 24"&gt;&lt;rect x="6" y="3" width="12" height="18" rx="1" fill="#fff" stroke="#fff"/&gt;&lt;/svg&gt;&lt;span class="bl-titlebar__title"&gt;Read Me — Notepad&lt;/span&gt;&lt;div class="bl-winbtns"&gt;&lt;span class="bl-winbtn" data-bl-min aria-label="Minimize"&gt;_&lt;/span&gt;&lt;span class="bl-winbtn" data-bl-max aria-label="Maximize"&gt;▢&lt;/span&gt;&lt;span class="bl-winbtn bl-winbtn--close" data-bl-close aria-label="Close"&gt;×&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;div class="bl-window__body"&gt;&lt;div style="padding:14px;background:#fff;font-family:var(--bl-font-mono);font-size:12px;min-height:120px"&gt;&lt;p&gt;BLISS — a design study.&lt;/p&gt;&lt;p&gt;Wallpaper "Bliss": Charles O'Rear, 1996.&lt;/p&gt;&lt;p&gt;Not affiliated with Microsoft.&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class="bl-taskbar"&gt;
+    &lt;button class="bl-startbtn"&gt;&lt;svg viewBox="0 0 48 48" aria-hidden="true"&gt;&lt;g transform="rotate(-8 24 24)"&gt;&lt;path d="M6 12 q10 -4 20 0 q10 4 18 0 v8 q-8 4 -18 0 q-10 -4 -20 0 z" fill="#f24e3a"/&gt;&lt;path d="M6 20 q10 -4 20 0 q10 4 18 0 v8 q-8 4 -18 0 q-10 -4 -20 0 z" fill="#5fb33a"/&gt;&lt;path d="M6 28 q10 -4 20 0 q10 4 18 0 v8 q-8 4 -18 0 q-10 -4 -20 0 z" fill="#2a8de0"/&gt;&lt;path d="M6 36 q10 -4 20 0 q10 4 18 0 v6 q-8 4 -18 0 q-10 -4 -20 0 z" fill="#ffd23a"/&gt;&lt;/g&gt;&lt;/svg&gt;start&lt;/button&gt;
+    &lt;div class="bl-tasklist" data-bl-tasklist&gt;&lt;/div&gt;
+    &lt;div class="bl-tray"&gt;&lt;svg viewBox="0 0 24 24"&gt;&lt;path d="M3 18l5-5 4 3 5-7 4 5v6H3z" fill="#cfe0f5"/&gt;&lt;/svg&gt;&lt;span class="bl-tray__clock" data-bl-clock&gt;12:00 PM&lt;/span&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class="bl-startmenu" hidden&gt;
+    &lt;div class="bl-startmenu__head"&gt;&lt;span class="bl-startmenu__avatar"&gt;&lt;svg viewBox="0 0 24 24" width="22" height="22"&gt;&lt;circle cx="12" cy="9" r="4" fill="#fff"/&gt;&lt;path d="M5 20c0-4 4-6 7-6s7 2 7 6" fill="#fff"/&gt;&lt;/svg&gt;&lt;/span&gt;User&lt;/div&gt;
+    &lt;div class="bl-startmenu__cols"&gt;
+      &lt;div class="bl-startmenu__left"&gt;
+        &lt;div class="bl-startmenu__item" data-bl-open-window="#dwin-readme"&gt;&lt;svg viewBox="0 0 24 24"&gt;&lt;rect x="4" y="3" width="16" height="18" rx="1.5" fill="#fff" stroke="#7d8a99"/&gt;&lt;path d="M8 8h8M8 12h8" stroke="#2a72e0" stroke-width="1.4"/&gt;&lt;/svg&gt;&lt;b&gt;Read Me&lt;/b&gt;&lt;/div&gt;
+        &lt;div class="bl-startmenu__item" data-bl-open-window="#dwin-mycomp"&gt;&lt;svg viewBox="0 0 24 24"&gt;&lt;rect x="3" y="5" width="18" height="11" rx="1" fill="#cfe0f5" stroke="#7d8a99"/&gt;&lt;rect x="5" y="7" width="14" height="7" fill="#2a72e0"/&gt;&lt;/svg&gt;My Computer&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="bl-startmenu__right"&gt;
+        &lt;div class="bl-startmenu__item"&gt;My Documents&lt;/div&gt;
+        &lt;div class="bl-startmenu__item"&gt;Control Panel&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="bl-startmenu__foot"&gt;&lt;button&gt;Log Off&lt;/button&gt;&lt;button&gt;Turn Off&lt;/button&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- SYSTEM INFO -->
+    <section class="doc-section" id="system">
+      <h2>System information</h2>
+      <p class="lede">A diegetic "System Properties" dialog — built from the same chrome, with live values that reflect the scheme you've chosen on this page.</p>
+      <div class="bl-window doc-reveal" style="max-width:520px">
+        <div class="bl-titlebar">
+          <svg class="bl-titlebar__icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#cfe0f5" stroke="#fff"/></svg>
+          <span class="bl-titlebar__title">System Properties</span>
+          <div class="bl-winbtns"><span class="bl-winbtn bl-winbtn--close" aria-label="Close">×</span></div>
+        </div>
+        <div class="bl-window__body" style="background:var(--bl-face)">
+          <div class="doc-facts" style="border:0;border-radius:0;box-shadow:none;background:transparent">
+            <div class="fr"><div><b>Visual style</b></div><div class="v">Bliss (Luna homage)</div></div>
+            <div class="fr"><div><b>Scheme</b></div><div class="v" id="siScheme">Blue · #1668e0</div></div>
+            <div class="fr"><div><b>Title face</b></div><div class="v">Trebuchet MS</div></div>
+            <div class="fr"><div><b>UI face</b></div><div class="v">Tahoma + ClearType</div></div>
+            <div class="fr"><div><b>Wallpaper</b></div><div class="v">Bliss (1996)</div></div>
+            <div class="fr"><div><b>Version</b></div><div class="v">v1.0.0 · MIT</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRINCIPLES -->
+    <section class="doc-section" id="principles">
+      <h2>Principles</h2>
+      <p class="lede">Six rules, each lifted from something Luna actually did — then stated as a rule you can hold a design against.</p>
+      <div class="doc-grid three">
+        <div class="bl-card doc-pcard doc-reveal"><div class="bl-card__body doc-prin"><div class="num">01</div><h3>Optimism by default</h3><p class="one">Light, sky, and air — the screen should feel like a good morning.</p><p>Bliss starts bright, not dark. The interface greets you instead of bracing you.</p></div></div>
+        <div class="bl-card doc-pcard doc-reveal"><div class="bl-card__body doc-prin"><div class="num">02</div><h3>Gloss is the material</h3><p class="one">A highlight up top, a saturated body below — light reads as a curved surface.</p><p>The signature gradient turns flat color into something that looks lit and pressable.</p></div></div>
+        <div class="bl-card doc-pcard doc-reveal"><div class="bl-card__body doc-prin"><div class="num">03</div><h3>Soft and tactile</h3><p class="one">Rounded corners, raised bevels, controls that look like buttons.</p><p>Everything invites the hand. A button is unmistakably a button.</p></div></div>
+        <div class="bl-card doc-pcard doc-reveal"><div class="bl-card__body doc-prin"><div class="num">04</div><h3>Color is a scheme</h3><p class="one">One accent themes the whole chrome. Swap it without rebuilding.</p><p>Blue, Olive Green, Silver: the same Windows, reskinned by a setting.</p></div></div>
+        <div class="bl-card doc-pcard doc-reveal"><div class="bl-card__body doc-prin"><div class="num">05</div><h3>Guide the way</h3><p class="one">Task panes, plain words, and a Start button labelled "start."</p><p>The interface names where to begin, so nobody has to already know.</p></div></div>
+        <div class="bl-card doc-pcard doc-reveal"><div class="bl-card__body doc-prin"><div class="num">06</div><h3>Confident chrome</h3><p class="one">The frame is allowed to be seen, and to be cheerful about it.</p><p>A glossy title bar and a green orb are landmarks, not noise.</p></div></div>
+      </div>
+
+      <h3 class="doc-sub">Do, and do not</h3>
+      <div class="doc-grid two">
+        <div class="bl-card doc-reveal"><div class="bl-card__body doc-dd do">
+          <h4>Do</h4>
+          <ul>
+            <li>Build every bar and button from the gloss layers: highlight, step, body, base shadow.</li>
+            <li>Keep one accent scheme driving all the chrome, and let users switch it.</li>
+            <li>Stay bright and roomy — light surfaces, open sky, generous padding.</li>
+            <li>Make controls obviously pressable with rounded corners and raised bevels.</li>
+            <li>Name the way forward: a labelled Start, task panes, plain-language headings.</li>
+            <li>Keep motion short and gentle, with a little pop where it earns a smile.</li>
+          </ul>
+        </div></div>
+        <div class="bl-card doc-reveal"><div class="bl-card__body doc-dd dont">
+          <h4>Do not</h4>
+          <ul>
+            <li>Flatten the chrome to a solid fill — without the gloss it isn't Luna, it's a rectangle.</li>
+            <li>Mix three accents on one screen; the scheme is one color, themed everywhere.</li>
+            <li>Go dark-and-moody — that betrays the optimism the whole language is built on.</li>
+            <li>Ship ambiguous, frameless controls that hide whether they can be pressed.</li>
+            <li>Assume expertise; never strip the guidance that makes Bliss welcoming.</li>
+            <li>Over-animate. Bouncing everything turns friendly into frantic.</li>
+          </ul>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- ACCESSIBILITY -->
+    <section class="doc-section" id="a11y">
+      <h2>Accessibility</h2>
+      <p class="lede">Friendly should mean reachable. XP shipped High Contrast themes and a magnifier; Bliss carries that intent — color is never the only signal, motion is optional, and every control works from the keyboard.</p>
+      <div class="doc-grid two">
+        <div class="bl-card doc-reveal"><div class="bl-card__body">
+          <h3 class="bl-h3" style="margin:0 0 8px">Built in</h3>
+          <p class="bl-small" style="margin:0">Color is never alone — status pairs a colored dot with a text label, and selections carry the authentic dotted XP focus rectangle (<code class="bl-mono">light on chrome, dark on the face</code>). Checkboxes, radios, tabs, switches and windows respond to <code class="bl-mono">Space</code>/<code class="bl-mono">Enter</code>/arrows; <code class="bl-mono">Esc</code> closes menus, dialogs and the Start menu. All motion collapses under <code class="bl-mono">prefers-reduced-motion</code>, and a <code class="bl-mono">@media print</code> block hides the taskbar, menus and toasts.</p>
+        </div></div>
+        <div class="bl-card doc-reveal"><div class="bl-card__body">
+          <h3 class="bl-h3" style="margin:0 0 8px">Your part</h3>
+          <p class="bl-small" style="margin:0">Lists, tabs and windows are styled, not re-implemented — keep correct roles and <code class="bl-mono">aria-*</code>. Reserve the accent for emphasis and chrome; use <code class="bl-mono">--bl-ink</code> / <code class="bl-mono">--bl-ink-dim</code> for prose, and don't place body text on a saturated title-bar fill. The chime never plays without a user gesture.</p>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- HERITAGE -->
+    <section class="doc-section" id="heritage">
+      <h2>Heritage</h2>
+      <p class="lede">For years the desktop was gray, beveled, and businesslike. Then Whistler shipped as Windows&nbsp;XP with the Luna visual style — rounded windows, glossy gradient title bars, a green Start button, and a photograph of a hill under a blue sky. Critics called it "Fisher-Price." Hundreds of millions called it home.</p>
+      <div class="doc-timeline">
+        <div class="doc-node doc-reveal"><div class="y">1995&ndash;2000</div><div class="n">Classic</div><div class="d">Win95 through 2000. Square grey bevels, raised and sunken edges. Capable, sober, never warm.</div></div>
+        <div class="doc-node doc-reveal"><div class="y">2001</div><div class="n">Whistler &rarr; Luna</div><div class="d">XP ships the themeable visual-styles engine on Oct&nbsp;25,&nbsp;2001. Rounded, glossy, green Start, ClearType text.</div></div>
+        <div class="doc-node doc-reveal"><div class="y">2001&ndash;2006</div><div class="n">Three schemes</div><div class="d">Blue, Olive Green, and Silver reskin the same Windows — color as a setting, not a rebuild.</div></div>
+        <div class="doc-node doc-reveal"><div class="y">2006&rarr;</div><div class="n">Aero &amp; after</div><div class="d">Gloss gave way to glass, then to flat. The friendliness, quietly, was the part worth keeping.</div></div>
+        <div class="doc-node now doc-reveal"><div class="y">Now</div><div class="n">Bliss</div><div class="d">Luna's optimism, re-tokenized: glossy, tactile chrome you can build with again.</div></div>
+      </div>
+
+      <div class="doc-foot">
+        A design study and homage, <strong style="color:var(--bl-ink-dim)">not affiliated with Microsoft or Windows</strong>. "Windows XP" and "Luna" are referenced descriptively; marks shown are original homage glyphs. The wallpaper named "Bliss" was photographed by Charles O'Rear in Sonoma/Napa, 1996.<br>
+        BLISS v1.0.0 · MIT · <a href="README.md">README</a> · <a href="bliss.css">bliss.css</a> · <a href="bliss.js">bliss.js</a> · <a href="bliss.tokens.json">bliss.tokens.json</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="doc-toasts" id="docLive" aria-live="polite" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+  function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
+
+  ready(function () {
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function $(s, c){ return (c||document).querySelector(s); }
+    function $all(s, c){ return Array.prototype.slice.call((c||document).querySelectorAll(s)); }
+
+    /* ---- copy + toast (dogfoods Bliss.toast; mirrors to an aria-live region) ---- */
+    var live = $('#docLive');
+    function announce(msg){ if (!live) return; live.textContent = ''; setTimeout(function(){ live.textContent = msg; }, 30); }
+    function copy(text, label){
+      var done = function(){ announce('Copied ' + (label || 'snippet')); if (window.Bliss && Bliss.toast) Bliss.toast({ title: 'Copied', body: label || 'snippet', timeout: 1800 }); };
+      if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); }); }
+      else { fallback(text); done(); }
+    }
+    function fallback(text){
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+      document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch(e){} ta.remove();
+    }
+
+    /* snippets are stored HTML-escaped; decode for live demo injection */
+    function decode(s){ var d = document.createElement('textarea'); d.innerHTML = s; return d.value; }
+    function dedent(s){
+      s = s.replace(/^\n+/, '').replace(/\s+$/, '');
+      var lines = s.split('\n');
+      var indent = lines.reduce(function(min, l){ if (!l.trim()) return min; var m = l.match(/^\s*/)[0].length; return Math.min(min, m); }, Infinity);
+      if (!isFinite(indent)) indent = 0;
+      return lines.map(function(l){ return l.slice(indent); }).join('\n');
+    }
+
+    /* render each example: snippet -> code block (+copy) and, unless [data-static], a live demo */
+    $all('.doc-example').forEach(function(ex){
+      var src = $('.doc-snippet', ex); if (!src) return;
+      var decoded = decode(dedent(src.textContent));
+      var codeEl = $('.doc-code code', ex);
+      if (codeEl) codeEl.textContent = decoded;       // textContent re-escapes for safe display
+      var demo = $('.doc-demo', ex);
+      if (demo && !demo.children.length && !ex.hasAttribute('data-static')) {
+        try {
+          demo.innerHTML = decoded;
+          if (window.Bliss && Bliss.init) Bliss.init(demo);  // wire newly injected .bl-* components
+        } catch(e){}
+      }
+      var wrap = $('.doc-codewrap', ex);
+      if (wrap){
+        var btn = document.createElement('button');
+        btn.className = 'bl-btn bl-btn--sm doc-copy';
+        btn.type = 'button'; btn.textContent = 'copy';
+        btn.addEventListener('click', function(){ copy(decoded, 'code'); });
+        wrap.appendChild(btn);
+      }
+    });
+
+    /* wire the "Show a toast" demo button (injected into a live demo) */
+    var toastBtn = $('#toastDemo');
+    if (toastBtn && window.Bliss && Bliss.toast){
+      toastBtn.addEventListener('click', function(){ Bliss.toast({ title: 'Bliss', body: 'A glossy notification, themed by the scheme.' }); });
+    }
+
+    /* ---- color ramps ---- */
+    var blues = [['50','#eaf3ff'],['100','#cfe0fb'],['200','#9fc0f4'],['300','#6aa9e4'],['400','#3f97ff'],['500','#1668e0'],['600','#0a55cf'],['700','#0a4ec4'],['800','#003db5'],['900','#0a246a']];
+    var greys = [['0','#ffffff'],['50','#fbfaf4'],['100','#f6f4ec'],['200','#ece9d8'],['300','#dcd8c4'],['400','#aca899'],['500','#919b9c'],['700','#51606e'],['900','#1b2733']];
+    function buildRamp(el, items, prefix){
+      if(!el) return;
+      items.forEach(function(p){
+        var s = document.createElement('button'); s.className='s'; s.style.background = p[1];
+        s.innerHTML = '<span>'+p[0]+'</span>'; s.title = prefix+p[0]+' · '+p[1];
+        s.addEventListener('click', function(){ copy('var('+prefix+p[0]+')', prefix+p[0]); });
+        el.appendChild(s);
+      });
+    }
+    buildRamp($('#blueRamp'), blues, '--bl-blue-');
+    buildRamp($('#greyRamp'), greys, '--bl-grey-');
+
+    /* semantic swatches copy */
+    $all('#semanticSwatches .doc-swatch').forEach(function(b){
+      b.addEventListener('click', function(){ var t=b.getAttribute('data-token'); copy('var('+t+')', t); });
+    });
+
+    /* ---- type scale ---- */
+    var typeRows = [
+      ['--bl-text-display','Bliss','var(--bl-font-title)',700,'44px'],
+      ['--bl-text-3xl','Heading','var(--bl-font-title)',700,'40px'],
+      ['--bl-text-2xl','Section title','var(--bl-font-title)',700,'28px'],
+      ['--bl-text-lg','Lead paragraph','var(--bl-font-ui)',400,'18px'],
+      ['--bl-text-md','Body copy is set here','var(--bl-font-ui)',400,'15px'],
+      ['--bl-text-sm','Secondary / labels','var(--bl-font-ui)',400,'13px'],
+      ['--bl-text-2xs','12.4 GB free of 38 GB','var(--bl-font-mono)',500,'11px']
+    ];
+    var ts = $('#typeScale');
+    if (ts) typeRows.forEach(function(r){
+      var row = document.createElement('div'); row.className='doc-scale-row';
+      row.innerHTML = '<span class="tk">'+r[0]+'</span><span style="font-family:'+r[2]+';font-weight:'+r[3]+';font-size:'+r[4]+';color:var(--bl-ink)"></span>';
+      row.lastChild.textContent = r[1];
+      ts.appendChild(row);
+    });
+
+    /* ---- spacing scale ---- */
+    var spaces = [['1','4'],['2','8'],['3','12'],['4','16'],['5','24'],['6','32'],['8','48'],['10','64']];
+    var sc = $('#spaceScale');
+    if (sc) spaces.forEach(function(p){
+      var row = document.createElement('div'); row.className='doc-space-row';
+      row.innerHTML = '<span class="tk">--bl-space-'+p[0]+'</span><span class="bar" style="width:'+p[1]+'px"></span><span class="bl-small">'+p[1]+'px</span>';
+      sc.appendChild(row);
+    });
+
+    /* ---- theme toggle (three Luna schemes) ---- */
+    var toggleBtns = $all('.doc-themetoggle [data-theme]');
+    var pickBtns = $all('[data-pick]');
+    var schemeLabel = { blue: 'Blue · #1668e0', olive: 'Olive Green · #7f9450', silver: 'Silver · #c3c3d2' };
+    function applyTheme(name){
+      if (window.Bliss && Bliss.setTheme) Bliss.setTheme(name, document.body);
+      else document.body.setAttribute('data-bl-theme', name);
+      toggleBtns.forEach(function(b){
+        var on = b.getAttribute('data-theme') === name;
+        b.setAttribute('aria-pressed', String(on));
+        b.classList.toggle('bl-btn--default', on);
+      });
+      var si = $('#siScheme'); if (si) si.textContent = schemeLabel[name] || name;
+    }
+    toggleBtns.forEach(function(b){ b.addEventListener('click', function(){ applyTheme(b.getAttribute('data-theme')); }); });
+    pickBtns.forEach(function(b){ b.addEventListener('click', function(){ applyTheme(b.getAttribute('data-pick')); }); });
+
+    /* copy install <link> */
+    var ci = $('#copyInstall');
+    if (ci) ci.addEventListener('click', function(){ copy('<link rel="stylesheet" href="bliss.css">', '<link>'); });
+
+    /* ---- reveal on scroll (default visible; opt into animation) ---- */
+    var reveals = $all('.doc-reveal');
+    if (!reduce && 'IntersectionObserver' in window){
+      var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('is-in'); io.unobserve(e.target); } }); }, { threshold: 0.08 });
+      reveals.forEach(function(s){ io.observe(s); });
+    } else { reveals.forEach(function(s){ s.classList.add('is-in'); }); }
+
+    /* ---- scrollspy for sidebar ---- */
+    var links = $all('.doc-side a');
+    var byId = {}; links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+    if ('IntersectionObserver' in window){
+      var spy = new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if (e.isIntersecting){
+            links.forEach(function(a){ a.classList.remove('is-active'); });
+            var a = byId[e.target.id]; if (a) a.classList.add('is-active');
+          }
+        });
+      }, { rootMargin: '-64px 0px -70% 0px', threshold: 0 });
+      $all('.doc-section').forEach(function(s){ if (s.id) spy.observe(s); });
+    }
+
+    /* dev-facing credit */
+    try {
+      console.log('%cBLISS v1.0.0', 'color:#1668e0;font-size:18px;font-weight:700');
+      console.log('%cA glossy, optimistic design system. Tokens: --bl-*  Components: .bl-*\nHomage to the Windows XP "Luna" visual style (2001). Not affiliated with Microsoft/Windows.',
+        'color:#51606e;font-family:monospace;font-size:12px;line-height:1.6');
+    } catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

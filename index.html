@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roger's Design Systems — an anthology of design languages</title>
+<meta name="description" content="Six design languages, each a faithful modern homage to a moment when software and print had a point of view — Art Deco, WPA wayfinding, '90s neon, Xbox, Windows XP & Vista. Tokens, components, and live docs you can build with.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0b10;
+    --bg-2:#0e1018;
+    --ink:#f2f3f8;
+    --dim:#a6a9b8;
+    --faint:#6b6f80;
+    --line:rgba(255,255,255,0.10);
+    --line-2:rgba(255,255,255,0.18);
+    --card:#13151f;
+    --radius:18px;
+    --sans:'Space Grotesk',system-ui,sans-serif;
+    --serif:'Instrument Serif',Georgia,serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;color:var(--ink);background:var(--bg);
+    font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(50rem 30rem at 15% -10%, rgba(120,90,255,0.16), transparent 60%),
+      radial-gradient(45rem 28rem at 100% 0%, rgba(31,199,190,0.13), transparent 55%),
+      radial-gradient(60rem 40rem at 50% 120%, rgba(237,30,156,0.10), transparent 60%);
+    background-attachment:fixed;
+  }
+  a{color:inherit;}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px 110px;}
+
+  /* ---------- HERO ---------- */
+  header.hero{padding:84px 0 26px;position:relative;}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:.72rem;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);
+    border:1px solid var(--line);border-radius:100px;padding:7px 14px;
+    background:rgba(255,255,255,0.02);
+  }
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:#3aee84;box-shadow:0 0 12px #3aee84;}
+  h1{
+    font-family:var(--sans);font-weight:700;letter-spacing:-.02em;
+    font-size:clamp(2.8rem,7.5vw,5.6rem);line-height:.98;margin:26px 0 0;
+    background:linear-gradient(120deg,#fff 20%,#b8b4ff 50%,#7fe9d8 80%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  h1 em{font-family:var(--serif);font-style:italic;font-weight:400;
+    -webkit-text-fill-color:#f2f3f8;}
+  .lede{max-width:64ch;color:var(--dim);font-size:clamp(1.05rem,2vw,1.32rem);margin:24px 0 0;}
+  .lede b{color:var(--ink);font-weight:500;}
+  .meta{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:30px;color:var(--faint);font-size:.86rem;}
+  .meta span{display:inline-flex;align-items:center;gap:8px;}
+  .meta b{color:var(--dim);font-weight:600;}
+
+  .railhead{
+    display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+    margin:64px 0 22px;border-top:1px solid var(--line);padding-top:22px;
+  }
+  .railhead h2{font-size:.78rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin:0;}
+  .railhead p{margin:0;color:var(--faint);font-size:.84rem;}
+
+  /* ---------- GRID ---------- */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;}
+  @media (max-width:760px){.grid{grid-template-columns:1fr;}}
+
+  .card{
+    --accent:#888;--c1:#888;--c2:#aaa;--c3:#ccc;--on:#fff;
+    position:relative;display:flex;flex-direction:column;
+    border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0) 40%),var(--card);
+    overflow:hidden;text-decoration:none;color:inherit;
+    transition:transform .22s cubic-bezier(.2,.7,.2,1), border-color .22s, box-shadow .22s;
+  }
+  .card:hover{
+    transform:translateY(-5px);
+    border-color:var(--line-2);
+    box-shadow:0 18px 50px -18px rgba(0,0,0,.8), 0 0 0 1px color-mix(in srgb,var(--accent) 30%, transparent),
+      0 24px 70px -30px var(--accent);
+  }
+  .card:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+
+  .card .band{height:92px;position:relative;overflow:hidden;
+    background:linear-gradient(115deg,var(--c1),var(--c2) 55%,var(--c3));}
+  .card .band::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(120% 140% at 0% 0%, rgba(255,255,255,.28), transparent 45%);}
+  .card .band .yr{
+    position:absolute;left:16px;bottom:12px;z-index:2;
+    font-family:var(--sans);font-weight:700;font-size:.78rem;letter-spacing:.14em;
+    color:var(--on);background:rgba(0,0,0,.28);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.25);border-radius:100px;padding:4px 11px;
+  }
+  .card .band .arrow{
+    position:absolute;right:14px;top:14px;z-index:2;width:34px;height:34px;border-radius:50%;
+    display:grid;place-items:center;color:var(--on);
+    background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.3);
+    transition:transform .22s, background .22s;
+  }
+  .card:hover .band .arrow{transform:translate(2px,-2px);background:rgba(0,0,0,.4);}
+
+  .card .body{padding:20px 20px 18px;display:flex;flex-direction:column;gap:10px;flex:1;}
+  .card .nm{display:flex;align-items:center;gap:11px;}
+  .card .nm h3{margin:0;font-size:1.5rem;font-weight:700;letter-spacing:-.01em;}
+  .card .nm .tag{font-size:.72rem;font-weight:600;letter-spacing:.04em;color:var(--dim);
+    border:1px solid var(--line);border-radius:100px;padding:3px 10px;white-space:nowrap;}
+  .card .desc{margin:0;color:var(--dim);font-size:.96rem;flex:1;}
+  .card .desc b{color:var(--ink);font-weight:500;}
+  .card .swatches{display:flex;gap:6px;margin-top:2px;}
+  .card .swatches i{width:18px;height:18px;border-radius:5px;border:1px solid rgba(255,255,255,.14);}
+  .card .url{
+    margin-top:6px;font-size:.78rem;color:var(--faint);
+    display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:13px;
+  }
+  .card .url code{font-family:var(--sans);letter-spacing:.01em;}
+  .card .url .live{margin-left:auto;color:var(--accent);font-weight:600;display:inline-flex;align-items:center;gap:6px;}
+
+  /* ---------- FOOTER ---------- */
+  footer{margin-top:70px;border-top:1px solid var(--line);padding-top:26px;color:var(--faint);font-size:.86rem;}
+  footer a{color:var(--dim);text-decoration:none;border-bottom:1px solid var(--line-2);}
+  footer a:hover{color:var(--ink);}
+  footer .row{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;}
+  .heart{color:#ed1e9c;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span>An anthology of design languages</span>
+    <h1>Roger's<br>Design <em>Systems</em></h1>
+    <p class="lede">Six design languages, each a faithful, modern homage to a moment when software — or print — had an unmistakable <b>point of view</b>. Not screenshots: real <b>tokens, components, and live documentation</b> you can read, copy, and build with. Pick an era and press the buttons.</p>
+    <div class="meta">
+      <span><b>6</b> systems</span>
+      <span><b>1925 → 2006</b> eight decades of taste</span>
+      <span><b>Self-contained</b> · open each in a browser</span>
+    </div>
+  </header>
+
+  <div class="railhead">
+    <h2>The collection</h2>
+    <p>ordered along the timeline they evoke</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- GILT -->
+    <a class="card" href="gilt/" style="--accent:#c5a24e;--c1:#f4ebd6;--c2:#c5a24e;--c3:#13654e;--on:#16130d">
+      <div class="band"><span class="yr">1925</span><span class="arrow" aria-hidden="true">↗</span></div>
+      <div class="body">
+        <div class="nm"><h3>Gilt</h3><span class="tag">Art Deco · machine age</span></div>
+        <p class="desc">The <b>1925 Paris Exposition</b> gone vertical — gilded geometry, jewel lacquer, and mirror symmetry from the Chrysler Building. Thin gold linework cut into shapes that mean business.</p>
+        <div class="swatches" aria-hidden="true"><i style="background:#c5a24e"></i><i style="background:#13654e"></i><i style="background:#9e2533"></i><i style="background:#1f457e"></i><i style="background:#f4ebd6"></i></div>
+        <div class="url"><code>…/gilt/</code><span class="live">live ↗</span></div>
+      </div>
+    </a>
+
+    <!-- CAIRN -->
+    <a class="card" href="cairn/" style="--accent:#ff6a2b;--c1:#39301f;--c2:#54905a;--c3:#15120c;--on:#f1e8d5">
+      <div class="band"><span class="yr">1930s–77</span><span class="arrow" aria-hidden="true">↗</span></div>
+      <div class="body">
+        <div class="nm"><h3>Cairn</h3><span class="tag">Wayfinding</span></div>
+        <p class="desc">Rugged and weatherproof, descended from <b>WPA park posters</b>, USGS topo maps, and the NPS Unigrid. Color is terrain; one high-vis blaze cuts through any light.</p>
+        <div class="swatches" aria-hidden="true"><i style="background:#54905a"></i><i style="background:#5fa3c0"></i><i style="background:#c4692f"></i><i style="background:#ff6a2b"></i><i style="background:#f1e8d5"></i></div>
+        <div class="url"><code>…/cairn/</code><span class="live">live ↗</span></div>
+      </div>
+    </a>
+
+    <!-- SONORA -->
+    <a class="card" href="sonora/" style="--accent:#ed1e9c;--c1:#f9821a;--c2:#ed1e9c;--c3:#7b3ff2;--on:#fff0c0">
+      <div class="band"><span class="yr">1995</span><span class="arrow" aria-hidden="true">↗</span></div>
+      <div class="body">
+        <div class="nm"><h3>Sonora</h3><span class="tag">Neon dusk</span></div>
+        <p class="desc">The <b>1990s Taco Bell rebrand</b>: warm Southwest ground — adobe and masa — detonated by electric neon and Memphis-Group confetti. Loud on purpose, grounded in the desert.</p>
+        <div class="swatches" aria-hidden="true"><i style="background:#ed1e9c"></i><i style="background:#7b3ff2"></i><i style="background:#19c3c3"></i><i style="background:#f9821a"></i><i style="background:#fff0c0"></i></div>
+        <div class="url"><code>…/sonora/</code><span class="live">live ↗</span></div>
+      </div>
+    </a>
+
+    <!-- NEBULA -->
+    <a class="card" href="nebula/" style="--accent:#3aee84;--c1:#04130b;--c2:#0e8f44;--c3:#3aee84;--on:#eafff0">
+      <div class="band"><span class="yr">2001</span><span class="arrow" aria-hidden="true">↗</span></div>
+      <div class="body">
+        <div class="nm"><h3>Nebula</h3><span class="tag">Living machine</span></div>
+        <p class="desc">A respectful homage to the <b>original Xbox dashboard</b> — translucent glass, bioluminescent green, and one beating core in the dark. The full kit ships CSS + tokens.</p>
+        <div class="swatches" aria-hidden="true"><i style="background:#3aee84"></i><i style="background:#0e8f44"></i><i style="background:#04230f"></i><i style="background:#a9f7c4"></i><i style="background:#03070a"></i></div>
+        <div class="url"><code>…/nebula/</code><span class="live">live ↗</span></div>
+      </div>
+    </a>
+
+    <!-- BLISS -->
+    <a class="card" href="bliss/" style="--accent:#2a73e8;--c1:#2a73e8;--c2:#5aa730;--c3:#1668e0;--on:#fff">
+      <div class="band"><span class="yr">2001</span><span class="arrow" aria-hidden="true">↗</span></div>
+      <div class="body">
+        <div class="nm"><h3>Bliss</h3><span class="tag">Glossy chrome</span></div>
+        <p class="desc">Friendly, optimistic chrome you can see and want to press — a homage to the <b>Windows XP "Luna"</b> style. Real component kit with three Luna schemes and a live desktop.</p>
+        <div class="swatches" aria-hidden="true"><i style="background:#1668e0"></i><i style="background:#5aa730"></i><i style="background:#6f8a3e"></i><i style="background:#6675a0"></i><i style="background:#fff"></i></div>
+        <div class="url"><code>…/bliss/</code><span class="live">live ↗</span></div>
+      </div>
+    </a>
+
+    <!-- AURORA -->
+    <a class="card" href="aurora/" style="--accent:#4fd1c5;--c1:#3a8ee6;--c2:#6dd5fa;--c3:#9b8cff;--on:#06121f">
+      <div class="band"><span class="yr">2006</span><span class="arrow" aria-hidden="true">↗</span></div>
+      <div class="body">
+        <div class="nm"><h3>Aurora</h3><span class="tag">Aero glass</span></div>
+        <p class="desc">Translucent, light-bending chrome and flowing color — a mature homage to <b>Windows Vista</b> and the Aero era of Frutiger optimism. Glass lit from within, not printed on.</p>
+        <div class="swatches" aria-hidden="true"><i style="background:#3a8ee6"></i><i style="background:#6dd5fa"></i><i style="background:#9b8cff"></i><i style="background:#4fd1c5"></i><i style="background:#eaf4ff"></i></div>
+        <div class="url"><code>…/aurora/</code><span class="live">live ↗</span></div>
+      </div>
+    </a>
+
+  </div>
+
+  <footer>
+    <div class="row">
+      <span>Each system is a design study & homage — original evocations, not affiliated with any named brand.</span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span>Built with <span class="heart">♥</span> by Roger Hernandez</span>
+      <span>·</span>
+      <a href="https://github.com/amosroger91/Roger-s-Design-Systems">Source on GitHub</a>
+      <span>·</span>
+      <a href="https://amosroger91.github.io/Roger-s-Design-Systems/">amosroger91.github.io/Roger-s-Design-Systems</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

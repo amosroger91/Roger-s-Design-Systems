@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURORA — Design Language</title>
+<meta name="description" content="Aurora is a glass interface language of translucent, light-bending chrome and flowing color — a mature homage to Windows Vista and the Aero era of Frutiger optimism. Edition 02.">
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     AURORA — design tokens · edition 02
+     Three switches theme the whole language from one place:
+       [data-accent]  — the glass tint (personalization, not place)
+       [data-sky]     — night | day  (the dark base vs. Frutiger bright)
+       body.solid     — Reduce transparency: glass becomes opaque
+     Set them on <body> for the system, or any subtree for one pane.
+     ============================================================ */
+  :root {
+    /* ---- night sky: the dark base the aurora glows against ---- */
+    --night-0: #05080f;   /* page base */
+    --night-1: #0a0f1a;   /* surface */
+    --night-2: #111a2b;   /* raised */
+    --night-3: rgba(255,255,255,0.03);
+    --surface-solid: #0e1726;   /* the opaque stand-in when glass is off */
+
+    /* ---- text on dark ---- */
+    --ink:       #eef4ff;
+    --ink-dim:   #b6c6dc;
+    --ink-faint: rgba(238,244,255,0.52);
+    --ink-ghost: rgba(238,244,255,0.32);
+
+    /* ---- hairline chrome ---- */
+    --line:        rgba(255,255,255,0.12);
+    --line-strong: rgba(255,255,255,0.22);
+
+    /* ---- THE GLASS — the material of the whole language ----
+       A pane is: translucent body + accent tint wash + a wet gloss
+       across the top + a bright specular top edge + frost grain +
+       an inner shadow + a soft drop. One recipe, used everywhere. */
+    --glass-bg:    rgba(255,255,255,0.10);
+    --glass-bg-2:  rgba(255,255,255,0.20);
+    --glass-line:  rgba(255,255,255,0.20);
+    --glass-edge:  rgba(255,255,255,0.62);   /* specular top border */
+    --glass-noise: 0.04;                      /* frost grain opacity */
+    --glass-shadow: 0 24px 60px rgba(0,0,0,0.50), 0 4px 14px rgba(0,0,0,0.34);
+    --glass-inner: inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -34px 54px rgba(0,0,0,0.28);
+
+    /* ---- blur scale ---- */
+    --blur-sm: 8px; --blur-md: 18px; --blur-lg: 28px;
+    --glass-blur: var(--blur-md);
+
+    /* ---- opacity scale (text + chrome) ---- */
+    --o-ghost: 0.32; --o-faint: 0.52; --o-dim: 0.72; --o-full: 1;
+
+    /* ---- the five glass tints — Vista's personalization ---- */
+    --tint-blue:     #3a9bf0;
+    --tint-green:    #54c95a;
+    --tint-violet:   #9b73f0;
+    --tint-amber:    #f0a93a;
+    --tint-graphite: #9fb2c6;
+
+    /* ---- semantic ---- */
+    --ok:    var(--tint-green);
+    --info:  var(--tint-blue);
+    --warn:  var(--tint-amber);
+    --danger:#ef5f63;
+
+    /* ---- spacing scale (4px base) ---- */
+    --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
+    --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+
+    /* ---- radii — softly rounded, never sharp ---- */
+    --r-sm: 4px; --r-md: 8px; --r-lg: 14px; --r-xl: 22px; --r-pill: 999px;
+
+    /* ---- elevation ---- */
+    --e1: 0 1px 0 rgba(255,255,255,0.05), 0 2px 10px rgba(0,0,0,0.32);
+    --e2: 0 10px 30px rgba(0,0,0,0.42);
+    --e3: 0 28px 64px rgba(0,0,0,0.52);
+
+    /* ---- z-index layers ---- */
+    --z-base: 0; --z-raised: 10; --z-sticky: 60; --z-toast: 80; --z-overlay: 90; --z-flash: 100;
+
+    /* ---- type — Segoe UI where present (Vista's face), else Open Sans;
+            both are Steve Matteson humanist sans, so the voice is seamless ---- */
+    --font-display: 'Segoe UI', 'Open Sans', system-ui, -apple-system, sans-serif;
+    --font-ui:      'Open Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-data:    'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+    /* ---- motion — Aero never snapped ---- */
+    --ease-aero:  cubic-bezier(0.25, 0.1, 0.25, 1);   /* calm default */
+    --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);      /* the flip / settle */
+    --dur-tap:    150ms;
+    --dur-move:   280ms;
+    --dur-flip:   460ms;
+    --dur-ambient: 30s;
+
+    --maxw: 1120px;
+  }
+
+  /* ---- the tint maps: accent + aurora ribbons from one attribute ---- */
+  [data-accent="blue"]{
+    --accent:#3a9bf0; --accent-bright:#9fd0ff; --accent-deep:#0b3a66;
+    --accent-tint:rgba(58,155,240,0.16); --accent-line:rgba(58,155,240,0.5); --accent-glow:rgba(58,155,240,0.55);
+    --aur-1:#39c6f5; --aur-2:#3a7bf0; --aur-3:#36e0c4; --aur-4:#5a9bff;
+  }
+  [data-accent="green"]{
+    --accent:#54c95a; --accent-bright:#b6f5ad; --accent-deep:#11521a;
+    --accent-tint:rgba(84,201,90,0.16); --accent-line:rgba(84,201,90,0.5); --accent-glow:rgba(84,201,90,0.55);
+    --aur-1:#8ef06a; --aur-2:#2fd07a; --aur-3:#39e0c4; --aur-4:#bff06a;
+  }
+  [data-accent="violet"]{
+    --accent:#9b73f0; --accent-bright:#d9c4ff; --accent-deep:#3a1f66;
+    --accent-tint:rgba(155,115,240,0.16); --accent-line:rgba(155,115,240,0.5); --accent-glow:rgba(155,115,240,0.55);
+    --aur-1:#b06ff5; --aur-2:#6f7bf0; --aur-3:#e06fd0; --aur-4:#9b8cff;
+  }
+  [data-accent="amber"]{
+    --accent:#f0a93a; --accent-bright:#ffe0a6; --accent-deep:#6b4209;
+    --accent-tint:rgba(240,169,58,0.16); --accent-line:rgba(240,169,58,0.5); --accent-glow:rgba(240,169,58,0.55);
+    --aur-1:#f5c45a; --aur-2:#f0807b; --aur-3:#e06fd0; --aur-4:#ffcf6a;
+  }
+  [data-accent="graphite"]{
+    --accent:#9fb2c6; --accent-bright:#e0e9f2; --accent-deep:#3a4654;
+    --accent-tint:rgba(159,178,198,0.16); --accent-line:rgba(159,178,198,0.5); --accent-glow:rgba(159,178,198,0.5);
+    --aur-1:#a9c0d6; --aur-2:#7f93a8; --aur-3:#6fb0c4; --aur-4:#c0d0e0;
+  }
+
+  /* ---- DAY sky: the Frutiger Aero bright variant. A toggle, not default. ---- */
+  body[data-sky="day"]{
+    --night-0:#cfe8fb; --night-1:#e8f4fe; --night-2:#ffffff; --night-3:rgba(0,0,0,0.03);
+    --surface-solid:#f4f8fd;
+    --ink:#10243a; --ink-dim:#3a5670; --ink-faint:rgba(16,36,58,0.55); --ink-ghost:rgba(16,36,58,0.32);
+    --line:rgba(16,36,58,0.14); --line-strong:rgba(16,36,58,0.24);
+    --glass-bg:rgba(255,255,255,0.42); --glass-bg-2:rgba(255,255,255,0.66);
+    --glass-line:rgba(255,255,255,0.7); --glass-edge:rgba(255,255,255,0.95);
+    --glass-noise:0.025;
+    --glass-shadow:0 24px 50px rgba(40,90,140,0.28), 0 4px 12px rgba(40,90,140,0.18);
+    --glass-inner:inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -34px 54px rgba(120,170,210,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--night-0);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background var(--dur-move) var(--ease-aero), color var(--dur-move) var(--ease-aero);
+  }
+  ::selection { background: var(--accent); color: #fff; }
+
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-sm); }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---- glossy Aero scrollbar ---- */
+  *::-webkit-scrollbar { width: 14px; height: 14px; }
+  *::-webkit-scrollbar-track { background: rgba(0,0,0,0.22); }
+  *::-webkit-scrollbar-thumb { border: 3px solid transparent; background-clip: padding-box; border-radius: 999px; background-color: rgba(255,255,255,0.18); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); }
+  *::-webkit-scrollbar-thumb:hover { background-color: var(--accent); }
+  html { scrollbar-color: rgba(255,255,255,0.25) rgba(0,0,0,0.22); }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+
+  .eyebrow { font-family: var(--font-data); font-size: 11px; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; color: var(--accent); transition: color var(--dur-move) var(--ease-aero); }
+
+  /* ============================================================
+     THE GLASS — reusable Aero material
+     ============================================================ */
+  .glass {
+    position: relative;
+    background:
+      linear-gradient(180deg, var(--accent-tint), transparent 60%),
+      linear-gradient(180deg, var(--glass-bg-2), var(--glass-bg) 46%, var(--glass-bg));
+    border: 1px solid var(--glass-line);
+    border-top-color: var(--glass-edge);
+    border-radius: var(--r-lg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+    box-shadow: var(--glass-inner), var(--glass-shadow);
+    overflow: hidden;
+    transition: background var(--dur-move) var(--ease-aero), box-shadow var(--dur-tap) var(--ease-aero), border-color var(--dur-tap) var(--ease-aero), transform var(--dur-tap) var(--ease-aero);
+  }
+  /* the wet gloss across the top half — the signature Aero sheen */
+  .glass::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.0)); pointer-events: none; z-index: 1; }
+  /* frost grain — the subtle texture of real frosted glass */
+  .glass::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: var(--glass-noise);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+  /* the active-window colored glow border — Aero's "this window has focus" cue */
+  .glass--glow { box-shadow: 0 0 0 1px var(--accent-line), 0 0 34px -8px var(--accent-glow), var(--glass-inner), var(--glass-shadow); }
+
+  /* ---- Reduce transparency: glass becomes a clean opaque surface ---- */
+  body.solid .glass, body.solid .frost {
+    background: var(--surface-solid) !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  }
+  body.solid .glass::after, body.solid .frost::after { display: none; }
+  body.solid .glass::before, body.solid .frost::before { opacity: 0.4; }
+  body.solid .aurora { opacity: 0.4; }
+  body.solid .stars { opacity: 0.5; }
+
+  /* ---- Graceful fallback where backdrop-filter is unsupported ---- */
+  @supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    .glass, .frost { background: var(--surface-solid); }
+    .glass::after, .frost::after { display: none; }
+  }
+  /* ---- Honor the OS-level setting automatically ---- */
+  @media (prefers-reduced-transparency: reduce) {
+    .glass, .frost { background: var(--surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .glass::after, .frost::after { display: none; }
+    .aurora { opacity: 0.4; }
+  }
+
+  /* ============ right-edge section dots ============ */
+  .dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 13px; z-index: var(--z-sticky); }
+  @media (max-width: 980px){ .dots { display: none; } }
+  .dots a { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--line-strong); background: transparent; transition: all var(--dur-tap) var(--ease-aero); position: relative; }
+  .dots a::after { content: attr(data-label); position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-family: var(--font-data); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity var(--dur-tap) var(--ease-aero); }
+  .dots a:hover { background: var(--accent); border-color: var(--accent); }
+  .dots a:hover::after { opacity: 1; }
+  .dots a.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+  /* ============================================================
+     THE AURORA FIELD + STARFIELD — signature backgrounds
+     ============================================================ */
+  .stars { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      radial-gradient(1.4px 1.4px at 12% 18%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1.2px 1.2px at 28% 64%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1.6px 1.6px at 44% 30%, rgba(255,255,255,0.85), transparent),
+      radial-gradient(1px 1px at 60% 78%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1.5px 1.5px at 73% 22%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1.1px 1.1px at 84% 56%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1.3px 1.3px at 92% 84%, rgba(255,255,255,0.8), transparent),
+      radial-gradient(1px 1px at 36% 88%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(1.2px 1.2px at 52% 50%, rgba(255,255,255,0.7), transparent);
+    animation: twinkle 7s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: 0.5; } to { opacity: 0.9; } }
+  body[data-sky="day"] .stars { display: none; }
+
+  .aurora { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+  .aurora .rib { position: absolute; border-radius: 50%; filter: blur(64px); opacity: 0.66; mix-blend-mode: screen; transition: background var(--dur-move) var(--ease-aero); will-change: transform; }
+  .aurora .r1 { width: 68vw; height: 46vh; left: -8vw; top: 4vh;  background: radial-gradient(closest-side, var(--aur-1), transparent 72%); animation: drift1 26s var(--ease-aero) infinite alternate; }
+  .aurora .r2 { width: 62vw; height: 40vh; right: -6vw; top: 20vh; background: radial-gradient(closest-side, var(--aur-2), transparent 72%); animation: drift2 32s var(--ease-aero) infinite alternate; }
+  .aurora .r3 { width: 78vw; height: 38vh; left: 6vw;  bottom: -8vh; background: radial-gradient(closest-side, var(--aur-3), transparent 72%); animation: drift3 38s var(--ease-aero) infinite alternate; }
+  .aurora .r4 { width: 46vw; height: 30vh; left: 32vw; top: 40vh; background: radial-gradient(closest-side, var(--aur-4), transparent 72%); opacity: 0.4; animation: drift2 44s var(--ease-aero) infinite alternate-reverse; }
+  .aurora .veil { position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.014) 0 1px, transparent 1px 3px); mix-blend-mode: overlay; }
+  @keyframes drift1 { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(8vw,4vh,0) rotate(8deg); } }
+  @keyframes drift2 { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(-7vw,6vh,0) rotate(-10deg); } }
+  @keyframes drift3 { from { transform: translate3d(0,0,0) rotate(0deg); } to { transform: translate3d(6vw,-5vh,0) rotate(6deg); } }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero { position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden; background: radial-gradient(140% 100% at 50% -10%, var(--night-2), var(--night-0) 70%); }
+  .hero-inner { position: relative; z-index: 3; width: 100%; }
+  .hero .pane { max-width: 770px; padding: 44px 48px 40px; }
+  @media (max-width: 620px){ .hero .pane { padding: 30px 26px; } }
+
+  .mark { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .mark .name { font-family: var(--font-data); font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+  .mark .ed { margin-left: auto; font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); border: 1px solid var(--line-strong); border-radius: var(--r-pill); padding: 4px 10px; }
+
+  /* the PEARL — original glossy orb homage to the Start button */
+  .pearl { width: 52px; height: 52px; border-radius: 50%; position: relative; flex: 0 0 auto; cursor: pointer; transition: transform var(--dur-tap) var(--ease-glide); border: 0; padding: 0; background: transparent; }
+  .pearl::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 38% 28%, rgba(255,255,255,0.95), rgba(255,255,255,0.1) 40%, transparent 60%), conic-gradient(from 210deg, var(--aur-1), var(--aur-2), var(--aur-3), var(--aur-1)); box-shadow: inset 0 2px 4px rgba(255,255,255,0.7), inset 0 -8px 16px rgba(0,0,0,0.35), 0 4px 12px rgba(0,0,0,0.4); }
+  .pearl::after { content: ""; position: absolute; left: 16%; right: 16%; top: 8%; height: 34%; border-radius: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.85), transparent); filter: blur(1px); }
+  .pearl:hover { transform: scale(1.06); }
+  .pearl:hover::before { box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 26px 4px var(--accent-glow); }
+
+  .hero h1 { font-family: var(--font-display); font-weight: 300; font-size: clamp(62px, 13vw, 150px); line-height: 0.92; letter-spacing: -0.02em; }
+  .hero h1 .glint { background: linear-gradient(120deg, var(--ink) 30%, var(--accent-bright) 50%, var(--ink) 70%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero .lede { margin-top: 22px; max-width: 560px; font-size: clamp(16px, 2.4vw, 20px); font-weight: 400; color: var(--ink-dim); }
+  .hero .lineage { margin-top: 16px; font-family: var(--font-data); font-size: 12.5px; color: var(--ink-faint); letter-spacing: 0.02em; }
+
+  .switch { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .switch .label { font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-faint); margin-right: 6px; }
+  .tint-chip { appearance: none; cursor: pointer; width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); padding: 0; position: relative; transition: transform var(--dur-tap) var(--ease-glide), box-shadow var(--dur-tap) var(--ease-aero); }
+  .tint-chip::after { content: ""; position: absolute; left: 18%; top: 12%; width: 40%; height: 30%; border-radius: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.85), transparent); }
+  .tint-chip:hover { transform: scale(1.12); }
+  .tint-chip[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--night-0), 0 0 0 4px currentColor, 0 0 18px currentColor; }
+  .pill-toggle { appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: var(--glass-bg); border: 1px solid var(--glass-line); border-top-color: var(--glass-edge); color: var(--ink-dim); font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 14px; border-radius: var(--r-pill); backdrop-filter: blur(8px); transition: all var(--dur-tap) var(--ease-aero); }
+  .pill-toggle:hover { color: var(--ink); border-color: var(--accent-line); }
+  .pill-toggle[aria-pressed="true"] { color: var(--ink); border-color: var(--accent-line); box-shadow: 0 0 14px -2px var(--accent-glow); }
+  .switch .sep { width: 1px; height: 22px; background: var(--line-strong); margin: 0 4px; }
+
+  .scrollcue { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: 3; font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-faint); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .scrollcue .ln { width: 1px; height: 34px; background: linear-gradient(var(--ink-faint), transparent); }
+
+  /* ============ generic section scaffold ============ */
+  .section { padding: 108px 0; border-top: 1px solid var(--line); position: relative; }
+  .section.tight { padding: 76px 0; }
+  .sec-head { margin-bottom: 50px; max-width: 740px; }
+  .sec-head h2 { font-family: var(--font-display); font-weight: 300; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -0.01em; margin-top: 14px; }
+  .sec-head p { margin-top: 18px; color: var(--ink-dim); font-size: 16.5px; max-width: 680px; }
+
+  /* ============================================================
+     LIVE: FLIP 3D — the cascading glass window stack, alive
+     ============================================================ */
+  .flip-stage { position: relative; height: 460px; border-radius: var(--r-lg); border: 1px solid var(--line); overflow: hidden; background: radial-gradient(120% 120% at 50% 120%, var(--night-2), var(--night-0) 70%); perspective: 1600px; }
+  @media (max-width: 620px){ .flip-stage { height: 380px; } }
+  .flip-deck { position: absolute; inset: 0; z-index: 2; transform-style: preserve-3d; display: grid; place-items: center; }
+  .win { position: absolute; width: min(440px, 78%); height: 280px; border-radius: var(--r-lg); overflow: hidden; background: linear-gradient(180deg, var(--accent-tint), transparent 50%), linear-gradient(180deg, var(--glass-bg-2), var(--glass-bg) 50%); border: 1px solid var(--glass-line); border-top-color: var(--glass-edge); backdrop-filter: blur(var(--glass-blur)) saturate(1.4); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4); box-shadow: var(--glass-inner), var(--glass-shadow); transition: transform var(--dur-flip) var(--ease-glide), opacity var(--dur-flip) var(--ease-aero), filter var(--dur-flip) var(--ease-aero); }
+  body.solid .win { background: var(--surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  @media (max-width: 620px){ .win { height: 220px; } }
+  .win .titlebar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.14); background: linear-gradient(180deg, rgba(255,255,255,0.16), transparent); }
+  .win .titlebar .wt { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .win .titlebar .wctl { margin-left: auto; display: flex; gap: 7px; }
+  .win .titlebar .wctl i { width: 13px; height: 13px; border-radius: 4px; display: block; border: 1px solid rgba(255,255,255,0.3); }
+  .win .titlebar .wctl .c { background: rgba(239,95,99,0.6); }
+  .win .body { padding: 18px 16px; position: relative; z-index: 2; }
+  .win .body .vk { font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent); }
+  .win .body h4 { font-family: var(--font-display); font-weight: 300; font-size: 26px; margin: 8px 0 8px; color: var(--ink); }
+  .win .body p { font-size: 13.5px; color: var(--ink-dim); }
+  .win .glyph { margin-top: 14px; width: 44px; height: 44px; color: var(--accent); opacity: 0.9; }
+
+  .flip-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; flex-wrap: wrap; }
+  .kbd-hint { display: flex; gap: 16px; font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.04em; align-items: center; }
+  .kbd-hint b { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 5px; border: 1px solid var(--line-strong); margin-right: 6px; font-weight: 500; font-size: 10.5px; color: var(--ink-dim); }
+  .sound-toggle { appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: var(--glass-bg); border: 1px solid var(--glass-line); border-top-color: var(--glass-edge); color: var(--ink-dim); font-family: var(--font-data); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 14px; border-radius: var(--r-pill); backdrop-filter: blur(8px); transition: all var(--dur-tap) var(--ease-aero); }
+  .sound-toggle:hover { color: var(--ink); border-color: var(--accent-line); }
+  .sound-toggle .wave { width: 16px; height: 16px; color: var(--accent); }
+  .sound-toggle[aria-pressed="false"] .wave { color: var(--ink-ghost); }
+
+  /* ============ HERITAGE timeline ============ */
+  .timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 8px; }
+  @media (max-width: 860px){ .timeline { grid-template-columns: 1fr 1fr; gap: 28px 0; } }
+  .node { position: relative; padding: 28px 22px 0 0; }
+  .node::before { content: ""; position: absolute; top: 8px; left: 0; right: 0; height: 1px; background: var(--line-strong); }
+  .node::after { content: ""; position: absolute; top: 4px; left: 0; width: 9px; height: 9px; border-radius: 50%; background: var(--tint-graphite); }
+  .node:nth-child(2)::after { background: var(--tint-blue); box-shadow: 0 0 10px var(--tint-blue); }
+  .node:nth-child(3)::after { background: var(--tint-violet); }
+  .node:nth-child(4)::after { background: var(--tint-graphite); }
+  .node:nth-child(5)::after { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+  .node .yr { font-family: var(--font-data); font-size: 12px; color: var(--ink-faint); letter-spacing: 0.08em; }
+  .node .nm { font-weight: 600; font-size: 15.5px; margin: 7px 0 8px; }
+  .node .ds { font-size: 13px; color: var(--ink-dim); }
+
+  /* ============ principles ============ */
+  .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 900px){ .principles { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 620px){ .principles { grid-template-columns: 1fr; } }
+  .prin { padding: 28px 26px; }
+  .prin .num { font-family: var(--font-data); font-size: 12px; color: var(--accent); letter-spacing: 0.1em; position: relative; z-index: 2; }
+  .prin h3 { font-family: var(--font-display); font-weight: 400; font-size: 21px; margin: 12px 0 12px; letter-spacing: -0.005em; position: relative; z-index: 2; }
+  .prin p { font-size: 14px; color: var(--ink-dim); position: relative; z-index: 2; }
+  .prin .one { color: var(--ink); font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+
+  /* ============ FOUNDATIONS ============ */
+  .tint-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 6px 0 14px; }
+  @media (max-width: 620px){ .tint-row { grid-template-columns: repeat(2, 1fr); } }
+  .tcard { padding: 0; cursor: pointer; }
+  .tcard .cap { height: 78px; position: relative; }
+  .tcard .cap::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.4), transparent 55%); }
+  .tcard .meta { padding: 11px 13px; position: relative; z-index: 2; }
+  .tcard .meta .k { font-weight: 600; font-size: 13px; }
+  .tcard .meta .v { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-faint); }
+
+  .sub-h { font-family: var(--font-data); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin: 40px 0 16px; }
+  .hint { font-size: 13px; color: var(--ink-faint); font-family: var(--font-data); margin-top: 4px; }
+
+  .ramp { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  @media (max-width: 620px){ .ramp { grid-template-columns: repeat(3, 1fr); } }
+  .step { padding: 22px 12px 12px; cursor: pointer; transition: background var(--dur-tap) var(--ease-aero); }
+  .step:hover { background: var(--night-3); }
+  .step .sw { height: 34px; border-radius: var(--r-sm); margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
+  .step .lab { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-faint); }
+
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px; }
+  @media (max-width: 760px){ .meta-grid { grid-template-columns: 1fr; } }
+  .tile-card { padding: 24px; }
+  .tile-card > * { position: relative; z-index: 2; }
+  .space-row { display: flex; align-items: center; gap: 14px; padding: 8px 0; }
+  .space-row .bar { height: 14px; background: var(--accent-tint); border-left: 2px solid var(--accent); border-radius: 2px; }
+  .space-row .lab { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-faint); min-width: 96px; }
+  .radius-row { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-end; }
+  .radius-demo { text-align: center; }
+  .radius-demo .box { width: 56px; height: 56px; background: var(--accent-tint); border: 1px solid var(--accent-line); margin-bottom: 8px; }
+  .radius-demo .lab { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-faint); }
+  .elev-row { display: flex; gap: 22px; flex-wrap: wrap; }
+  .elev-demo { flex: 1 1 110px; min-width: 100px; }
+  .elev-demo .box { height: 74px; border-radius: var(--r-md); background: var(--night-2); border: 1px solid var(--line); margin-bottom: 10px; }
+  .elev-demo .lab { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-faint); }
+
+  /* token scales reference */
+  .scales { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 760px){ .scales { grid-template-columns: 1fr; } }
+  .scale-card { padding: 22px 24px; }
+  .scale-card > * { position: relative; z-index: 2; }
+  .scale-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .blur-row { display: flex; align-items: center; gap: 14px; padding: 7px 0; }
+  .blur-chip { width: 54px; height: 36px; border-radius: var(--r-sm); border: 1px solid var(--glass-line); border-top-color: var(--glass-edge); position: relative; overflow: hidden; flex: 0 0 auto; background: linear-gradient(135deg, var(--aur-1), var(--aur-3)); }
+  .blur-chip span { position: absolute; inset: 0; backdrop-filter: blur(var(--b)); -webkit-backdrop-filter: blur(var(--b)); background: rgba(255,255,255,0.12); }
+  .blur-row .lab { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-faint); }
+  .kv { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .kv:last-child { border-bottom: 0; }
+  .kv .k { color: var(--ink-dim); }
+  .kv .v { font-family: var(--font-data); font-size: 11.5px; color: var(--accent); }
+  .opacity-row { display: flex; gap: 8px; align-items: flex-end; }
+  .opacity-row .oc { flex: 1; text-align: center; }
+  .opacity-row .oc .b { height: 40px; border-radius: var(--r-sm); background: var(--accent); margin-bottom: 6px; border: 1px solid var(--accent-line); }
+  .opacity-row .oc .lab { font-family: var(--font-data); font-size: 10px; color: var(--ink-faint); }
+
+  /* ============ type specimen ============ */
+  .spec { display: grid; gap: 16px; }
+  .face { padding: 28px 30px; }
+  .face > * { position: relative; z-index: 2; }
+  .face .role { font-family: var(--font-data); font-size: 11px; color: var(--accent); letter-spacing: 0.18em; text-transform: uppercase; }
+  .face .fname { font-family: var(--font-data); font-size: 12px; color: var(--ink-faint); float: right; }
+  .face .big { margin: 18px 0 6px; line-height: 1; color: var(--ink); }
+  .face .note { font-size: 13.5px; color: var(--ink-dim); max-width: 640px; }
+  .d1 { font-family: var(--font-display); font-weight: 300; font-size: clamp(40px, 8vw, 74px); letter-spacing: -0.02em; }
+  .d2 { font-family: var(--font-ui); font-weight: 400; font-size: clamp(24px, 5vw, 38px); }
+  .d3 { font-family: var(--font-data); font-weight: 500; font-size: clamp(20px, 4vw, 30px); letter-spacing: 0.02em; }
+  .scale { margin-top: 24px; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  .scale .sr { display: flex; align-items: baseline; gap: 18px; padding: 14px 22px; border-bottom: 1px solid var(--line); }
+  .scale .sr:last-child { border-bottom: 0; }
+  .scale .sr .tk { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-faint); width: 130px; flex: 0 0 auto; }
+
+  /* ============ the glass anatomy ============ */
+  .glass-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: stretch; }
+  @media (max-width: 820px){ .glass-grid { grid-template-columns: 1fr; } }
+  .glass-demo { position: relative; min-height: 340px; border-radius: var(--r-lg); overflow: hidden; display: grid; place-items: center; padding: 30px; border: 1px solid var(--line); }
+  .glass-demo .specimen { width: 100%; max-width: 320px; padding: 26px; z-index: 2; }
+  .glass-demo .specimen h4 { font-family: var(--font-display); font-weight: 300; font-size: 24px; color: var(--ink); position: relative; z-index: 2; }
+  .glass-demo .specimen p { font-size: 13.5px; color: var(--ink-dim); margin-top: 8px; position: relative; z-index: 2; }
+  .anatomy { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  .arow { display: flex; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  .arow:last-child { border-bottom: 0; }
+  .arow .k { font-weight: 600; font-size: 13.5px; min-width: 120px; }
+  .arow .v { font-size: 12.5px; color: var(--ink-dim); }
+  .arow .v code { font-family: var(--font-data); font-size: 11.5px; color: var(--accent); }
+  .tuner { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+  .tuner label { font-family: var(--font-data); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); display: flex; justify-content: space-between; }
+  .tuner label b { color: var(--accent); }
+
+  /* ============ motion ============ */
+  .motion-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: stretch; }
+  @media (max-width: 760px){ .motion-grid { grid-template-columns: 1fr; } }
+  .curve-box { padding: 26px; }
+  .curve-box > * { position: relative; z-index: 2; }
+  .curve-box svg { width: 100%; height: auto; display: block; }
+  .glide { margin-top: 18px; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; position: relative; }
+  .glide i { position: absolute; top: -4px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); animation: glide 2.6s var(--ease-glide) infinite; }
+  @keyframes glide { 0%,12% { left: 0; } 50% { left: calc(100% - 12px); } 88%,100% { left: calc(100% - 12px); } }
+  .motion-tokens { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  .mt { display: flex; justify-content: space-between; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .mt:last-child { border-bottom: 0; }
+  .mt .k { font-weight: 600; font-size: 14px; }
+  .mt .k small { display: block; color: var(--ink-faint); font-weight: 400; font-size: 12.5px; }
+  .mt .v { font-family: var(--font-data); font-size: 12px; color: var(--accent); text-align: right; }
+
+  /* ============================================================
+     THE DESKTOP — a full Vista Explorer window, in situ
+     ============================================================ */
+  .desktop { position: relative; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); min-height: 540px; background: radial-gradient(120% 100% at 30% 0%, var(--night-2), var(--night-0) 75%); padding: 28px; }
+  .desktop .aurora, .desktop .stars { z-index: 0; }
+
+  .xwin { position: relative; z-index: 2; width: min(680px, 100%); border-radius: var(--r-lg); overflow: hidden; }
+  .x-titlebar { display: flex; align-items: center; padding: 8px 10px; min-height: 36px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .x-ctl { margin-left: auto; display: flex; gap: 6px; }
+  .x-ctl button { appearance: none; cursor: pointer; width: 30px; height: 22px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.25); background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.05)); color: var(--ink); display: grid; place-items: center; transition: all var(--dur-tap) var(--ease-aero); }
+  .x-ctl button svg { width: 11px; height: 11px; }
+  .x-ctl button:hover { background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.12)); box-shadow: 0 0 12px var(--accent-glow); }
+  .x-ctl button.close:hover { background: linear-gradient(180deg, rgba(239,95,99,0.7), rgba(239,95,99,0.4)); box-shadow: 0 0 14px rgba(239,95,99,0.6); border-color: rgba(239,95,99,0.6); }
+
+  /* address row: back/forward + breadcrumb + search */
+  .x-addr { display: flex; align-items: center; gap: 10px; padding: 8px 12px; position: relative; z-index: 2; }
+  .navbtn { appearance: none; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-strong); background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.04)); color: var(--accent); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); transition: all var(--dur-tap) var(--ease-aero); }
+  .navbtn svg { width: 14px; height: 14px; }
+  .navbtn:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 0 12px var(--accent-glow); }
+  .navbtn.fwd { color: var(--ink-ghost); }
+  .crumbs { flex: 1; display: flex; align-items: center; gap: 2px; min-width: 0; height: 30px; padding: 0 10px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: rgba(255,255,255,0.08); box-shadow: inset 0 1px 3px rgba(0,0,0,0.25); overflow: hidden; }
+  .crumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-dim); padding: 4px 6px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: background var(--dur-tap) var(--ease-aero); }
+  .crumb:hover { background: rgba(255,255,255,0.1); color: var(--ink); }
+  .crumb.here { color: var(--ink); font-weight: 600; }
+  .crumb svg { width: 13px; height: 13px; opacity: 0.6; }
+  .crumb-sep { color: var(--ink-faint); font-size: 12px; }
+  .x-search { width: 150px; height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: rgba(255,255,255,0.08); box-shadow: inset 0 1px 3px rgba(0,0,0,0.25); }
+  @media (max-width: 560px){ .x-search { display: none; } }
+  .x-search svg { width: 14px; height: 14px; color: var(--ink-faint); }
+  .x-search input { border: 0; background: transparent; outline: none; color: var(--ink); font-family: var(--font-ui); font-size: 12.5px; width: 100%; }
+  .x-search input::placeholder { color: var(--ink-ghost); }
+
+  /* command bar */
+  .x-cmd { display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent); position: relative; z-index: 2; }
+  .cmd { appearance: none; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--ink-dim); font-family: var(--font-ui); font-size: 12.5px; font-weight: 600; padding: 6px 11px; border-radius: var(--r-sm); display: inline-flex; align-items: center; gap: 6px; transition: all var(--dur-tap) var(--ease-aero); }
+  .cmd:hover { background: rgba(255,255,255,0.1); color: var(--ink); border-color: var(--glass-line); }
+  .cmd .car { font-size: 9px; opacity: 0.7; }
+
+  /* body: nav pane | content */
+  .x-main { display: grid; grid-template-columns: 184px 1fr; min-height: 300px; position: relative; z-index: 2; }
+  @media (max-width: 620px){ .x-main { grid-template-columns: 1fr; } }
+  .x-tree { padding: 12px 8px; border-right: 1px solid rgba(255,255,255,0.08); }
+  @media (max-width: 620px){ .x-tree { display: none; } }
+  .tgroup { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); padding: 12px 10px 6px; }
+  .titem { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: var(--r-sm); font-size: 13px; color: var(--ink-dim); cursor: pointer; transition: background var(--dur-tap) var(--ease-aero); }
+  .titem svg { width: 15px; height: 15px; color: var(--accent); opacity: 0.85; flex: 0 0 auto; }
+  .titem:hover { background: rgba(255,255,255,0.07); color: var(--ink); }
+  .titem.on { background: var(--accent-tint); color: var(--ink); box-shadow: inset 0 0 0 1px var(--accent-line); }
+  .x-content { padding: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; align-content: start; }
+  .ftile { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 6px; border-radius: var(--r-md); border: 1px solid transparent; cursor: pointer; text-align: center; transition: all var(--dur-tap) var(--ease-aero); }
+  .ftile:hover { background: rgba(255,255,255,0.08); border-color: var(--glass-line); }
+  .ftile.sel { background: var(--accent-tint); border-color: var(--accent-line); box-shadow: 0 0 16px -6px var(--accent-glow); }
+  .ftile .fi { width: 42px; height: 42px; color: var(--accent); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35)); }
+  .ftile .fn { font-size: 12px; color: var(--ink); line-height: 1.25; }
+  .ftile .thumb { width: 48px; height: 38px; border-radius: 4px; background: linear-gradient(135deg, var(--aur-1), var(--aur-3)); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4), 0 4px 8px rgba(0,0,0,0.4); }
+
+  /* status bar */
+  .x-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 14px; border-top: 1px solid rgba(255,255,255,0.1); background: linear-gradient(180deg, transparent, rgba(0,0,0,0.12)); font-size: 12px; color: var(--ink-dim); position: relative; z-index: 2; }
+  .x-status .meta { font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); }
+
+  /* gadgets */
+  .gadget { position: absolute; z-index: 3; padding: 16px; text-align: center; }
+  .gadget.clock-g { right: 28px; top: 28px; width: 142px; }
+  .gadget.cpu-g { right: 28px; top: 196px; width: 142px; }
+  @media (max-width: 860px){ .gadget { display: none; } }
+  .gadget > * { position: relative; z-index: 2; }
+  .gadget .clock { font-family: var(--font-display); font-weight: 300; font-size: 34px; color: var(--ink); }
+  .gadget .date { font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.08em; margin-top: 2px; }
+  .gadget .glabel { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }
+  .meter { height: 8px; border-radius: var(--r-pill); background: rgba(0,0,0,0.3); box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); overflow: hidden; margin: 10px 0 4px; }
+  .meter i { display: block; height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--accent), var(--accent-bright)); box-shadow: 0 0 8px var(--accent-glow); transition: width 1.2s var(--ease-aero); }
+  .gadget .pct { font-family: var(--font-data); font-size: 12px; color: var(--ink-dim); }
+
+  /* taskbar + Aero Peek */
+  .taskbar { position: absolute; z-index: 4; left: 14px; right: 14px; bottom: 14px; height: 52px; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 8px; border-radius: var(--r-md); }
+  .taskbar .tb-pearl { width: 38px; height: 38px; flex: 0 0 auto; }
+  .tb-task { position: relative; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: var(--r-sm); font-size: 13px; color: var(--ink-dim); border: 1px solid transparent; cursor: pointer; transition: all var(--dur-tap) var(--ease-aero); }
+  .tb-task svg { width: 15px; height: 15px; color: var(--accent); }
+  .tb-task:hover { background: rgba(255,255,255,0.1); color: var(--ink); border-color: var(--glass-line); }
+  .tb-task.on { background: rgba(255,255,255,0.14); color: var(--ink); border-color: var(--glass-edge); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); }
+  /* Aero Peek live thumbnail */
+  .peek { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%) translateY(6px); width: 180px; border-radius: var(--r-md); padding: 8px; opacity: 0; pointer-events: none; transition: opacity var(--dur-tap) var(--ease-aero), transform var(--dur-tap) var(--ease-aero); z-index: 5; }
+  .tb-task:hover .peek, .tb-task:focus-within .peek { opacity: 1; transform: translateX(-50%); }
+  .peek .pk-title { font-size: 11px; color: var(--ink-dim); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; position: relative; z-index: 2; }
+  .peek .pk-shot { height: 86px; border-radius: 5px; border: 1px solid var(--glass-line); background: linear-gradient(160deg, var(--aur-2), var(--aur-3)); position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  .peek .pk-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent 40%); }
+  .taskbar .tb-clock { margin-left: auto; font-family: var(--font-data); font-size: 12px; color: var(--ink-dim); text-align: right; line-height: 1.3; padding-right: 6px; }
+
+  /* ============================================================
+     COMPONENT KIT
+     ============================================================ */
+  .kit { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  @media (max-width: 820px){ .kit { grid-template-columns: 1fr; } }
+  .card { border-radius: var(--r-lg); overflow: visible; }
+  .card .ct { display: flex; justify-content: space-between; align-items: center; padding: 15px 22px; border-bottom: 1px solid rgba(255,255,255,0.12); background: linear-gradient(180deg, rgba(255,255,255,0.12), transparent); border-radius: var(--r-lg) var(--r-lg) 0 0; position: relative; z-index: 2; }
+  .card .ct .name { font-family: var(--font-data); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
+  .card .ct .tag2 { font-family: var(--font-data); font-size: 10.5px; color: var(--ink-ghost); }
+  .card .stage { padding: 28px 22px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; position: relative; z-index: 2; }
+  .card.full { grid-column: 1 / -1; }
+
+  /* --- buttons: glossy Aero --- */
+  .btn { appearance: none; cursor: pointer; font-family: var(--font-ui); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 9px; padding: 10px 20px; border-radius: var(--r-md); border: 1px solid var(--line-strong); color: var(--ink); position: relative; background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); transition: transform var(--dur-tap) var(--ease-aero), background var(--dur-tap) var(--ease-aero), box-shadow var(--dur-tap) var(--ease-aero), border-color var(--dur-tap) var(--ease-aero); }
+  .btn:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 0 16px var(--accent-glow); border-color: var(--accent-line); }
+  .btn:active { transform: translateY(1px); box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); }
+  .btn .gl { width: 16px; height: 16px; }
+  .btn--solid { background: linear-gradient(180deg, var(--accent-bright), var(--accent) 48%, var(--accent-deep)); border-color: var(--accent-line); color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+  .btn--solid:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 0 22px var(--accent-glow); }
+  .btn--ghost { background: transparent; box-shadow: none; color: var(--ink-dim); }
+  .btn--ghost:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
+  .btn--danger { background: linear-gradient(180deg, rgba(239,95,99,0.4), rgba(239,95,99,0.12)); border-color: rgba(239,95,99,0.5); color: #ffd9da; }
+  .btn--danger:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 0 16px rgba(239,95,99,0.5); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn--icon { padding: 10px; width: 42px; height: 42px; justify-content: center; }
+
+  /* --- form fields --- */
+  .field { display: flex; flex-direction: column; gap: 7px; width: 100%; max-width: 280px; }
+  .field label { font-size: 12.5px; color: var(--ink-dim); }
+  .input, .select { appearance: none; width: 100%; font-family: var(--font-ui); font-size: 14px; color: var(--ink); background: rgba(255,255,255,0.08); border: 1px solid var(--line-strong); border-radius: var(--r-md); padding: 11px 14px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.25); transition: border-color var(--dur-tap) var(--ease-aero), box-shadow var(--dur-tap) var(--ease-aero), background var(--dur-tap) var(--ease-aero); }
+  .input::placeholder { color: var(--ink-ghost); }
+  .input:hover, .select:hover { border-color: var(--ink-faint); }
+  .input:focus-visible, .select:focus-visible { outline: none; border-color: var(--accent); box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), 0 0 0 3px var(--accent-tint), 0 0 14px var(--accent-glow); background: rgba(255,255,255,0.12); }
+  .select { background-image: linear-gradient(45deg, transparent 50%, var(--ink-faint) 50%), linear-gradient(135deg, var(--ink-faint) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
+
+  /* --- toggle switch --- */
+  .switch-ctrl { display: inline-flex; align-items: center; gap: 11px; cursor: pointer; user-select: none; }
+  .switch-ctrl .track { width: 48px; height: 26px; border-radius: var(--r-pill); background: rgba(0,0,0,0.3); border: 1px solid var(--line-strong); box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); position: relative; transition: background var(--dur-move) var(--ease-aero), border-color var(--dur-move) var(--ease-aero); }
+  .switch-ctrl .knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(180deg, #fff, #d4dce6); box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.9); transition: transform var(--dur-move) var(--ease-glide); }
+  .switch-ctrl[aria-checked="true"] .track { background: linear-gradient(180deg, var(--accent-bright), var(--accent)); border-color: var(--accent-line); box-shadow: inset 0 1px 2px rgba(255,255,255,0.4), 0 0 12px var(--accent-glow); }
+  .switch-ctrl[aria-checked="true"] .knob { transform: translateX(22px); }
+  .switch-ctrl .lbl { font-size: 14px; color: var(--ink-dim); }
+
+  /* --- checkbox + radio --- */
+  .opt { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: var(--ink-dim); }
+  .opt .box { width: 20px; height: 20px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(0,0,0,0.1)); box-shadow: inset 0 1px 2px rgba(0,0,0,0.25); display: grid; place-items: center; transition: all var(--dur-tap) var(--ease-aero); }
+  .opt .box.round { border-radius: 50%; }
+  .opt[aria-checked="true"] .box { background: linear-gradient(180deg, var(--accent-bright), var(--accent)); border-color: var(--accent-line); box-shadow: 0 0 10px var(--accent-glow); }
+  .opt .box svg { width: 13px; height: 13px; color: #fff; opacity: 0; transform: scale(0.6); transition: all var(--dur-tap) var(--ease-glide); }
+  .opt[aria-checked="true"] .box svg { opacity: 1; transform: none; }
+  .opt[aria-checked="true"] .box.round svg { display: none; }
+  .opt[aria-checked="true"] .box.round { box-shadow: inset 0 0 0 4px #fff, 0 0 10px var(--accent-glow); }
+
+  /* --- slider --- */
+  .slider { width: 100%; max-width: 260px; }
+  .slider input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--accent) var(--pct,50%), rgba(255,255,255,0.14) var(--pct,50%)); box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); outline: none; }
+  .slider input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg, #fff, var(--accent-bright)); border: 1px solid var(--accent-line); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4), 0 0 10px var(--accent-glow); }
+  .slider input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg, #fff, var(--accent-bright)); border: 1px solid var(--accent-line); cursor: pointer; }
+
+  /* --- segmented control --- */
+  .segmented { display: inline-flex; background: rgba(0,0,0,0.28); border: 1px solid var(--line-strong); border-radius: var(--r-pill); padding: 3px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.35); }
+  .segmented button { appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--ink-faint); font-family: var(--font-ui); font-weight: 600; font-size: 13px; padding: 8px 16px; border-radius: var(--r-pill); transition: color var(--dur-tap) var(--ease-aero), background var(--dur-tap) var(--ease-aero); }
+  .segmented button[aria-pressed="true"] { background: linear-gradient(180deg, var(--accent-bright), var(--accent)); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 0 12px var(--accent-glow); }
+
+  /* --- tabs --- */
+  .tabs { width: 100%; }
+  .tablist { display: flex; gap: 2px; border-bottom: 1px solid var(--line-strong); }
+  .tab { appearance: none; cursor: pointer; border: 1px solid transparent; border-bottom: 0; background: transparent; color: var(--ink-dim); font-family: var(--font-ui); font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: var(--r-sm) var(--r-sm) 0 0; position: relative; top: 1px; transition: all var(--dur-tap) var(--ease-aero); }
+  .tab:hover { color: var(--ink); background: rgba(255,255,255,0.05); }
+  .tab[aria-selected="true"] { color: var(--ink); background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)); border-color: var(--line-strong); box-shadow: inset 0 2px 0 var(--accent); }
+  .tabpanel { padding: 18px 4px 2px; font-size: 14px; color: var(--ink-dim); }
+  .tabpanel[hidden] { display: none; }
+
+  /* --- breadcrumb (standalone) --- */
+  .breadcrumb { display: inline-flex; align-items: center; gap: 2px; padding: 6px 8px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: rgba(255,255,255,0.06); box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); flex-wrap: wrap; }
+
+  /* --- menu / context menu (frosted) --- */
+  .menu-host { position: relative; }
+  .menu { position: absolute; top: calc(100% + 8px); left: 0; min-width: 220px; border-radius: var(--r-md); padding: 6px; z-index: var(--z-raised); opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity var(--dur-tap) var(--ease-aero), transform var(--dur-tap) var(--ease-aero); }
+  .menu.open { opacity: 1; transform: none; pointer-events: auto; }
+  .mi { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: var(--r-sm); font-size: 13.5px; color: var(--ink-dim); cursor: pointer; position: relative; z-index: 2; transition: background var(--dur-tap) var(--ease-aero), color var(--dur-tap) var(--ease-aero); }
+  .mi svg { width: 15px; height: 15px; color: var(--accent); flex: 0 0 auto; }
+  .mi:hover, .mi:focus-visible { background: var(--accent-tint); color: var(--ink); outline: none; box-shadow: inset 0 0 0 1px var(--accent-line); }
+  .mi .sc { margin-left: auto; font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); }
+  .mi.danger { color: var(--danger); } .mi.danger svg { color: var(--danger); }
+  .msep { height: 1px; background: var(--line); margin: 5px 8px; }
+
+  /* --- list rows --- */
+  .listbox { width: 100%; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  .lrow { display: flex; align-items: center; gap: 13px; padding: 13px 16px; border-bottom: 1px solid var(--line); cursor: pointer; transition: background var(--dur-tap) var(--ease-aero); }
+  .lrow:last-child { border-bottom: 0; }
+  .lrow:hover { background: rgba(255,255,255,0.06); }
+  .lrow[aria-selected="true"] { background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-line); }
+  .lrow .ic { width: 16px; height: 16px; flex: 0 0 auto; color: var(--accent); }
+  .lrow .t { font-size: 14px; }
+  .lrow .meta2 { margin-left: auto; font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); }
+
+  /* --- data table --- */
+  .table-wrap { width: 100%; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data thead th { text-align: left; font-weight: 600; color: var(--ink-dim); padding: 11px 14px; background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03)); border-bottom: 1px solid var(--line-strong); cursor: pointer; white-space: nowrap; }
+  table.data thead th:hover { color: var(--ink); }
+  table.data thead th .ar { font-size: 9px; color: var(--accent); margin-left: 5px; }
+  table.data tbody td { padding: 10px 14px; border-bottom: 1px solid var(--line); color: var(--ink); }
+  table.data tbody tr:nth-child(even) { background: rgba(255,255,255,0.025); }
+  table.data tbody tr { cursor: pointer; transition: background var(--dur-tap) var(--ease-aero); }
+  table.data tbody tr:hover { background: rgba(255,255,255,0.07); }
+  table.data tbody tr[aria-selected="true"] { background: var(--accent-tint); box-shadow: inset 2px 0 0 var(--accent); }
+  table.data td .fc { display: inline-flex; align-items: center; gap: 9px; }
+  table.data td .fc svg { width: 16px; height: 16px; color: var(--accent); }
+  table.data tbody tr:last-child td { border-bottom: 0; }
+
+  /* --- accordion / expander --- */
+  .accordion { width: 100%; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+  .acc { border-bottom: 1px solid var(--line); }
+  .acc:last-child { border-bottom: 0; }
+  .acc-head { width: 100%; appearance: none; cursor: pointer; border: 0; background: transparent; color: var(--ink); font-family: var(--font-ui); font-size: 14px; font-weight: 600; text-align: left; padding: 14px 16px; display: flex; align-items: center; gap: 11px; transition: background var(--dur-tap) var(--ease-aero); }
+  .acc-head:hover { background: rgba(255,255,255,0.05); }
+  .acc-head .chev { width: 14px; height: 14px; color: var(--accent); transition: transform var(--dur-move) var(--ease-glide); }
+  .acc-head[aria-expanded="true"] .chev { transform: rotate(90deg); }
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height var(--dur-move) var(--ease-aero); }
+  .acc-body .inner { padding: 0 16px 16px; font-size: 13.5px; color: var(--ink-dim); }
+
+  /* --- badges / status --- */
+  .badge { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-data); font-size: 11px; letter-spacing: 0.04em; padding: 5px 11px; border-radius: var(--r-pill); border: 1px solid var(--line-strong); color: var(--ink-dim); background: rgba(255,255,255,0.05); }
+  .badge .sd { width: 7px; height: 7px; border-radius: 50%; }
+  .badge.ok { color: var(--ok); border-color: rgba(84,201,90,0.4); } .badge.ok .sd { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .badge.info { color: var(--info); border-color: rgba(58,155,240,0.4); } .badge.info .sd { background: var(--info); }
+  .badge.warn { color: var(--warn); border-color: rgba(240,169,58,0.4); } .badge.warn .sd { background: var(--warn); }
+  .badge.danger { color: var(--danger); border-color: rgba(239,95,99,0.4); } .badge.danger .sd { background: var(--danger); }
+
+  /* --- profile chip --- */
+  .pchip { display: inline-flex; align-items: center; gap: 11px; }
+  .pchip .tl { width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 38% 30%, rgba(255,255,255,0.9), transparent 45%), conic-gradient(from 30deg, var(--aur-1), var(--aur-2), var(--aur-3), var(--aur-1)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.3); }
+  .pchip .nm b { font-size: 13.5px; font-weight: 600; }
+  .pchip .nm small { display: block; font-family: var(--font-data); font-size: 11px; color: var(--ink-faint); }
+
+  /* --- tooltip --- */
+  .tt { position: relative; display: inline-block; }
+  .tt .tip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(4px); background: var(--glass-bg-2); border: 1px solid var(--glass-line); border-top-color: var(--glass-edge); backdrop-filter: blur(12px); color: var(--ink); font-size: 12px; padding: 7px 12px; border-radius: var(--r-md); white-space: nowrap; opacity: 0; pointer-events: none; box-shadow: var(--e2); transition: opacity var(--dur-tap) var(--ease-aero), transform var(--dur-tap) var(--ease-aero); z-index: var(--z-raised); }
+  body.solid .tt .tip { background: var(--surface-solid); backdrop-filter: none; }
+  .tt:hover .tip, .tt:focus-within .tip { opacity: 1; transform: translateX(-50%); }
+
+  /* --- progress --- */
+  .progress { width: 100%; max-width: 260px; }
+  .progress .bar { height: 12px; border-radius: var(--r-pill); background: rgba(0,0,0,0.3); box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); overflow: hidden; }
+  .progress .bar i { display: block; height: 100%; width: 62%; border-radius: var(--r-pill); background: linear-gradient(180deg, var(--accent-bright), var(--accent)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); position: relative; overflow: hidden; }
+  .progress .bar i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(120deg, rgba(255,255,255,0.22) 0 12px, transparent 12px 24px); animation: stripe 1.1s linear infinite; }
+  @keyframes stripe { to { transform: translateX(24px); } }
+  .spinner { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.12); border-top-color: var(--accent); animation: spin 0.8s linear infinite; box-shadow: 0 0 10px var(--accent-glow); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* --- tray balloon --- */
+  .balloon { width: 100%; max-width: 320px; border-radius: var(--r-md); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .balloon > * { position: relative; z-index: 2; }
+  .balloon .bi { width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; background: linear-gradient(180deg, var(--accent-bright), var(--accent)); box-shadow: 0 0 12px var(--accent-glow); }
+  .balloon .bi svg { width: 16px; height: 16px; color: #fff; }
+  .balloon .bt b { font-size: 13.5px; display: block; }
+  .balloon .bt p { font-size: 12.5px; color: var(--ink-dim); margin-top: 3px; }
+  .balloon .bx { margin-left: auto; cursor: pointer; color: var(--ink-faint); background: none; border: 0; font-size: 16px; line-height: 1; padding: 2px; }
+  .balloon .bx:hover { color: var(--ink); }
+  .balloon.out { opacity: 0; transform: translateY(8px); transition: opacity var(--dur-move) var(--ease-aero), transform var(--dur-move) var(--ease-aero); }
+
+  /* --- toast --- */
+  .toast-wrap { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: var(--z-toast); display: flex; flex-direction: column; gap: 10px; align-items: center; pointer-events: none; }
+  .toast { display: flex; align-items: center; gap: 12px; background: var(--glass-bg-2); border: 1px solid var(--glass-line); border-top-color: var(--glass-edge); backdrop-filter: blur(14px) saturate(1.4); border-radius: var(--r-md); padding: 13px 18px; box-shadow: var(--e3); font-size: 14px; color: var(--ink); min-width: 280px; pointer-events: auto; animation: toastIn var(--dur-move) var(--ease-glide); }
+  body.solid .toast { background: var(--surface-solid); backdrop-filter: none; }
+  .toast .ti { color: var(--accent); width: 18px; height: 18px; flex: 0 0 auto; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .toast.out { animation: toastOut var(--dur-move) var(--ease-aero) forwards; }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(10px); } }
+
+  /* --- modal: a glass dialog --- */
+  .overlay { position: fixed; inset: 0; z-index: var(--z-overlay); display: grid; place-items: center; padding: 24px; background: rgba(5,8,15,0.5); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity var(--dur-move) var(--ease-aero); }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .modal { width: min(440px, 100%); border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 0 0 1px var(--accent-line), 0 0 40px -8px var(--accent-glow), var(--e3); background: linear-gradient(180deg, var(--accent-tint), transparent 40%), linear-gradient(180deg, var(--glass-bg-2), var(--glass-bg) 46%); border: 1px solid var(--glass-line); border-top-color: var(--glass-edge); backdrop-filter: blur(18px) saturate(1.4); transform: translateY(14px) scale(0.98); transition: transform var(--dur-move) var(--ease-glide); }
+  body.solid .modal { background: var(--surface-solid); backdrop-filter: none; }
+  .overlay.open .modal { transform: none; }
+  .modal .mtitle { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid rgba(255,255,255,0.14); background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent); }
+  .modal .mtitle .dt-icon { width: 16px; height: 16px; color: var(--accent); }
+  .modal .mtitle b { font-size: 13.5px; }
+  .modal .mb { padding: 22px 20px 8px; color: var(--ink-dim); font-size: 14.5px; }
+  .modal .mb h3 { font-family: var(--font-display); font-weight: 300; font-size: 22px; color: var(--ink); margin-bottom: 10px; }
+  .modal .mf { padding: 18px 20px 22px; display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ============ do / don't ============ */
+  .dd { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 720px){ .dd { grid-template-columns: 1fr; } }
+  .dd-col { padding: 26px 28px; }
+  .dd-col > * { position: relative; z-index: 2; }
+  .dd-col h4 { font-family: var(--font-data); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 18px; }
+  .dd-col.do h4 { color: var(--ok); }
+  .dd-col.dont h4 { color: var(--warn); }
+  .dd-col ul { list-style: none; }
+  .dd-col li { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--ink-dim); display: flex; gap: 12px; }
+  .dd-col li:last-child { border-bottom: 0; }
+  .dd-col li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; margin-top: 8px; flex: 0 0 auto; }
+  .dd-col.do li::before { background: var(--ok); }
+  .dd-col.dont li::before { background: var(--warn); }
+
+  /* ============ accessibility ============ */
+  .a11y { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+  @media (max-width: 760px){ .a11y { grid-template-columns: 1fr; } }
+  .a11y .it { padding: 28px; }
+  .a11y .it > * { position: relative; z-index: 2; }
+  .a11y .it .ic { width: 26px; height: 26px; color: var(--accent); margin-bottom: 16px; }
+  .a11y .it h4 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .a11y .it p { font-size: 13.5px; color: var(--ink-dim); }
+  .a11y .it code { font-family: var(--font-data); font-size: 12px; color: var(--accent); }
+
+  /* ============ footer ============ */
+  footer { padding: 70px 0 90px; border-top: 1px solid var(--line); }
+  footer .ft { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 18px; align-items: flex-end; }
+  footer .ft .big { font-family: var(--font-display); font-weight: 300; font-size: clamp(34px, 7vw, 64px); letter-spacing: -0.02em; line-height: 0.95; }
+  footer .ft .meta { font-family: var(--font-data); font-size: 12px; color: var(--ink-faint); text-align: right; line-height: 1.9; }
+
+  /* copy feedback */
+  .copied-flash { position: fixed; z-index: var(--z-flash); font-family: var(--font-data); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--accent); padding: 5px 10px; border-radius: var(--r-sm); pointer-events: none; transform: translate(-50%, -140%); animation: flashUp 900ms var(--ease-aero) forwards; box-shadow: 0 0 14px var(--accent-glow); }
+  @keyframes flashUp { 0% { opacity: 0; transform: translate(-50%, -120%); } 18% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -220%); } }
+
+  /* entrance choreography */
+  .reveal { opacity: 0; transform: translateY(16px); }
+  body.ready .hero .reveal { opacity: 1; transform: none; transition: opacity 760ms var(--ease-aero), transform 760ms var(--ease-aero); }
+  body.ready .hero .reveal:nth-child(1){ transition-delay: 120ms; }
+  body.ready .hero .reveal:nth-child(2){ transition-delay: 220ms; }
+  body.ready .hero .reveal:nth-child(3){ transition-delay: 320ms; }
+  body.ready .hero .reveal:nth-child(4){ transition-delay: 410ms; }
+  body.ready .hero .reveal:nth-child(5){ transition-delay: 500ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .aurora .rib, .stars { animation: none !important; }
+  }
+</style>
+</head>
+<body data-accent="blue" data-sky="night">
+
+  <!-- right-edge wayfinding dots -->
+  <nav class="dots" aria-label="Section navigation">
+    <a href="#top"        data-label="home"></a>
+    <a href="#live"       data-label="flip 3d"></a>
+    <a href="#heritage"   data-label="heritage"></a>
+    <a href="#principles" data-label="principles"></a>
+    <a href="#color"      data-label="foundations"></a>
+    <a href="#type"       data-label="type"></a>
+    <a href="#glass"      data-label="glass"></a>
+    <a href="#motion"     data-label="motion"></a>
+    <a href="#desktop"    data-label="desktop"></a>
+    <a href="#components" data-label="components"></a>
+    <a href="#a11y"       data-label="access"></a>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <header class="hero" id="top">
+    <div class="stars" aria-hidden="true"></div>
+    <div class="aurora" aria-hidden="true">
+      <div class="rib r1"></div><div class="rib r2"></div><div class="rib r3"></div><div class="rib r4"></div>
+      <div class="veil"></div>
+    </div>
+    <div class="hero-inner">
+      <div class="wrap">
+        <div class="glass glass--glow pane">
+          <div class="mark reveal">
+            <button class="pearl" id="heroPearl" aria-label="The pearl — play the glass chime"></button>
+            <div class="name">AURORA &middot; design language</div>
+            <div class="ed">edition 02</div>
+          </div>
+          <h1 class="reveal"><span class="glint">Aurora</span></h1>
+          <p class="lede reveal">A glass interface language of translucent, light-bending chrome over flowing color. Surfaces you can see through, lit with a wet gloss and a tint that's yours — descended from Windows Vista and the Aero era, re-tokenized, hardened, and made graceful enough to ship today.</p>
+          <p class="lineage reveal">Luna / XP 2001 &rsaquo; Windows Aero 2006&ndash;2007 &rsaquo; Frutiger Aero &rsaquo; the flat years &rsaquo; resurfacing now. Authentic, Energetic, Reflective, Open.</p>
+
+          <div class="switch reveal" role="group" aria-label="Personalize the system">
+            <span class="label">Tint is yours</span>
+            <button class="tint-chip" aria-pressed="true"  data-accent="blue"     style="background:#3a9bf0;color:#3a9bf0"  aria-label="Aero blue"></button>
+            <button class="tint-chip" aria-pressed="false" data-accent="green"    style="background:#54c95a;color:#54c95a"  aria-label="Frutiger green"></button>
+            <button class="tint-chip" aria-pressed="false" data-accent="violet"   style="background:#9b73f0;color:#9b73f0"  aria-label="Twilight violet"></button>
+            <button class="tint-chip" aria-pressed="false" data-accent="amber"    style="background:#f0a93a;color:#f0a93a"  aria-label="Sunset amber"></button>
+            <button class="tint-chip" aria-pressed="false" data-accent="graphite" style="background:#9fb2c6;color:#9fb2c6"  aria-label="Graphite"></button>
+            <span class="sep" aria-hidden="true"></span>
+            <button class="pill-toggle" id="skyToggle"   aria-pressed="false">&#9788; day sky</button>
+            <button class="pill-toggle" id="solidToggle" aria-pressed="false">&#9632; reduce transparency</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a class="scrollcue" href="#live" aria-label="Scroll to Flip 3D"><span>flip through</span><span class="ln"></span></a>
+  </header>
+
+  <main>
+  <!-- ================= LIVE: FLIP 3D ================= -->
+  <section class="section" id="live">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">The language, running</div>
+        <h2>Flip 3D, made interactive</h2>
+        <p>Aurora's core gesture, alive: a cascade of glass windows in real space. Click the deck, or focus it and press <b>&larr;&rarr;</b> / <b>Space</b> to flip. The front pane is sharp and lit; the ones behind recede into blur and perspective, exactly as Vista's Win+Tab did. A soft glass chime confirms each flip.</p>
+      </div>
+
+      <div class="flip-stage reveal" id="flipStage" tabindex="0" role="group" aria-label="Flip 3D window deck — use arrow keys to flip">
+        <div class="stars" aria-hidden="true"></div>
+        <div class="aurora" aria-hidden="true"><div class="rib r1"></div><div class="rib r2"></div><div class="rib r3"></div></div>
+        <div class="flip-deck" id="flipDeck" aria-live="polite"></div>
+      </div>
+
+      <div class="flip-foot reveal">
+        <div class="kbd-hint">
+          <span><b>&larr;</b><b>&rarr;</b>flip</span>
+          <span><b>Space</b>next</span>
+          <span><b>click</b>cycle</span>
+        </div>
+        <button class="sound-toggle" id="soundToggle" aria-pressed="true" aria-label="Toggle glass chime sound">
+          <svg class="wave" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+          <span>chime</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HERITAGE ================= -->
+  <section class="section" id="heritage">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Where it comes from</div>
+        <h2>The release that decided chrome should be made of light</h2>
+        <p>Windows Vista's Aero was the first mainstream interface composited entirely on the GPU: every window's title bar became real-time frosted glass, blurring and tinting whatever sat behind it. It was glossy, optimistic, and a little utopian — the centerpiece of the broader Frutiger Aero look of bubbles, water, clean skies, and humanist type. The industry abandoned it for flat design a few years later; the instincts — translucency as hierarchy, glass as material, light as feedback — are exactly what Acrylic, vibrancy, and Liquid Glass reach for now.</p>
+      </div>
+      <div class="timeline">
+        <div class="node reveal"><div class="yr">2001</div><div class="nm">Luna (XP)</div><div class="ds">Plastic, candy-colored, opaque. Friendly but flat — the warm-up for what composition could do.</div></div>
+        <div class="node reveal"><div class="yr">2006</div><div class="nm">Windows Aero</div><div class="ds">DWM composites everything. Live frosted glass, the Start pearl, Flip 3D, gadgets, soft glows.</div></div>
+        <div class="node reveal"><div class="yr">2009</div><div class="nm">Aero Peek (7)</div><div class="ds">The glass matured: live thumbnails, Peek-to-desktop, snapping. Aero at its most refined.</div></div>
+        <div class="node reveal"><div class="yr">2012</div><div class="nm">The flat years</div><div class="ds">Metro and the industry strip the glass away. Depth and gloss declared decadent, removed wholesale.</div></div>
+        <div class="node reveal"><div class="yr">Now</div><div class="nm">Aurora</div><div class="ds">The glass returns, re-tokenized: translucency you can theme, with the gloss and optimism intact — and a graceful way to turn it off.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRINCIPLES ================= -->
+  <section class="section" id="principles">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">The spine</div>
+        <h2>Six principles</h2>
+        <p>Each is lifted from something Aero actually did, then stated as a rule you can hold a design against.</p>
+      </div>
+      <div class="principles">
+        <div class="prin glass reveal"><div class="num">01</div><h3>Glass over solid</h3><p class="one">Chrome is translucent; the world shows through it.</p><p>Surfaces are frosted, not painted. Blurring the context behind a pane keeps the user oriented while pushing it back in space.</p></div>
+        <div class="prin glass reveal"><div class="num">02</div><h3>Light is wet</h3><p class="one">Every surface has a gloss and a specular edge.</p><p>A highlight across the top half, a bright top border, and a faint frost grain make the material read as polished glass.</p></div>
+        <div class="prin glass reveal"><div class="num">03</div><h3>Depth through blur</h3><p class="one">Blur is hierarchy. Sharper is nearer.</p><p>Focus comes forward and sharpens; everything else softens and recedes. The amount of blur tells you the layer order.</p></div>
+        <div class="prin glass reveal"><div class="num">04</div><h3>Tint is yours</h3><p class="one">One accent colors the whole system's glass.</p><p>Personalization, not wayfinding. Pick a tint and every pane, control, and glow inherits it — the interface becomes the user's.</p></div>
+        <div class="prin glass reveal"><div class="num">05</div><h3>Glow is feedback</h3><p class="one">Controls answer with a soft bloom of light.</p><p>Hover, focus, and active states bloom rather than snap. The response is warm and physical, never a hard flip.</p></div>
+        <div class="prin glass reveal"><div class="num">06</div><h3>Glass is optional</h3><p class="one">The whole system survives without transparency.</p><p>Reduce transparency, no backdrop-filter, or a low-end GPU all degrade to clean opaque surfaces. Beauty is never load-bearing.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOUNDATIONS / COLOR ================= -->
+  <section class="section" id="color">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Foundations &middot; tokens</div>
+        <h2>Color, space, form</h2>
+        <p>The accent is one swappable token. Change it and the glass tint, the aurora ribbons, every glow, and the focus ring all move together. Click any swatch or token to copy it.</p>
+      </div>
+
+      <div class="sub-h">Glass tints — personalization, not place</div>
+      <div class="tint-row">
+        <div class="tcard glass reveal" data-accent-pick="blue"><div class="cap" style="background:linear-gradient(180deg,#9fd0ff,#3a9bf0 50%,#0b3a66)"></div><div class="meta"><div class="k">aero blue</div><div class="v" data-copy="#3a9bf0">#3a9bf0</div></div></div>
+        <div class="tcard glass reveal" data-accent-pick="green"><div class="cap" style="background:linear-gradient(180deg,#b6f5ad,#54c95a 50%,#11521a)"></div><div class="meta"><div class="k">frutiger green</div><div class="v" data-copy="#54c95a">#54c95a</div></div></div>
+        <div class="tcard glass reveal" data-accent-pick="violet"><div class="cap" style="background:linear-gradient(180deg,#d9c4ff,#9b73f0 50%,#3a1f66)"></div><div class="meta"><div class="k">twilight</div><div class="v" data-copy="#9b73f0">#9b73f0</div></div></div>
+        <div class="tcard glass reveal" data-accent-pick="amber"><div class="cap" style="background:linear-gradient(180deg,#ffe0a6,#f0a93a 50%,#6b4209)"></div><div class="meta"><div class="k">sunset</div><div class="v" data-copy="#f0a93a">#f0a93a</div></div></div>
+        <div class="tcard glass reveal" data-accent-pick="graphite"><div class="cap" style="background:linear-gradient(180deg,#e0e9f2,#9fb2c6 50%,#3a4654)"></div><div class="meta"><div class="k">graphite</div><div class="v" data-copy="#9fb2c6">#9fb2c6</div></div></div>
+      </div>
+      <p class="hint">double-click a tint card to apply it to the whole page</p>
+
+      <div class="sub-h">Neutral ramp — night to ink</div>
+      <div class="ramp reveal">
+        <div class="step" data-copy="#05080f"><div class="sw" style="background:#05080f"></div><div class="lab">night-0 / base</div></div>
+        <div class="step" data-copy="#0a0f1a"><div class="sw" style="background:#0a0f1a"></div><div class="lab">night-1 / surface</div></div>
+        <div class="step" data-copy="#111a2b"><div class="sw" style="background:#111a2b"></div><div class="lab">night-2 / raised</div></div>
+        <div class="step" data-copy="rgba(255,255,255,0.12)"><div class="sw" style="background:rgba(255,255,255,0.12)"></div><div class="lab">line / hairline</div></div>
+        <div class="step" data-copy="#b6c6dc"><div class="sw" style="background:#b6c6dc"></div><div class="lab">ink-dim</div></div>
+        <div class="step" data-copy="#eef4ff"><div class="sw" style="background:#eef4ff"></div><div class="lab">ink / text</div></div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="tile-card glass reveal">
+          <div class="sub-h" style="margin-top:0">Spacing &middot; 4px base</div>
+          <div class="space-row"><span class="lab">--s1 &middot; 4</span><span class="bar" style="width:4px"></span></div>
+          <div class="space-row"><span class="lab">--s2 &middot; 8</span><span class="bar" style="width:8px"></span></div>
+          <div class="space-row"><span class="lab">--s3 &middot; 12</span><span class="bar" style="width:12px"></span></div>
+          <div class="space-row"><span class="lab">--s4 &middot; 16</span><span class="bar" style="width:16px"></span></div>
+          <div class="space-row"><span class="lab">--s5 &middot; 24</span><span class="bar" style="width:24px"></span></div>
+          <div class="space-row"><span class="lab">--s6 &middot; 32</span><span class="bar" style="width:32px"></span></div>
+          <div class="space-row"><span class="lab">--s7 &middot; 48</span><span class="bar" style="width:48px"></span></div>
+          <div class="space-row"><span class="lab">--s8 &middot; 64</span><span class="bar" style="width:64px"></span></div>
+        </div>
+        <div class="tile-card glass reveal">
+          <div class="sub-h" style="margin-top:0">Radius — softly rounded</div>
+          <div class="radius-row">
+            <div class="radius-demo"><div class="box" style="border-radius:4px"></div><div class="lab">sm &middot; 4</div></div>
+            <div class="radius-demo"><div class="box" style="border-radius:8px"></div><div class="lab">md &middot; 8</div></div>
+            <div class="radius-demo"><div class="box" style="border-radius:14px"></div><div class="lab">lg &middot; 14</div></div>
+            <div class="radius-demo"><div class="box" style="border-radius:22px"></div><div class="lab">xl &middot; 22</div></div>
+            <div class="radius-demo"><div class="box" style="border-radius:999px"></div><div class="lab">pill</div></div>
+          </div>
+          <div class="sub-h">Elevation</div>
+          <div class="elev-row">
+            <div class="elev-demo"><div class="box" style="box-shadow:var(--e1)"></div><div class="lab">e1 / resting</div></div>
+            <div class="elev-demo"><div class="box" style="box-shadow:var(--e2)"></div><div class="lab">e2 / lifted</div></div>
+            <div class="elev-demo"><div class="box" style="box-shadow:var(--e3)"></div><div class="lab">e3 / floating</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sub-h">The rest of the scales</div>
+      <div class="scales">
+        <div class="scale-card glass reveal">
+          <h4>Blur scale</h4>
+          <div class="blur-row"><span class="blur-chip" style="--b:8px"><span></span></span><span class="lab">--blur-sm &middot; 8px &middot; tooltips, chips</span></div>
+          <div class="blur-row"><span class="blur-chip" style="--b:18px"><span></span></span><span class="lab">--blur-md &middot; 18px &middot; panes, windows</span></div>
+          <div class="blur-row"><span class="blur-chip" style="--b:28px"><span></span></span><span class="lab">--blur-lg &middot; 28px &middot; overlays, scrims</span></div>
+          <h4 style="margin-top:20px">Opacity scale</h4>
+          <div class="opacity-row">
+            <div class="oc"><div class="b" style="opacity:.32"></div><div class="lab">ghost .32</div></div>
+            <div class="oc"><div class="b" style="opacity:.52"></div><div class="lab">faint .52</div></div>
+            <div class="oc"><div class="b" style="opacity:.72"></div><div class="lab">dim .72</div></div>
+            <div class="oc"><div class="b" style="opacity:1"></div><div class="lab">full 1</div></div>
+          </div>
+        </div>
+        <div class="scale-card glass reveal">
+          <h4>Duration</h4>
+          <div class="kv"><span class="k">--dur-tap &middot; hover / press</span><span class="v">150ms</span></div>
+          <div class="kv"><span class="k">--dur-move &middot; recolor / slide</span><span class="v">280ms</span></div>
+          <div class="kv"><span class="k">--dur-flip &middot; window flip</span><span class="v">460ms</span></div>
+          <div class="kv"><span class="k">--dur-ambient &middot; aurora drift</span><span class="v">26&ndash;44s</span></div>
+          <h4 style="margin-top:20px">Z-index layers</h4>
+          <div class="kv"><span class="k">raised &middot; menus, tooltips</span><span class="v">10</span></div>
+          <div class="kv"><span class="k">sticky &middot; nav dots</span><span class="v">60</span></div>
+          <div class="kv"><span class="k">toast</span><span class="v">80</span></div>
+          <div class="kv"><span class="k">overlay &middot; modal</span><span class="v">90</span></div>
+          <div class="kv"><span class="k">flash &middot; copy cue</span><span class="v">100</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TYPE ================= -->
+  <section class="section" id="type">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Voice</div>
+        <h2>Type</h2>
+        <p>Vista introduced Segoe UI as the system face. Aurora uses it where it's present, and falls back to Open Sans everywhere else — both are humanist sans-serifs drawn by Steve Matteson, so the voice stays consistent from Windows to the web. A monospace handles data and tokens.</p>
+      </div>
+      <div class="spec">
+        <div class="face glass reveal"><span class="fname">Segoe UI / Open Sans Light</span><div class="role">Display &middot; 300</div><div class="big d1">authentic, energetic, open</div><div class="note">Light weight at large sizes — the calm, confident Vista title voice. Set thin and slightly tight so big words feel airy, not heavy.</div></div>
+        <div class="face glass reveal"><span class="fname">Open Sans</span><div class="role">Interface &middot; 400 / 600</div><div class="big d2">documents &middot; pictures &middot; music</div><div class="note">The working voice. Open, warm, highly readable. Steve Matteson designed both this and Segoe UI, so the fallback is seamless.</div></div>
+        <div class="face glass reveal"><span class="fname">JetBrains Mono</span><div class="role">Data &middot; 400 / 500</div><div class="big d3">--glass-blur: 18px;</div><div class="note">For tokens, hex, captions, and any value the eye must scan precisely. The authentically digital layer under the glass.</div></div>
+      </div>
+      <div class="scale reveal">
+        <div class="sr"><span class="tk">display / 150</span><span class="ex d1" style="font-size:34px">Aurora</span></div>
+        <div class="sr"><span class="tk">h2 / 46</span><span class="ex" style="font-size:28px;font-weight:300;font-family:var(--font-display)">Six principles</span></div>
+        <div class="sr"><span class="tk">h3 / 21</span><span class="ex" style="font-size:21px;font-weight:600">Glass over solid</span></div>
+        <div class="sr"><span class="tk">body / 16</span><span class="ex" style="font-size:16px">Chrome is translucent; the world shows through it.</span></div>
+        <div class="sr"><span class="tk">label / 14</span><span class="ex" style="font-size:14px;font-weight:600">Personalize</span></div>
+        <div class="sr"><span class="tk">data / 11.5</span><span class="ex" style="font-family:var(--font-data);font-size:12px;color:var(--ink-faint)">blur(18px) saturate(1.4)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= THE GLASS ================= -->
+  <section class="section" id="glass">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Material</div>
+        <h2>The glass</h2>
+        <p>One material carries the entire language. A pane is a translucent body, a wash of the active tint, a wet gloss across the top, a bright specular edge, a faint frost grain, an inner shadow that hollows it, and a soft drop beneath. Tune it live, then read the recipe — and note how it degrades when transparency is off.</p>
+      </div>
+      <div class="glass-grid">
+        <div class="glass-demo reveal" id="glassDemoStage">
+          <div class="stars" aria-hidden="true"></div>
+          <div class="aurora" aria-hidden="true"><div class="rib r1"></div><div class="rib r2"></div><div class="rib r3"></div></div>
+          <div class="glass glass--glow specimen" id="glassSpecimen"><h4>Frosted pane</h4><p>Drag the sliders — blur and tint update this live specimen against the aurora behind it. Flip &ldquo;reduce transparency&rdquo; in the hero to watch it fall back to a clean opaque surface.</p></div>
+        </div>
+        <div>
+          <div class="anatomy reveal">
+            <div class="arow"><div class="k">Body</div><div class="v">Translucent white, <code>rgba(255,255,255,0.10&ndash;0.20)</code>, top-lighter to bottom-darker.</div></div>
+            <div class="arow"><div class="k">Tint</div><div class="v">A wash of the accent over the top, <code>--accent-tint</code>. Identity, never just opacity.</div></div>
+            <div class="arow"><div class="k">Gloss</div><div class="v">A highlight across the top 50% — the wet Aero sheen. <code>::before</code></div></div>
+            <div class="arow"><div class="k">Grain</div><div class="v">A faint fractal-noise overlay so frost reads as frost. <code>::after</code></div></div>
+            <div class="arow"><div class="k">Edge</div><div class="v">A bright 1px specular top border. <code>--glass-edge</code></div></div>
+            <div class="arow"><div class="k">Blur</div><div class="v">Backdrop blur + saturate lifts color from behind. <code>--glass-blur</code></div></div>
+            <div class="arow"><div class="k">Glow</div><div class="v">Focused windows gain an accent ring. <code>.glass--glow</code></div></div>
+          </div>
+          <div class="tuner reveal">
+            <label for="tBlur">backdrop blur <b id="tBlurV">18px</b></label>
+            <input id="tBlur" type="range" min="0" max="40" value="18">
+            <label for="tTint">tint strength <b id="tTintV">16%</b></label>
+            <input id="tTint" type="range" min="0" max="60" value="16">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MOTION ================= -->
+  <section class="section" id="motion">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Behavior</div>
+        <h2>Motion</h2>
+        <p>Aero never snapped. Two curves do the work: a calm symmetric ease for fades and tints, and an expressive settle for the flip and any element coming to rest. Glows bloom slowly. Keep durations gentle and honest.</p>
+      </div>
+      <div class="motion-grid">
+        <div class="curve-box glass reveal">
+          <svg viewBox="0 0 300 170" aria-label="Easing curve">
+            <line x1="20" y1="150" x2="280" y2="150" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+            <line x1="20" y1="20"  x2="20"  y2="150" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+            <path d="M20 150 C 62 -2, 104 14, 280 20" fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+            <circle cx="20" cy="150" r="3.5" fill="var(--accent)"/>
+            <circle cx="280" cy="20" r="3.5" fill="var(--accent)"/>
+          </svg>
+          <div style="font-family:var(--font-data);font-size:11.5px;color:var(--ink-faint);margin-top:14px">--ease-glide: cubic-bezier(0.16, 1, 0.3, 1)</div>
+          <div class="glide" aria-hidden="true"><i></i></div>
+        </div>
+        <div class="motion-tokens reveal">
+          <div class="mt"><div class="k">Window flip<small>front to back</small></div><div class="v">460ms<br>ease-glide</div></div>
+          <div class="mt"><div class="k">Tint recolor<small>accent crossfade</small></div><div class="v">280ms<br>ease-aero</div></div>
+          <div class="mt"><div class="k">Control bloom<small>hover / focus glow</small></div><div class="v">150ms<br>ease-aero</div></div>
+          <div class="mt"><div class="k">Aurora drift<small>ambient ribbons</small></div><div class="v">26&ndash;44s<br>ease-aero</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= THE DESKTOP ================= -->
+  <section class="section" id="desktop">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">In situ</div>
+        <h2>The desktop</h2>
+        <p>The material assembled into the real thing: a full Explorer window with a frosted title bar, a breadcrumb address bar, a command bar, a navigation tree, and a status bar — plus floating gadgets and a glass taskbar anchored by the pearl. Hover a taskbar item for an Aero Peek thumbnail. Everything here is built from the tokens above and respects the reduce-transparency switch.</p>
+      </div>
+      <div class="desktop reveal">
+        <div class="stars" aria-hidden="true"></div>
+        <div class="aurora" aria-hidden="true"><div class="rib r1"></div><div class="rib r2"></div><div class="rib r3"></div></div>
+
+        <div class="xwin glass glass--glow">
+          <div class="x-titlebar">
+            <div class="x-ctl">
+              <button aria-label="Minimize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 19h14"/></svg></button>
+              <button aria-label="Maximize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="1"/></svg></button>
+              <button class="close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            </div>
+          </div>
+          <div class="x-addr">
+            <button class="navbtn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <button class="navbtn fwd" aria-label="Forward"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+            <div class="crumbs">
+              <span class="crumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>Computer</span>
+              <span class="crumb-sep">&rsaquo;</span>
+              <span class="crumb">OS (C:)</span>
+              <span class="crumb-sep">&rsaquo;</span>
+              <span class="crumb">Users</span>
+              <span class="crumb-sep">&rsaquo;</span>
+              <span class="crumb here">Aurora</span>
+            </div>
+            <div class="x-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input type="text" placeholder="Search Aurora" aria-label="Search"></div>
+          </div>
+          <div class="x-cmd">
+            <div class="menu-host">
+              <button class="cmd" id="orgBtn" aria-haspopup="true" aria-expanded="false">Organize <span class="car">&#9662;</span></button>
+              <div class="menu glass" id="orgMenu" role="menu" aria-label="Organize">
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Cut<span class="sc">Ctrl X</span></div>
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy<span class="sc">Ctrl C</span></div>
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>Paste<span class="sc">Ctrl V</span></div>
+                <div class="msep" role="separator"></div>
+                <div class="mi danger" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete<span class="sc">Del</span></div>
+              </div>
+            </div>
+            <button class="cmd">Views <span class="car">&#9662;</span></button>
+            <button class="cmd">Slideshow</button>
+            <button class="cmd">Burn</button>
+          </div>
+          <div class="x-main">
+            <div class="x-tree">
+              <div class="tgroup">Favorites</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Desktop</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Downloads</div>
+              <div class="tgroup">Libraries</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>Documents</div>
+              <div class="titem on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 21"/></svg>Pictures</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Music</div>
+              <div class="tgroup">Computer</div>
+              <div class="titem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>OS (C:)</div>
+            </div>
+            <div class="x-content" id="xContent">
+              <div class="ftile sel"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H3z"/></svg><span class="fn">Camera Roll</span></div>
+              <div class="ftile"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H3z"/></svg><span class="fn">Wallpapers</span></div>
+              <div class="ftile"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H3z"/></svg><span class="fn">Screenshots</span></div>
+              <div class="ftile"><span class="thumb"></span><span class="fn">aurora.jpg</span></div>
+              <div class="ftile"><span class="thumb" style="background:linear-gradient(135deg,var(--aur-2),var(--aur-4))"></span><span class="fn">glass.png</span></div>
+              <div class="ftile"><span class="thumb" style="background:linear-gradient(135deg,var(--aur-4),var(--aur-1))"></span><span class="fn">peek.png</span></div>
+            </div>
+          </div>
+          <div class="x-status">
+            <span id="xCount">1 item selected</span>
+            <span class="meta">3.4 GB free of 119 GB</span>
+          </div>
+        </div>
+
+        <div class="gadget clock-g glass">
+          <div class="clock" id="gadgetClock">10:24</div>
+          <div class="date" id="gadgetDate">FRI &middot; JUN 20</div>
+        </div>
+        <div class="gadget cpu-g glass">
+          <div class="glabel">CPU</div>
+          <div class="meter"><i id="cpuBar" style="width:38%"></i></div>
+          <div class="pct" id="cpuPct">38%</div>
+        </div>
+
+        <div class="taskbar glass">
+          <button class="pearl tb-pearl" aria-label="Start"></button>
+          <div class="tb-task on" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>Computer
+            <div class="peek glass"><div class="pk-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l9-4 9 4-9 4-9-4z"/></svg>Computer</div><div class="pk-shot"></div></div>
+          </div>
+          <div class="tb-task" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 21"/></svg>Photos
+            <div class="peek glass"><div class="pk-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Photos</div><div class="pk-shot" style="background:linear-gradient(160deg,var(--aur-1),var(--aur-4))"></div></div>
+          </div>
+          <div class="tb-task" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Media
+            <div class="peek glass"><div class="pk-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18V5l12-2v13"/></svg>Media Player</div><div class="pk-shot" style="background:linear-gradient(160deg,var(--aur-4),var(--aur-2))"></div></div>
+          </div>
+          <div class="tb-clock" id="taskClock">10:24<br>6/20/2026</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= COMPONENTS ================= -->
+  <section class="section" id="components">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Parts</div>
+        <h2>Components</h2>
+        <p>A complete vocabulary built only from the tokens above. Every part is shown with its real states — hover, focus, active, selected, disabled — glossy, glass, and glowing. All controls are keyboard-operable, inherit the active tint, and survive reduce-transparency.</p>
+      </div>
+
+      <div class="kit">
+        <!-- buttons -->
+        <div class="card glass reveal">
+          <div class="ct"><span class="name">Buttons</span><span class="tag2">.btn</span></div>
+          <div class="stage">
+            <button class="btn btn--solid">OK</button>
+            <button class="btn"><svg class="gl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Continue</button>
+            <button class="btn btn--ghost">Cancel</button>
+            <button class="btn btn--danger">Delete</button>
+            <button class="btn" disabled>Disabled</button>
+            <button class="btn btn--icon" aria-label="More"><svg class="gl" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
+          </div>
+        </div>
+
+        <!-- toggles & options -->
+        <div class="card glass reveal">
+          <div class="ct"><span class="name">Toggle, check, radio</span><span class="tag2">role=switch / checkbox</span></div>
+          <div class="stage" style="flex-direction:column;align-items:flex-start;gap:18px">
+            <div class="switch-ctrl" role="switch" aria-checked="true" tabindex="0"><span class="track"><span class="knob"></span></span><span class="lbl">Aero glass</span></div>
+            <div style="display:flex;gap:22px;flex-wrap:wrap">
+              <div class="opt" role="checkbox" aria-checked="true" tabindex="0"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Transparency</div>
+              <div class="opt" role="checkbox" aria-checked="false" tabindex="0"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg></span>Animations</div>
+            </div>
+            <div style="display:flex;gap:22px;flex-wrap:wrap" role="radiogroup" aria-label="Theme">
+              <div class="opt" role="radio" aria-checked="true" tabindex="0"><span class="box round"></span>Glass</div>
+              <div class="opt" role="radio" aria-checked="false" tabindex="-1"><span class="box round"></span>Classic</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- inputs -->
+        <div class="card glass reveal">
+          <div class="ct"><span class="name">Fields</span><span class="tag2">.input / .select</span></div>
+          <div class="stage" style="flex-direction:column;align-items:stretch;gap:16px">
+            <div class="field"><label for="f1">Computer name</label><input class="input" id="f1" type="text" placeholder="AURORA-PC"></div>
+            <div class="field"><label for="f2">Color scheme</label><select class="select" id="f2"><option>Aero glass</option><option>Standard</option><option>Classic</option></select></div>
+            <div class="slider" style="margin-top:4px"><label style="display:block;font-size:12.5px;color:var(--ink-dim);margin-bottom:8px" for="f3">Transparency</label><input id="f3" type="range" min="0" max="100" value="62"></div>
+          </div>
+        </div>
+
+        <!-- segmented + tabs -->
+        <div class="card glass reveal">
+          <div class="ct"><span class="name">Segmented &amp; tabs</span><span class="tag2">.segmented / role=tablist</span></div>
+          <div class="stage" style="flex-direction:column;align-items:stretch;gap:20px">
+            <div class="segmented" role="group" aria-label="View">
+              <button aria-pressed="true">Tiles</button>
+              <button aria-pressed="false">List</button>
+              <button aria-pressed="false">Details</button>
+            </div>
+            <div class="tabs">
+              <div class="tablist" role="tablist" aria-label="Properties">
+                <button class="tab" role="tab" aria-selected="true"  id="t2a" aria-controls="p2a">General</button>
+                <button class="tab" role="tab" aria-selected="false" id="t2b" aria-controls="p2b" tabindex="-1">Sharing</button>
+                <button class="tab" role="tab" aria-selected="false" id="t2c" aria-controls="p2c" tabindex="-1">Security</button>
+              </div>
+              <div class="tabpanel" role="tabpanel" id="p2a" aria-labelledby="t2a">General settings live here — name, type, and location of the item.</div>
+              <div class="tabpanel" role="tabpanel" id="p2b" aria-labelledby="t2b" hidden>Sharing controls who on the network can reach this folder.</div>
+              <div class="tabpanel" role="tabpanel" id="p2c" aria-labelledby="t2c" hidden>Security lists the permissions each user and group has.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- menu + breadcrumb -->
+        <div class="card glass reveal" style="overflow:visible">
+          <div class="ct"><span class="name">Menu &amp; breadcrumb</span><span class="tag2">role=menu / nav</span></div>
+          <div class="stage" style="flex-direction:column;align-items:flex-start;gap:18px;overflow:visible">
+            <div class="menu-host">
+              <button class="btn" id="kitMenuBtn" aria-haspopup="true" aria-expanded="false">Organize <span style="font-size:9px">&#9662;</span></button>
+              <div class="menu glass" id="kitMenu" role="menu" aria-label="Organize">
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy<span class="sc">Ctrl C</span></div>
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>Paste<span class="sc">Ctrl V</span></div>
+                <div class="mi" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Rename<span class="sc">F2</span></div>
+                <div class="msep" role="separator"></div>
+                <div class="mi danger" role="menuitem" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Delete<span class="sc">Del</span></div>
+              </div>
+            </div>
+            <nav class="breadcrumb" aria-label="Path">
+              <span class="crumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l9-4 9 4-9 4-9-4z"/></svg>Computer</span>
+              <span class="crumb-sep">&rsaquo;</span><span class="crumb">OS (C:)</span>
+              <span class="crumb-sep">&rsaquo;</span><span class="crumb here">Users</span>
+            </nav>
+          </div>
+        </div>
+
+        <!-- badges, profile, tooltip -->
+        <div class="card glass reveal">
+          <div class="ct"><span class="name">Status, profile, tooltip</span><span class="tag2">.badge / .pchip / .tt</span></div>
+          <div class="stage" style="flex-direction:column;align-items:flex-start;gap:18px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <span class="badge ok"><span class="sd"></span>connected</span>
+              <span class="badge info"><span class="sd"></span>syncing</span>
+              <span class="badge warn"><span class="sd"></span>update</span>
+              <span class="badge danger"><span class="sd"></span>offline</span>
+            </div>
+            <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">
+              <span class="pchip"><span class="tl"></span><span class="nm"><b>Administrator</b><small>signed in</small></span></span>
+              <span class="tt"><button class="btn btn--ghost" aria-describedby="tip1">Hover me</button><span class="tip" role="tooltip" id="tip1">Tooltips are glass too</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- accordion -->
+        <div class="card glass reveal">
+          <div class="ct"><span class="name">Accordion</span><span class="tag2">.accordion</span></div>
+          <div class="stage" style="align-items:stretch">
+            <div class="accordion">
+              <div class="acc">
+                <button class="acc-head" aria-expanded="true"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>Appearance</button>
+                <div class="acc-body"><div class="inner">Window color, transparency, and the glass blur radius all live here. Changes preview live against your wallpaper.</div></div>
+              </div>
+              <div class="acc">
+                <button class="acc-head" aria-expanded="false"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>Performance</button>
+                <div class="acc-body"><div class="inner">Tune which visual effects stay on. Reduce transparency and animations independently for low-end hardware.</div></div>
+              </div>
+              <div class="acc">
+                <button class="acc-head" aria-expanded="false"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>Advanced</button>
+                <div class="acc-body"><div class="inner">DWM composition, GPU acceleration, and per-monitor scaling for the people who really want to dig in.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- feedback -->
+        <div class="card glass reveal">
+          <div class="ct"><span class="name">Feedback &amp; overlays</span><span class="tag2">.progress / .toast / .modal</span></div>
+          <div class="stage" style="flex-direction:column;align-items:flex-start;gap:18px">
+            <div class="progress"><div class="bar"><i></i></div></div>
+            <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+              <span class="spinner" aria-label="Working"></span>
+              <button class="btn" id="toastBtn">Show toast</button>
+              <button class="btn" id="balloonBtn">Tray balloon</button>
+              <button class="btn btn--solid" id="modalBtn">Open dialog</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- data table (full width) -->
+        <div class="card glass reveal full">
+          <div class="ct"><span class="name">Data table</span><span class="tag2">table.data</span></div>
+          <div class="stage" style="align-items:stretch;padding:0">
+            <div class="table-wrap" style="border:0;border-radius:0">
+              <table class="data" aria-label="Files">
+                <thead><tr><th data-sort>Name <span class="ar">&#9650;</span></th><th data-sort>Date modified</th><th data-sort>Type</th><th data-sort>Size</th></tr></thead>
+                <tbody>
+                  <tr aria-selected="true"><td><span class="fc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 21"/></svg>aurora.jpg</span></td><td>6/20/2026 10:24 AM</td><td>JPEG Image</td><td>2.4 MB</td></tr>
+                  <tr><td><span class="fc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H3z"/></svg>Wallpapers</span></td><td>6/18/2026 9:02 PM</td><td>File folder</td><td>—</td></tr>
+                  <tr><td><span class="fc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>readme.txt</span></td><td>6/15/2026 1:47 PM</td><td>Text Document</td><td>4 KB</td></tr>
+                  <tr><td><span class="fc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>theme.mp3</span></td><td>6/10/2026 8:31 AM</td><td>MP3 Audio</td><td>5.1 MB</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DO / DON'T ================= -->
+  <section class="section tight" id="rules">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Discipline</div>
+        <h2>Do, and do not</h2>
+      </div>
+      <div class="dd">
+        <div class="dd-col do glass reveal">
+          <h4>Do</h4>
+          <ul>
+            <li>Let glass be translucent — blur real context behind every pane.</li>
+            <li>Give each surface a gloss, a bright specular edge, and a touch of frost grain.</li>
+            <li>Use blur amount to signal layer order: sharper is nearer.</li>
+            <li>Drive the whole system from one accent tint the user picks.</li>
+            <li>Answer interaction with a soft glow that blooms, not a hard flip.</li>
+            <li>Always ship the opaque fallback — test the whole app with glass off.</li>
+          </ul>
+        </div>
+        <div class="dd-col dont glass reveal">
+          <h4>Do not</h4>
+          <ul>
+            <li>Fake glass with a flat semi-opaque fill — without blur it's just a tint.</li>
+            <li>Stack many heavy blurs at once; legibility and performance both suffer.</li>
+            <li>Use the tint for wayfinding — it's personalization, so it can't mean "place."</li>
+            <li>Put low-contrast text on raw frosted glass; add a scrim or inner shadow first.</li>
+            <li>Pile on gloss until controls look wet and unreadable.</li>
+            <li>Let the design break when transparency is unavailable or switched off.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ACCESSIBILITY ================= -->
+  <section class="section" id="a11y">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Inclusive by default</div>
+        <h2>Accessibility &amp; resilience</h2>
+        <p>Glass is gorgeous and easy to get wrong. Aurora carries its weight here: contrast survives the blur, the whole language has an opaque mode, motion is optional, and every control is reachable and operable from the keyboard.</p>
+      </div>
+      <div class="a11y">
+        <div class="it glass reveal">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+          <h4>Reduce transparency, for real</h4>
+          <p>The hero's <code>reduce transparency</code> switch sets <code>body.solid</code>, swapping every pane for an opaque surface and dropping the grain. It also honors the OS-level <code>prefers-reduced-transparency</code> automatically — no setting required.</p>
+        </div>
+        <div class="it glass reveal">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 20h18"/></svg>
+          <h4>It works without glass</h4>
+          <p>Where <code>backdrop-filter</code> is unsupported, an <code>@supports</code> fallback paints solid surfaces instead of failing to transparent. The layout, contrast, and controls never depend on the blur landing.</p>
+        </div>
+        <div class="it glass reveal">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M7 14h10"/></svg>
+          <h4>Keyboard first</h4>
+          <p>Flip 3D, tabs, menus, and the accordion are real focusable widgets — arrows, Space, Enter, and Escape all behave. The dialog traps focus and restores it on close. Every control shows a 2px accent focus ring.</p>
+        </div>
+        <div class="it glass reveal">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg>
+          <h4>Motion &amp; sound are choices</h4>
+          <p>Everything respects <code>prefers-reduced-motion</code>: the aurora and stars stop, flips become instant, the spinner settles. The glass chime is off-able and never plays without a gesture.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="ft">
+        <div class="big">Aurora</div>
+        <div class="meta">
+          Translucent &middot; glossy &middot; optimistic &middot; resilient<br>
+          Edition 02 &middot; derived from Windows Vista &amp; the Aero era, 2006&ndash;2009<br>
+          A design study, not affiliated with Microsoft or Windows
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- toast + modal mounts -->
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="modal">
+      <div class="mtitle"><svg class="dt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><b>Confirm</b></div>
+      <div class="mb"><h3 id="modalTitle">Turn off Aero glass?</h3>Transparency and the aurora will be disabled. You can switch back any time from Personalization.</div>
+      <div class="mf"><button class="btn btn--ghost" data-close>Keep glass</button><button class="btn btn--solid" data-close>Turn off</button></div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- entrance ---------- */
+  window.addEventListener('load', function () {
+    requestAnimationFrame(function () { document.body.classList.add('ready'); });
+  });
+
+  /* ---------- reveal on scroll ---------- */
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        e.target.style.transition = 'opacity 680ms var(--ease-aero), transform 680ms var(--ease-aero)';
+        e.target.style.opacity = '1'; e.target.style.transform = 'none';
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('main .reveal, footer .reveal').forEach(function (el) { io.observe(el); });
+
+  /* ---------- glass chime (synthesized, no asset) ---------- */
+  var audioOn = true, actx = null;
+  function ensureCtx() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { actx = null; } } return actx; }
+  function chime() {
+    if (!audioOn || reduce) return;
+    var ctx = ensureCtx(); if (!ctx) return;
+    var t = ctx.currentTime;
+    [ [880, 0], [1320, 0.05] ].forEach(function (pair) {
+      var o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = pair[0];
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t + pair[1]);
+      g.gain.exponentialRampToValueAtTime(0.10, t + pair[1] + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + pair[1] + 0.5);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t + pair[1]); o.stop(t + pair[1] + 0.55);
+    });
+  }
+  var st = document.getElementById('soundToggle');
+  st.addEventListener('click', function () {
+    audioOn = !audioOn; st.setAttribute('aria-pressed', String(audioOn));
+    if (audioOn) { ensureCtx(); chime(); }
+  });
+  document.getElementById('heroPearl').addEventListener('click', function () { ensureCtx(); chime(); });
+
+  /* ---------- tint chips ---------- */
+  var chips = document.querySelectorAll('.tint-chip');
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      chips.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+      c.setAttribute('aria-pressed', 'true');
+      document.body.setAttribute('data-accent', c.getAttribute('data-accent'));
+    });
+  });
+  document.querySelectorAll('[data-accent-pick]').forEach(function (el) {
+    el.addEventListener('dblclick', function () {
+      var a = el.getAttribute('data-accent-pick');
+      document.body.setAttribute('data-accent', a);
+      chips.forEach(function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-accent') === a)); });
+    });
+  });
+
+  /* ---------- day / night ---------- */
+  var skyBtn = document.getElementById('skyToggle');
+  skyBtn.addEventListener('click', function () {
+    var day = document.body.getAttribute('data-sky') === 'day';
+    document.body.setAttribute('data-sky', day ? 'night' : 'day');
+    skyBtn.setAttribute('aria-pressed', String(!day));
+    skyBtn.innerHTML = day ? '☀ day sky' : '☾ night sky';
+  });
+
+  /* ---------- reduce transparency ---------- */
+  var solidBtn = document.getElementById('solidToggle');
+  solidBtn.addEventListener('click', function () {
+    var on = document.body.classList.toggle('solid');
+    solidBtn.setAttribute('aria-pressed', String(on));
+    solidBtn.innerHTML = on ? '▣ glass on' : '■ reduce transparency';
+  });
+
+  /* ---------- FLIP 3D ---------- */
+  var deckData = [
+    { vk: 'documents', t: 'Documents', p: 'Everything you are working on, in one frosted pane.', g: '<path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/>' },
+    { vk: 'pictures',  t: 'Pictures',  p: 'Photos and screenshots, lit by the aurora behind.',    g: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L5 21"/>' },
+    { vk: 'music',     t: 'Music',     p: 'Albums and playlists, glass deep.',                     g: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>' },
+    { vk: 'computer',  t: 'Computer',  p: 'Drives, devices, and the network at a glance.',         g: '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/>' },
+    { vk: 'network',   t: 'Network',   p: 'Who is connected and what is shared.',                  g: '<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-6 5M12 12l6 5"/>' }
+  ];
+  var deck = document.getElementById('flipDeck');
+  var front = 0;
+  deckData.forEach(function (d) {
+    var w = document.createElement('div'); w.className = 'win';
+    w.innerHTML = '<div class="titlebar"><span class="wt">' + d.t + '</span><span class="wctl"><i></i><i></i><i class="c"></i></span></div>' +
+      '<div class="body"><div class="vk">' + d.vk + '</div><h4>' + d.t + '</h4><p>' + d.p + '</p>' +
+      '<svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' + d.g + '</svg></div>';
+    deck.appendChild(w);
+  });
+  var wins = Array.prototype.slice.call(deck.querySelectorAll('.win'));
+  function layout() {
+    var n = wins.length;
+    wins.forEach(function (w, i) {
+      var rel = (i - front + n) % n;
+      var x = rel * 30, y = -rel * 26, z = -rel * 160;
+      var rot = rel === 0 ? 0 : -26;
+      var blur = rel === 0 ? 0 : Math.min(1 + rel * 1.6, 6);
+      var op = rel === 0 ? 1 : Math.max(0.9 - rel * 0.16, 0.32);
+      w.style.transform = 'translate3d(' + x + 'px,' + y + 'px,' + z + 'px) rotateY(' + rot + 'deg)';
+      w.style.filter = blur ? 'blur(' + blur + 'px)' : 'none';
+      w.style.opacity = op; w.style.zIndex = String(n - rel);
+    });
+  }
+  function flip(dir) { front = (front + dir + wins.length) % wins.length; layout(); chime(); deck.setAttribute('aria-label', deckData[front].t + ' is in front'); }
+  layout();
+  var stage = document.getElementById('flipStage');
+  stage.addEventListener('click', function () { flip(1); });
+  stage.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); flip(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); flip(-1); }
+  });
+
+  /* ---------- glass tuner ---------- */
+  var tBlur = document.getElementById('tBlur'), tTint = document.getElementById('tTint');
+  var spec = document.getElementById('glassSpecimen');
+  var tBlurV = document.getElementById('tBlurV'), tTintV = document.getElementById('tTintV');
+  function hexA(hex, a) {
+    hex = hex.replace('#', ''); if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+    return 'rgba(' + parseInt(hex.substr(0,2),16) + ',' + parseInt(hex.substr(2,2),16) + ',' + parseInt(hex.substr(4,2),16) + ',' + a + ')';
+  }
+  function tune() {
+    var b = tBlur.value, tn = tTint.value;
+    spec.style.backdropFilter = 'blur(' + b + 'px) saturate(1.4)';
+    spec.style.webkitBackdropFilter = 'blur(' + b + 'px) saturate(1.4)';
+    var rgb = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+    spec.style.background = 'linear-gradient(180deg, ' + hexA(rgb, tn / 100) + ', transparent 60%), linear-gradient(180deg, var(--glass-bg-2), var(--glass-bg) 46%, var(--glass-bg))';
+    tBlurV.textContent = b + 'px'; tTintV.textContent = tn + '%';
+  }
+  [tBlur, tTint].forEach(function (s) { s.addEventListener('input', tune); });
+  tune();
+
+  /* ---------- toggles / checkboxes / radios ---------- */
+  function bindToggle(sel, group) {
+    document.querySelectorAll(sel).forEach(function (el) {
+      function flipState() {
+        if (group) {
+          el.parentElement.querySelectorAll(sel).forEach(function (s) { s.setAttribute('aria-checked', 'false'); s.tabIndex = -1; });
+          el.setAttribute('aria-checked', 'true'); el.tabIndex = 0;
+        } else { el.setAttribute('aria-checked', el.getAttribute('aria-checked') === 'true' ? 'false' : 'true'); }
+      }
+      el.addEventListener('click', flipState);
+      el.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipState(); } });
+    });
+  }
+  bindToggle('[role="switch"]', false);
+  bindToggle('[role="checkbox"]', false);
+  bindToggle('[role="radio"]', true);
+
+  /* ---------- segmented ---------- */
+  document.querySelectorAll('.segmented').forEach(function (seg) {
+    seg.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        seg.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+      });
+    });
+  });
+
+  /* ---------- tabs ---------- */
+  document.querySelectorAll('.tablist').forEach(function (tl) {
+    var tabs = Array.prototype.slice.call(tl.querySelectorAll('.tab'));
+    function select(tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+      });
+      if (focus) tab.focus();
+    }
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener('click', function () { select(tab, false); });
+      tab.addEventListener('keydown', function (e) {
+        var last = tabs.length - 1, next = null;
+        if (e.key === 'ArrowRight') next = tabs[i === last ? 0 : i + 1];
+        else if (e.key === 'ArrowLeft') next = tabs[i === 0 ? last : i - 1];
+        else if (e.key === 'Home') next = tabs[0];
+        else if (e.key === 'End') next = tabs[last];
+        if (next) { e.preventDefault(); select(next, true); }
+      });
+    });
+  });
+
+  /* ---------- listbox ---------- */
+  document.querySelectorAll('.listbox').forEach(function (lb) {
+    lb.querySelectorAll('.lrow').forEach(function (r) {
+      r.addEventListener('click', function () {
+        lb.querySelectorAll('.lrow').forEach(function (x) { x.setAttribute('aria-selected', 'false'); });
+        r.setAttribute('aria-selected', 'true');
+      });
+    });
+  });
+
+  /* ---------- data table: select + sort indicator ---------- */
+  document.querySelectorAll('table.data').forEach(function (tb) {
+    tb.querySelectorAll('tbody tr').forEach(function (r) {
+      r.addEventListener('click', function () {
+        tb.querySelectorAll('tbody tr').forEach(function (x) { x.removeAttribute('aria-selected'); });
+        r.setAttribute('aria-selected', 'true');
+      });
+    });
+    tb.querySelectorAll('thead th[data-sort]').forEach(function (th) {
+      th.addEventListener('click', function () {
+        var existing = th.querySelector('.ar');
+        var asc = !existing || existing.textContent.indexOf('▲') === -1;
+        tb.querySelectorAll('thead th .ar').forEach(function (a) { a.remove(); });
+        var s = document.createElement('span'); s.className = 'ar'; s.textContent = asc ? '▲' : '▼';
+        th.appendChild(s);
+      });
+    });
+  });
+
+  /* ---------- accordion ---------- */
+  document.querySelectorAll('.acc-head').forEach(function (h) {
+    h.addEventListener('click', function () {
+      var open = h.getAttribute('aria-expanded') === 'true';
+      h.setAttribute('aria-expanded', String(!open));
+      var body = h.nextElementSibling;
+      body.style.maxHeight = open ? '0px' : (body.firstElementChild.offsetHeight + 'px');
+    });
+  });
+  document.querySelectorAll('.acc-head[aria-expanded="true"]').forEach(function (h) {
+    var body = h.nextElementSibling; body.style.maxHeight = body.firstElementChild.offsetHeight + 'px';
+  });
+
+  /* ---------- menus ---------- */
+  function bindMenu(btnId, menuId) {
+    var btn = document.getElementById(btnId), menu = document.getElementById(menuId);
+    if (!btn || !menu) return;
+    var items = Array.prototype.slice.call(menu.querySelectorAll('.mi'));
+    function open() { menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); if (items[0]) items[0].focus(); }
+    function close(focusBtn) { menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); if (focusBtn) btn.focus(); }
+    btn.addEventListener('click', function (e) { e.stopPropagation(); if (menu.classList.contains('open')) { close(false); } else { open(); } });
+    items.forEach(function (it, i) {
+      it.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); (items[i+1] || items[0]).focus(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); (items[i-1] || items[items.length-1]).focus(); }
+        else if (e.key === 'Escape') { e.preventDefault(); close(true); }
+        else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); close(true); }
+      });
+      it.addEventListener('click', function () { close(true); });
+    });
+    document.addEventListener('click', function (e) { if (!menu.contains(e.target) && e.target !== btn) close(false); });
+  }
+  bindMenu('orgBtn', 'orgMenu');
+  bindMenu('kitMenuBtn', 'kitMenu');
+
+  /* ---------- explorer tiles + tree select ---------- */
+  var content = document.getElementById('xContent');
+  if (content) {
+    var tiles = content.querySelectorAll('.ftile');
+    tiles.forEach(function (t) {
+      t.addEventListener('click', function () {
+        tiles.forEach(function (x) { x.classList.remove('sel'); });
+        t.classList.add('sel');
+        document.getElementById('xCount').textContent = '1 item selected';
+      });
+    });
+  }
+  document.querySelectorAll('.x-tree .titem').forEach(function (it) {
+    it.addEventListener('click', function () {
+      document.querySelectorAll('.x-tree .titem').forEach(function (x) { x.classList.remove('on'); });
+      it.classList.add('on');
+    });
+  });
+
+  /* ---------- toast ---------- */
+  var toastWrap = document.getElementById('toastWrap');
+  document.getElementById('toastBtn').addEventListener('click', function () {
+    var t = document.createElement('div'); t.className = 'toast';
+    t.innerHTML = '<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg><span>Settings saved</span>';
+    toastWrap.appendChild(t);
+    setTimeout(function () { t.classList.add('out'); setTimeout(function () { t.remove(); }, 280); }, 2600);
+  });
+
+  /* ---------- tray balloon ---------- */
+  document.getElementById('balloonBtn').addEventListener('click', function () {
+    var b = document.createElement('div'); b.className = 'balloon glass';
+    b.style.position = 'fixed'; b.style.right = '20px'; b.style.bottom = '20px'; b.style.zIndex = '85'; b.style.boxShadow = 'var(--e3)';
+    b.innerHTML = '<span class="bi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a7 7 0 0 0-7 7v4l-2 3h18l-2-3v-4a7 7 0 0 0-7-7z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></span>' +
+      '<span class="bt"><b>Updates are ready</b><p>3 updates were installed. Restart when convenient.</p></span>' +
+      '<button class="bx" aria-label="Dismiss">&times;</button>';
+    document.body.appendChild(b);
+    var kill = function () { b.classList.add('out'); setTimeout(function () { b.remove(); }, 300); };
+    b.querySelector('.bx').addEventListener('click', kill);
+    setTimeout(kill, 5200);
+  });
+
+  /* ---------- modal with focus trap ---------- */
+  var overlay = document.getElementById('overlay'), modal = document.getElementById('modal'), modalBtn = document.getElementById('modalBtn');
+  var lastFocus = null;
+  function focusables() { return Array.prototype.slice.call(modal.querySelectorAll('button, [href], input, select, [tabindex]:not([tabindex="-1"])')); }
+  function openModal() { lastFocus = document.activeElement; overlay.classList.add('open'); var f = focusables(); if (f[0]) f[0].focus(); }
+  function closeModal() { overlay.classList.remove('open'); if (lastFocus) lastFocus.focus(); }
+  modalBtn.addEventListener('click', openModal);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+  overlay.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', closeModal); });
+  document.addEventListener('keydown', function (e) {
+    if (!overlay.classList.contains('open')) return;
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (e.key === 'Tab') {
+      var f = focusables(); if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  /* ---------- live clock + drifting CPU gadget ---------- */
+  var cpu = 38;
+  function tick() {
+    var d = new Date();
+    var hh = d.getHours(), mm = String(d.getMinutes()).padStart(2, '0');
+    var h12 = ((hh + 11) % 12) + 1;
+    var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    var mons = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    var set = function (id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+    set('gadgetClock', h12 + ':' + mm);
+    set('gadgetDate', days[d.getDay()] + ' · ' + mons[d.getMonth()] + ' ' + d.getDate());
+    var tc = document.getElementById('taskClock'); if (tc) tc.innerHTML = h12 + ':' + mm + '<br>' + (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
+  }
+  function cpuTick() {
+    if (reduce) return;
+    cpu += (Math.sin(Date.now() / 4000) * 8) + (((Date.now() / 1000 | 0) % 7) - 3);
+    cpu = Math.max(8, Math.min(92, cpu));
+    var bar = document.getElementById('cpuBar'), pct = document.getElementById('cpuPct');
+    if (bar) bar.style.width = cpu.toFixed(0) + '%';
+    if (pct) pct.textContent = cpu.toFixed(0) + '%';
+  }
+  tick(); setInterval(tick, 30000);
+  cpuTick(); setInterval(cpuTick, 2200);
+
+  /* ---------- copy-to-clipboard ---------- */
+  function flashCopied(x, y) {
+    var f = document.createElement('div'); f.className = 'copied-flash'; f.textContent = 'copied';
+    f.style.left = x + 'px'; f.style.top = y + 'px'; document.body.appendChild(f);
+    setTimeout(function () { f.remove(); }, 900);
+  }
+  document.querySelectorAll('[data-copy]').forEach(function (el) {
+    el.style.cursor = 'copy';
+    el.addEventListener('click', function (e) {
+      var val = el.getAttribute('data-copy');
+      if (navigator.clipboard) { navigator.clipboard.writeText(val).catch(function () {}); }
+      flashCopied(e.clientX, e.clientY);
+    });
+  });
+
+  /* ---------- right-edge dots ---------- */
+  var dotLinks = Array.prototype.slice.call(document.querySelectorAll('.dots a'));
+  var secMap = dotLinks.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+  var dio = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        var i = secMap.indexOf(e.target);
+        dotLinks.forEach(function (d, j) { d.classList.toggle('active', j === i); });
+      }
+    });
+  }, { threshold: 0.4 });
+  secMap.forEach(function (s) { if (s) dio.observe(s); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "name": "NEBULA",
+  "version": "1.0.0",
+  "description": "A living-machine design system — a respectful homage to the original Xbox dashboard (2001). Tokens mirror the CSS custom properties in nebula.css (--nb-*).",
+  "color": {
+    "green": {
+      "50":  { "value": "#eafff0" },
+      "100": { "value": "#d6ffe2" },
+      "200": { "value": "#a9f7c4" },
+      "300": { "value": "#6cf0a0" },
+      "400": { "value": "#3aee84", "comment": "signature glow / default accent" },
+      "500": { "value": "#14b85a" },
+      "600": { "value": "#0e8f44" },
+      "700": { "value": "#0a5a2c" },
+      "800": { "value": "#073d1f" },
+      "900": { "value": "#04230f" }
+    },
+    "ink": {
+      "0": { "value": "#03070a", "comment": "base background (abyss)" },
+      "1": { "value": "#060c0d", "comment": "void" },
+      "2": { "value": "#0a1413", "comment": "surface" },
+      "3": { "value": "#0e1b18", "comment": "raised" },
+      "4": { "value": "#14211d", "comment": "overlay" }
+    },
+    "teal": { "400": { "value": "#29d6c8", "comment": "aurora accent" } },
+    "amber": { "400": { "value": "#ffd23a" } },
+    "red": { "400": { "value": "#ff5d63" }, "700": { "value": "#5e171a" } },
+    "semantic": {
+      "bg":              { "value": "{color.ink.0}" },
+      "surface":         { "value": "{color.ink.2}" },
+      "surfaceRaised":   { "value": "{color.ink.3}" },
+      "surfaceOverlay":  { "value": "{color.ink.4}" },
+      "border":          { "value": "rgba(214,255,226,0.12)" },
+      "borderStrong":    { "value": "rgba(214,255,226,0.22)" },
+      "edge":            { "value": "rgba(255,255,255,0.24)", "comment": "lit top bevel" },
+      "text":            { "value": "#eafff0" },
+      "textDim":         { "value": "#a9c9b6" },
+      "textFaint":       { "value": "rgba(234,255,240,0.50)" },
+      "textOnAccent":    { "value": "#03070a" },
+      "accent":          { "value": "{color.green.400}" },
+      "accentStrong":    { "value": "{color.green.300}" },
+      "accentSoft":      { "value": "rgba(58,238,132,0.14)" },
+      "core":            { "value": "{color.green.100}", "comment": "hot center" },
+      "deep":            { "value": "{color.green.700}", "comment": "edge falloff" },
+      "success":         { "value": "{color.green.400}" },
+      "warning":         { "value": "{color.amber.400}" },
+      "danger":          { "value": "{color.red.400}" },
+      "info":            { "value": "{color.teal.400}" },
+      "focus":           { "value": "{color.green.400}" }
+    }
+  },
+  "theme": {
+    "2001": {
+      "comment": "The authentic radioactive 'apple green' (#7EB900 lineage), limier than the modern accent. Apply via [data-nb-theme=\"2001\"].",
+      "accent":       { "value": "#9ede00" },
+      "accentStrong": { "value": "#c6ff3d" },
+      "core":         { "value": "#f1ffae" },
+      "deep":         { "value": "#2f6a00" },
+      "text":         { "value": "#f0ffd8" },
+      "textDim":      { "value": "#bcd79a" }
+    }
+  },
+  "font": {
+    "family": {
+      "display": { "value": "'Exo 2', system-ui, -apple-system, sans-serif" },
+      "sans":    { "value": "'Hanken Grotesk', system-ui, -apple-system, sans-serif" },
+      "mono":    { "value": "'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace" }
+    },
+    "size": {
+      "2xs":     { "value": "0.6875rem" },
+      "xs":      { "value": "0.75rem" },
+      "sm":      { "value": "0.875rem" },
+      "md":      { "value": "1rem" },
+      "lg":      { "value": "1.125rem" },
+      "xl":      { "value": "1.375rem" },
+      "2xl":     { "value": "1.75rem" },
+      "3xl":     { "value": "2.25rem" },
+      "4xl":     { "value": "3rem" },
+      "display": { "value": "clamp(3.25rem, 9vw, 8.25rem)" }
+    },
+    "weight": {
+      "thin":    { "value": 200 },
+      "light":   { "value": 300 },
+      "regular": { "value": 400 },
+      "medium":  { "value": 500 },
+      "bold":    { "value": 700 }
+    },
+    "leading": {
+      "tight":  { "value": 1.1 },
+      "snug":   { "value": 1.35 },
+      "normal": { "value": 1.6 }
+    },
+    "tracking": {
+      "tight":   { "value": "-0.01em" },
+      "normal":  { "value": "0" },
+      "wide":    { "value": "0.04em" },
+      "eyebrow": { "value": "0.28em" }
+    }
+  },
+  "space": {
+    "1": { "value": "0.25rem" },
+    "2": { "value": "0.5rem" },
+    "3": { "value": "0.75rem" },
+    "4": { "value": "1rem" },
+    "5": { "value": "1.25rem" },
+    "6": { "value": "1.5rem" },
+    "8": { "value": "2rem" },
+    "10": { "value": "2.5rem" },
+    "12": { "value": "3rem" },
+    "16": { "value": "4rem" },
+    "20": { "value": "5rem" },
+    "24": { "value": "6rem" }
+  },
+  "radius": {
+    "xs":   { "value": "4px" },
+    "sm":   { "value": "6px" },
+    "md":   { "value": "10px" },
+    "lg":   { "value": "14px" },
+    "xl":   { "value": "18px" },
+    "2xl":  { "value": "24px" },
+    "pill": { "value": "999px" }
+  },
+  "shadow": {
+    "1": { "value": "0 2px 10px rgba(0,0,0,0.40)" },
+    "2": { "value": "0 12px 34px rgba(0,0,0,0.45)" },
+    "3": { "value": "0 20px 54px rgba(0,0,0,0.50)" },
+    "glass": { "value": "inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -26px 46px rgba(3,7,10,0.55), 0 20px 54px rgba(0,0,0,0.50)" },
+    "glowSm": { "value": "0 0 14px rgba(58,238,132,0.35)" },
+    "glowMd": { "value": "0 0 26px rgba(58,238,132,0.45)" },
+    "glowLg": { "value": "0 0 60px rgba(58,238,132,0.50)" }
+  },
+  "motion": {
+    "ease": {
+      "organic": { "value": "cubic-bezier(0.45, 0, 0.2, 1)" },
+      "glass":   { "value": "cubic-bezier(0.33, 1, 0.68, 1)" },
+      "out":     { "value": "cubic-bezier(0.16, 1, 0.3, 1)" }
+    },
+    "duration": {
+      "fast":  { "value": "160ms" },
+      "base":  { "value": "240ms" },
+      "slow":  { "value": "480ms" },
+      "pulse": { "value": "5.5s" }
+    }
+  },
+  "zIndex": {
+    "base":    { "value": 1 },
+    "raised":  { "value": 10 },
+    "sticky":  { "value": 60 },
+    "overlay": { "value": 100 },
+    "toast":   { "value": 8000 }
+  },
+  "layout": {
+    "container":       { "value": "1080px" },
+    "containerNarrow": { "value": "760px" }
+  }
+}

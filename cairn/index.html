@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAIRN · Design Language</title>
+<meta name="description" content="CAIRN: a rugged, weatherproof wayfinding design language descended from WPA park posters, USGS topographic maps, and the National Park Unigrid system. Tokens, components, and usage.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Asap:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ---- neutral ground: warm bark / soil / stone ---- */
+    --bark:    #15120c;
+    --soil:    #1c1710;
+    --stone-1: #231d14;
+    --stone-2: #2c2518;
+    --ridge:   #39301f;   /* raised edge / strong hairline base */
+
+    /* ---- kraft canvas text on dark ---- */
+    --canvas:       #f1e8d5;
+    --canvas-dim:   #c7b896;
+    --canvas-faint: rgba(241,232,213,0.45);
+
+    /* ---- biome wayfinding hues (color is terrain) ---- */
+    --pine:   #54905a;
+    --tundra: #a3ad6c;
+    --alpine: #5fa3c0;
+    --clay:   #c4692f;
+
+    /* biome tints + shades for ramps */
+    --pine-2:#80b27f;   --pine-3:#54905a;   --pine-4:#356039;   --pine-5:#21401f;
+    --tun-2:#c6cf95;    --tun-3:#a3ad6c;    --tun-4:#76814a;    --tun-5:#4c552f;
+    --alp-2:#93c6dc;    --alp-3:#5fa3c0;    --alp-4:#3a728c;    --alp-5:#234856;
+    --cly-2:#e2965f;    --cly-3:#c4692f;    --cly-4:#8d451c;    --cly-5:#592b12;
+
+    /* ---- the blaze: one high-vis accent ---- */
+    --blaze:      #ff6a2b;
+    --blaze-deep: #c14617;
+    --blaze-lite: #ff9c6f;
+
+    /* active biome — swapped live by the trail / biome toggle */
+    --biome: var(--pine);
+
+    /* ---- chrome ---- */
+    --line:        rgba(241,232,213,0.11);
+    --line-strong: rgba(241,232,213,0.22);
+    --panel:       rgba(241,232,213,0.035);
+    --panel-2:     rgba(241,232,213,0.065);
+
+    /* ---- semantic aliases (tier 2) — purpose, not appearance ---- */
+    --surface:        var(--soil);
+    --surface-raised: var(--stone-1);
+    --text:           var(--canvas);
+    --text-dim:       var(--canvas-dim);
+    --border:         var(--line);
+    --accent:         var(--biome);
+    --action:         var(--blaze);
+    --action-deep:    var(--blaze-deep);
+
+    /* ---- type ---- */
+    --font-display: 'Oswald', 'Arial Narrow', system-ui, sans-serif;
+    --font-ui:      'Asap', system-ui, -apple-system, sans-serif;
+    --font-data:    'Space Mono', ui-monospace, monospace;
+
+    /* ---- spacing scale (base 4) ---- */
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+
+    /* ---- radii ---- */
+    --r-stamp:2px; --r-1:4px; --r-2:8px; --r-pill:999px;
+
+    /* ---- motion: grounded, things settle ---- */
+    --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-firm:   cubic-bezier(0.4, 0, 0.2, 1);
+    --dur-set:  440ms;
+    --dur-tap:  150ms;
+
+    --maxw: 1120px;
+    --nav-h: 58px;
+
+    /* surfaces that must invert with theme */
+    --nav-bg:    rgba(21,18,12,0.72);
+    --chip-bg:   rgba(21,18,12,0.66);
+    --h1-shadow: rgba(0,0,0,0.4);
+    --biome-rgb: 84,144,90;   /* active biome as rgb, for glows/tints — synced by the trail */
+    color-scheme: dark;
+  }
+
+  /* ---- PAPER THEME: cream USGS map, brown ink ---- */
+  html[data-theme="paper"] {
+    --bark:    #efe6cf;
+    --soil:    #e7ddc1;
+    --stone-1: #ded3b3;
+    --stone-2: #d2c6a3;
+    --ridge:   #beb086;
+    --canvas:       #2a2417;
+    --canvas-dim:   #5d5234;
+    --canvas-faint: rgba(42,36,23,0.5);
+    --line:        rgba(42,36,23,0.14);
+    --line-strong: rgba(42,36,23,0.27);
+    --panel:       rgba(42,36,23,0.035);
+    --panel-2:     rgba(42,36,23,0.065);
+    --nav-bg:    rgba(239,230,207,0.82);
+    --chip-bg:   rgba(239,230,207,0.9);
+    --h1-shadow: rgba(0,0,0,0.1);
+    --pine:#3f7a46; --tundra:#7e8845; --alpine:#3d7f9c; --clay:#b0531f;
+    --blaze:#df541b; --blaze-deep:#a83a0f; --blaze-lite:#ef7a44;
+    --biome-rgb: 63,122,70;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce){ html { scroll-behavior: auto; } }
+
+  body {
+    background: var(--bark);
+    color: var(--canvas);
+    font-family: var(--font-ui);
+    font-weight: 300;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--blaze); color: var(--bark); }
+  :focus-visible { outline: 2px solid var(--blaze); outline-offset: 3px; border-radius: var(--r-1); }
+  .hidden-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+  /* ======================================================================
+     COMPONENT LIBRARY — the Cairn material (tokens + .cn-style components)
+     ====================================================================== */
+  .eyebrow {
+    font-family: var(--font-data); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.26em; text-transform: uppercase; color: var(--biome);
+    transition: color var(--dur-set) var(--ease-firm);
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before { content: ""; width: 16px; height: 2px; background: currentColor; }
+
+  /* buttons + states */
+  .btn { font-family: var(--font-display); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 10px 18px; border-radius: var(--r-stamp); cursor: pointer; border: 1px solid transparent; transition: all var(--dur-tap) var(--ease-firm); display: inline-flex; align-items: center; gap: 8px; }
+  .btn.primary { background: var(--action); color: var(--bark); box-shadow: 0 2px 0 var(--action-deep); }
+  .btn.primary:hover { background: var(--blaze-lite); }
+  .btn.secondary { background: transparent; color: var(--canvas); border-color: var(--line-strong); }
+  .btn.secondary:hover { border-color: var(--canvas-dim); background: var(--panel-2); }
+  .btn.ghost { background: transparent; color: var(--canvas-dim); }
+  .btn.ghost:hover { color: var(--canvas); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+  .crow { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: var(--r-1); color: var(--canvas-dim); }
+  .crow svg { width: 16px; height: 16px; }
+  .crow.on { color: var(--canvas); background: rgba(255,106,43,0.08); box-shadow: inset 3px 0 0 var(--blaze); }
+  .crow.on svg { color: var(--blaze); }
+
+  .field-input { display: flex; align-items: center; gap: 10px; background: var(--bark); border: 1px solid var(--line-strong); border-radius: var(--r-1); padding: 10px 12px; }
+  .field-input:focus-within { border-color: var(--blaze); }
+  .field-input svg { width: 16px; height: 16px; color: var(--canvas-faint); }
+  .field-input input { flex: 1; background: none; border: 0; color: var(--canvas); font-family: var(--font-ui); font-size: 14px; outline: none; }
+  .field-input input::placeholder { color: var(--canvas-faint); }
+
+  .alert { display: flex; gap: 12px; padding: 14px 16px; border-radius: var(--r-1); border: 1px solid rgba(196,105,47,0.4); background: rgba(196,105,47,0.1); }
+  .alert svg { width: 18px; height: 18px; color: var(--clay); flex: 0 0 auto; margin-top: 1px; }
+  .alert .at { font-family: var(--font-display); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; font-size: 14px; color: var(--cly-2); }
+  .alert .ab { font-size: 13px; color: var(--canvas-dim); margin-top: 2px; }
+
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--r-1); overflow: hidden; }
+  .seg button { appearance: none; cursor: pointer; border: 0; border-left: 1px solid var(--line); background: var(--panel); color: var(--canvas-dim);
+    font-family: var(--font-data); font-size: 12px; padding: 9px 16px; transition: all var(--dur-tap) var(--ease-firm); }
+  .seg button:first-child { border-left: 0; }
+  .seg button[aria-pressed="true"] { background: var(--blaze); color: var(--bark); }
+
+  .toggle { width: 46px; height: 26px; border-radius: var(--r-pill); background: var(--stone-2); border: 1px solid var(--line-strong); position: relative; cursor: pointer; transition: background var(--dur-tap) var(--ease-firm); }
+  .toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--canvas-dim); transition: all var(--dur-tap) var(--ease-firm); }
+  .toggle[aria-pressed="true"] { background: rgba(255,106,43,0.25); border-color: var(--blaze); }
+  .toggle[aria-pressed="true"]::after { left: 22px; background: var(--blaze); box-shadow: 0 0 12px rgba(255,106,43,0.6); }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-data); font-size: 11px; padding: 4px 9px; border-radius: var(--r-stamp); letter-spacing: 0.04em; }
+  .badge.open { background: rgba(84,144,90,0.18); color: var(--pine-2); border: 1px solid rgba(84,144,90,0.4); }
+  .badge.caution { background: rgba(196,105,47,0.16); color: var(--cly-2); border: 1px solid rgba(196,105,47,0.4); }
+  .badge.closed { background: var(--stone-2); color: var(--canvas-faint); border: 1px solid var(--line-strong); }
+  .meter { display: block; height: 8px; border-radius: var(--r-pill); background: var(--stone-1); border: 1px solid var(--line); overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 68%; background: linear-gradient(90deg, var(--pine), var(--tundra)); }
+
+  .tag { font-family: var(--font-data); font-size: 11px; padding: 5px 10px; border-radius: var(--r-stamp); background: var(--chip-bg); color: var(--canvas); border: 1px solid var(--line-strong); }
+
+  /* the cairn mark */
+  .cairn-mark .top { color: var(--blaze); }
+
+  /* ============ docs-only chrome (NOT part of the library) ============
+     Remapped from Nebula's docs chrome onto Cairn's own tokens, fonts,
+     radii and the dark bark / kraft-canvas palette + blaze accent. */
+  html { scroll-behavior: smooth; }
+  body { margin: 0; }
+
+  .doc-skip { position: fixed; left: -999px; top: 8px; z-index: 9000; }
+  .doc-skip:focus { left: 8px; }
+
+  /* top bar */
+  .doc-topbar {
+    position: sticky; top: 0; z-index: 60;
+    display: flex; align-items: center; gap: var(--s4);
+    height: var(--nav-h); padding: 0 var(--s5);
+    background: var(--nav-bg);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2);
+    border-bottom: 1px solid var(--line);
+  }
+  .doc-brand { display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto; text-decoration: none; }
+  .doc-brand svg { width: 18px; height: 24px; color: var(--canvas); }
+  .doc-brand svg .top { color: var(--blaze); }
+  .doc-brand b { font-family: var(--font-display); font-weight: 600; font-size: 17px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--canvas); }
+  .doc-ver { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); border: 1px solid var(--line); padding: 2px 7px; border-radius: var(--r-pill); }
+  .doc-topbar .spacer { flex: 1; }
+
+  /* biome toggle (Cairn's analog of Nebula's now/2001 toggle) */
+  .doc-biome { display: flex; align-items: center; gap: 6px; }
+  .doc-biome .lbl { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--canvas-faint); margin-right: 2px; }
+  .doc-biome button { appearance: none; cursor: pointer; background: var(--panel); border: 1px solid var(--line-strong); color: var(--canvas-dim);
+    font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 11px; border-radius: var(--r-stamp); transition: all var(--dur-tap) var(--ease-firm); }
+  .doc-biome button:hover { color: var(--canvas); border-color: var(--canvas-dim); }
+  .doc-biome button[aria-pressed="true"] { color: var(--bark); background: var(--biome); border-color: var(--biome); }
+  @media (max-width: 620px){ .doc-biome .lbl { display: none; } .doc-biome button { padding: 6px 8px; } }
+  .doc-theme { appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; background: var(--panel); border: 1px solid var(--line-strong); color: var(--canvas-dim);
+    font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 12px; border-radius: var(--r-pill); transition: all var(--dur-tap) var(--ease-firm); }
+  .doc-theme:hover { color: var(--canvas); border-color: var(--canvas-dim); }
+  .doc-theme svg { width: 14px; height: 14px; }
+  @media (max-width: 700px){ .doc-theme .tl { display: none; } }
+
+  .doc-scrollbar { position: fixed; top: var(--nav-h); left: 0; height: 2px; width: 0; z-index: 61; background: var(--blaze); transition: width 90ms linear; }
+
+  /* shell: sidebar + content */
+  .doc-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 0; max-width: 1320px; margin: 0 auto; }
+  .doc-side {
+    position: sticky; top: var(--nav-h); align-self: start; height: calc(100vh - var(--nav-h));
+    overflow-y: auto; padding: var(--s7) var(--s4) var(--s9) var(--s6);
+    border-right: 1px solid var(--line);
+  }
+  .doc-side h4 { font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--canvas-faint); margin: var(--s5) 0 var(--s2); }
+  .doc-side h4:first-child { margin-top: 0; }
+  .doc-side a { display: block; font-family: var(--font-data); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--canvas-dim); text-decoration: none; padding: 6px 10px; border-radius: var(--r-1); border-left: 2px solid transparent; transition: color var(--dur-tap) var(--ease-firm), background var(--dur-tap) var(--ease-firm); }
+  .doc-side a:hover { color: var(--canvas); background: var(--panel-2); }
+  .doc-side a.is-active { color: var(--canvas); border-left-color: var(--biome); background: rgba(var(--biome-rgb),0.10); }
+
+  .doc-main { padding: var(--s8) clamp(var(--s5), 4vw, var(--s8)) var(--s9); min-width: 0; }
+  @media (max-width: 940px) {
+    .doc-shell { grid-template-columns: 1fr; }
+    .doc-side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); display: flex; gap: 4px; flex-wrap: wrap; padding: var(--s3) var(--s5); }
+    .doc-side h4 { display: none; }
+    .doc-side a { border-left: 0; }
+  }
+
+  .doc-section { padding-top: var(--s8); scroll-margin-top: 72px; border-top: 1px solid var(--line); margin-top: var(--s8); }
+  .doc-section:first-child { padding-top: var(--s5); border-top: 0; margin-top: 0; }
+  .doc-section > h2 { font-family: var(--font-display); font-weight: 500; text-transform: uppercase; font-size: clamp(30px, 5vw, 46px); line-height: 1.02; letter-spacing: 0.005em; margin: 0 0 var(--s3); color: var(--canvas); }
+  .doc-section > .lede { color: var(--canvas-dim); font-size: 16.5px; max-width: 64ch; margin: 0 0 var(--s7); }
+  .doc-sub { font-family: var(--font-data); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--canvas-faint); margin: var(--s7) 0 var(--s4); }
+  .doc-secno { font-family: var(--font-data); font-size: 11px; letter-spacing: 0.16em; color: var(--canvas-faint); display: block; margin-bottom: 10px; }
+
+  /* hero */
+  .doc-hero { position: relative; padding: var(--s8) 0 var(--s7); overflow: hidden; }
+  .doc-hero .topobg { position: absolute; inset: -10% -6% auto auto; width: 640px; height: 540px; pointer-events: none; color: var(--biome); opacity: 0.5; transition: color var(--dur-set) var(--ease-firm); }
+  .doc-hero .topobg svg { width: 100%; height: 100%; }
+  .doc-hero .topobg path, .doc-hero .topobg use { fill: none; stroke: currentColor; vector-effect: non-scaling-stroke; }
+  .doc-hero .trailpath { stroke: var(--blaze); stroke-width: 2; stroke-dasharray: 5 6; opacity: 0.85; }
+  body.ready .doc-hero .trailpath { animation: docdraw 2.6s var(--ease-settle) forwards; }
+  @keyframes docdraw { from { stroke-dashoffset: 1400; opacity: 0; } 20% { opacity: .85; } to { stroke-dashoffset: 0; } }
+  .doc-hero .row { position: relative; z-index: 2; display: grid; grid-template-columns: 1.25fr 0.75fr; gap: var(--s7); align-items: center; }
+  @media (max-width: 800px){ .doc-hero .row { grid-template-columns: 1fr; } .doc-hero .art { display: none; } }
+  .doc-hero h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(58px, 11vw, 124px); line-height: 0.9; letter-spacing: 0.005em; text-transform: uppercase; margin: 12px 0 0; color: var(--canvas); text-shadow: 0 2px 0 var(--h1-shadow); }
+  .doc-hero h1 b { color: var(--blaze); font-weight: 600; }
+  .doc-hero p.lede { color: var(--canvas-dim); font-size: 18px; max-width: 52ch; margin: var(--s4) 0 var(--s3); }
+  .doc-hero .lineage { font-family: var(--font-data); font-size: 12.5px; color: var(--canvas-faint); margin: 0 0 var(--s5); line-height: 1.7; }
+  .doc-hero .cta { display: flex; gap: var(--s3); flex-wrap: wrap; }
+  .doc-hero .art { display: grid; place-items: center; }
+
+  /* stamped field marker (hero signature graphic) */
+  .doc-marker { width: 100%; max-width: 312px; background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line-strong); border-radius: var(--r-stamp); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55); overflow: hidden; }
+  .doc-marker .mh { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line);
+    font-family: var(--font-data); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--biome); transition: color var(--dur-set) var(--ease-firm); }
+  .doc-marker .mh .tagdot { width: 24px; height: 12px; border-radius: 2px; background: var(--blaze); box-shadow: 0 0 12px rgba(255,106,43,0.5); }
+  .doc-marker .place { padding: 16px; border-bottom: 1px solid var(--line); }
+  .doc-marker .place .nm { font-family: var(--font-display); font-weight: 500; font-size: 26px; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1.05; }
+  .doc-marker .place .sub { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); margin-top: 4px; }
+  .doc-marker .grid2 { display: grid; grid-template-columns: 1fr 1fr; }
+  .doc-marker .stat { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .doc-marker .stat + .stat { border-left: 1px solid var(--line); }
+  .doc-marker .stat .k { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--canvas-faint); }
+  .doc-marker .stat .v { font-family: var(--font-display); font-weight: 500; font-size: 22px; margin-top: 2px; }
+  .doc-marker .ebar { margin: 14px 16px 6px; height: 6px; border-radius: 3px; background: var(--stone-1); border: 1px solid var(--line); overflow: hidden; }
+  .doc-marker .ebar i { display: block; height: 100%; background: linear-gradient(90deg, var(--blaze-deep), var(--blaze)); transition: width var(--dur-set) var(--ease-settle); }
+  .doc-marker .foot { display: flex; justify-content: space-between; padding: 10px 16px; font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); }
+  .doc-marker .foot b { color: var(--canvas-dim); font-weight: 700; }
+
+  /* example: live demo + code */
+  .doc-example { border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; margin: var(--s4) 0 var(--s7); background: var(--soil); }
+  .doc-demo { padding: var(--s6); display: flex; flex-wrap: wrap; gap: var(--s4); align-items: center;
+    background: radial-gradient(90% 120% at 50% 0%, rgba(var(--biome-rgb),0.08), transparent 70%); }
+  .doc-demo.col { flex-direction: column; align-items: stretch; }
+  .doc-codewrap { position: relative; border-top: 1px solid var(--line); }
+  .doc-code { margin: 0; padding: var(--s4) var(--s5); overflow-x: auto; background: var(--bark); }
+  .doc-code code { font-family: var(--font-data); font-size: 12.5px; line-height: 1.75; color: var(--canvas-dim); white-space: pre; }
+  .doc-copy { position: absolute; top: 8px; right: 8px; }
+
+  /* token grids */
+  .doc-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s3); }
+  .doc-swatch { text-align: left; cursor: copy; border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; background: var(--soil); font: inherit; color: inherit; padding: 0; }
+  .doc-swatch:hover { border-color: var(--blaze); }
+  .doc-swatch .cap { display:block; height: 56px; border-bottom: 1px solid var(--line); }
+  .doc-swatch .m { display:block; padding: 9px 11px; }
+  .doc-swatch .m .k { display:block; font-family: var(--font-display); font-weight: 500; text-transform: uppercase; font-size: 13px; letter-spacing: 0.02em; }
+  .doc-swatch .m .v { display:block; font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); margin-top: 2px; }
+
+  .doc-ramp { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; }
+  .doc-ramp .s { height: 60px; position: relative; cursor: copy; border: 0; padding: 0; }
+  .doc-ramp .s span { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--font-data); font-size: 9px; text-align: center; padding: 2px 0; color: rgba(0,0,0,0.7); background: rgba(241,232,213,0.4); }
+  .doc-rampgrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); }
+  @media (max-width: 720px){ .doc-rampgrid { grid-template-columns: 1fr; } }
+  .doc-rampgrid .rl { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); margin: 0 0 8px; letter-spacing: 0.06em; }
+
+  .doc-scale-row { display: flex; align-items: baseline; gap: var(--s5); padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .doc-scale-row .tk { font-family: var(--font-data); font-size: 11.5px; color: var(--canvas-faint); width: 150px; flex: 0 0 auto; }
+
+  .doc-space-row { display: flex; align-items: center; gap: var(--s4); padding: 9px 0; }
+  .doc-space-row .tk { font-family: var(--font-data); font-size: 11.5px; color: var(--canvas-dim); width: 120px; flex: 0 0 auto; }
+  .doc-space-row .bar { height: 14px; background: var(--blaze); border-radius: 2px; opacity: 0.85; }
+  .doc-space-row .px { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); }
+
+  .doc-grid { display: grid; gap: var(--s4); }
+  .doc-grid.two { grid-template-columns: 1fr 1fr; }
+  .doc-grid.three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 760px){ .doc-grid.two, .doc-grid.three { grid-template-columns: 1fr; } }
+
+  /* a reusable card on the soil surface */
+  .doc-card { border: 1px solid var(--line); border-radius: var(--r-2); padding: 24px; background: var(--soil); }
+  .doc-card h3 { font-family: var(--font-display); font-weight: 500; text-transform: uppercase; font-size: 18px; margin: 0 0 10px; letter-spacing: 0.01em; }
+  .doc-card p { font-size: 13.5px; color: var(--canvas-dim); margin: 0; }
+
+  .doc-radius-demo { height: 88px; border: 1px solid var(--line-strong); background: var(--panel-2); display: grid; place-items: end center; padding-bottom: 8px; font-family: var(--font-data); font-size: 11px; color: var(--canvas-dim); }
+
+  /* heritage timeline */
+  .doc-timeline { display: grid; grid-template-columns: repeat(4,1fr); }
+  @media (max-width: 760px){ .doc-timeline { grid-template-columns: 1fr 1fr; gap: 30px 0; } }
+  .doc-node { position: relative; padding: 30px 22px 0 0; }
+  .doc-node::before { content:""; position:absolute; top:9px; left:0; right:0; height:2px;
+    background: repeating-linear-gradient(90deg, var(--line-strong) 0 7px, transparent 7px 14px); }
+  .doc-node::after { content:""; position:absolute; top:3px; left:0; width:13px; height:13px; transform: rotate(45deg); background: var(--pine); border: 1px solid var(--bark); }
+  .doc-node:nth-child(2)::after { background: var(--tundra); }
+  .doc-node:nth-child(3)::after { background: var(--alpine); }
+  .doc-node:nth-child(4)::after { background: var(--blaze); box-shadow: 0 0 14px rgba(255,106,43,0.5); }
+  .doc-node .y { font-family: var(--font-data); font-size: 12px; color: var(--canvas-faint); letter-spacing: 0.04em; }
+  .doc-node .n { font-family: var(--font-display); font-weight: 500; font-size: 17px; text-transform: uppercase; margin: 8px 0; letter-spacing: 0.01em; }
+  .doc-node .d { font-size: 13.5px; color: var(--canvas-dim); }
+
+  .doc-foot { margin-top: var(--s7); padding-top: var(--s6); border-top: 1px solid var(--line); font-family: var(--font-data); font-size: 12px; color: var(--canvas-faint); line-height: 1.95; }
+  .doc-foot a { color: var(--canvas-dim); }
+
+  /* toast */
+  .doc-toasts { position: fixed; left: 0; right: 0; bottom: 24px; z-index: 80; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .doc-toast { pointer-events: auto; background: var(--stone-1); border: 1px solid rgba(255,106,43,0.5); border-radius: var(--r-1); padding: 10px 16px; font-size: 13px; color: var(--canvas); box-shadow: 0 18px 40px rgba(0,0,0,0.5); opacity: 0; transform: translateY(10px); transition: opacity .26s, transform .26s; }
+  .doc-toast.show { opacity: 1; transform: none; }
+  .doc-toast b { color: var(--blaze); }
+
+  /* ---- sub-block styling reused from the original Cairn layout ---- */
+  .group-band { display: flex; align-items: center; gap: 16px; padding: 14px 0; margin-top: var(--s4); }
+  .group-band .bar { height: 22px; padding: 0 12px; display: inline-flex; align-items: center; background: var(--canvas); color: var(--bark);
+    font-family: var(--font-display); font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: var(--r-stamp); }
+  .group-band .line { flex: 1; height: 1px; background: var(--line-strong); }
+
+  /* principles */
+  .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; }
+  @media (max-width: 860px){ .principles { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px){ .principles { grid-template-columns: 1fr; } }
+  .prin { background: var(--soil); padding: 28px 26px; transition: background var(--dur-tap) var(--ease-firm); }
+  .prin:hover { background: var(--stone-1); }
+  .prin .pi { width: 26px; height: 26px; color: var(--biome); margin-bottom: 16px; transition: color var(--dur-set) var(--ease-firm); }
+  .prin .num { font-family: var(--font-data); font-size: 12px; font-weight: 700; color: var(--canvas-faint); float: right; }
+  .prin h3 { font-family: var(--font-display); font-weight: 500; text-transform: uppercase; font-size: 19px; margin: 0 0 10px; letter-spacing: 0.01em; }
+  .prin .one { color: var(--canvas); font-weight: 500; margin-bottom: 8px; font-size: 14.5px; }
+  .prin p.body { font-size: 13.5px; color: var(--canvas-dim); }
+
+  /* GRID / Unigrid section */
+  .grid-demo { display: grid; grid-template-columns: 1.3fr 1fr; gap: 26px; align-items: start; }
+  @media (max-width: 820px){ .grid-demo { grid-template-columns: 1fr; } }
+  .unigrid { border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; background: var(--soil); }
+  .unigrid .band { background: var(--canvas); color: var(--bark); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .unigrid .band b { font-family: var(--font-display); font-weight: 600; font-size: 19px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .unigrid .band span { font-family: var(--font-data); font-size: 11px; }
+  .unigrid .cols { position: relative; padding: 22px 18px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .unigrid .cols .c { height: 64px; background: repeating-linear-gradient(135deg, rgba(196,105,47,0.16) 0 6px, rgba(196,105,47,0.06) 6px 12px); border: 1px solid rgba(196,105,47,0.3); border-radius: var(--r-1); }
+  .unigrid .base { padding: 0 18px 20px; }
+  .unigrid .base .lbl { font-family: var(--font-data); font-size: 10.5px; color: var(--canvas-faint); margin-bottom: 8px; letter-spacing: 0.06em; }
+  .unigrid .base .rhythm { background-image: repeating-linear-gradient(180deg, var(--line) 0 1px, transparent 1px 12px); height: 84px; border-radius: var(--r-1); padding: 0 4px;
+    font-family: var(--font-display); text-transform: uppercase; }
+  .unigrid .base .rhythm .t1 { font-size: 22px; line-height: 24px; font-weight: 500; }
+  .unigrid .base .rhythm .t2 { font-family: var(--font-ui); font-size: 13px; line-height: 24px; font-weight: 300; color: var(--canvas-dim); text-transform: none; }
+  .grid-legend .lg { padding: 15px 0; border-bottom: 1px solid var(--line); }
+  .grid-legend .lg:last-child { border-bottom: 0; }
+  .grid-legend .lg .k { font-weight: 500; font-size: 14px; }
+  .grid-legend .lg .v { font-size: 13px; color: var(--canvas-dim); margin-top: 4px; }
+  .grid-legend .lg .tok { font-family: var(--font-data); font-size: 11.5px; color: var(--blaze); display: block; margin-top: 6px; }
+
+  /* spacing + tokens */
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+  @media (max-width: 820px){ .twocol { grid-template-columns: 1fr; } }
+  pre.tokens { background: var(--soil); border: 1px solid var(--line); border-radius: var(--r-2); padding: 22px; overflow-x: auto;
+    font-family: var(--font-data); font-size: 12px; line-height: 1.85; color: var(--canvas-dim); }
+  pre.tokens .c { color: var(--canvas-faint); }
+  pre.tokens .v { color: var(--blaze); }
+  pre.tokens .p { color: var(--alpine); }
+
+  /* color */
+  .field { height: 220px; border-radius: var(--r-2); position: relative; overflow: hidden; margin-bottom: 26px; border: 1px solid var(--line);
+    background: radial-gradient(130% 110% at 70% 32%, var(--soil), var(--bark) 72%); color: var(--biome); transition: color var(--dur-set) var(--ease-firm); }
+  .field svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.6; }
+  .field path, .field use { fill: none; stroke: currentColor; vector-effect: non-scaling-stroke; }
+  .field .tags { position: absolute; bottom: 16px; left: 18px; display: flex; gap: 8px; flex-wrap: wrap; z-index: 2; }
+  .field .index { stroke-width: 2.2; }
+
+  .biome-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px; }
+  @media (max-width: 720px){ .biome-grid { grid-template-columns: 1fr 1fr; } }
+  .biome-card { border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; background: var(--soil); }
+  .biome-card .ramp5 { display: flex; height: 56px; }
+  .biome-card .ramp5 span { flex: 1; }
+  .biome-card .meta { padding: 12px 14px; }
+  .biome-card .meta .k { font-family: var(--font-display); font-weight: 500; font-size: 16px; text-transform: uppercase; }
+  .biome-card .meta .v { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); margin-top: 2px; }
+  .biome-card .meta .u { font-size: 11.5px; color: var(--canvas-dim); margin-top: 6px; }
+
+  .neutral-ramp { display: grid; grid-template-columns: repeat(6, 1fr); border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; margin-bottom: 26px; }
+  @media (max-width: 620px){ .neutral-ramp { grid-template-columns: repeat(3, 1fr); } }
+  .step { padding: 20px 12px 12px; }
+  .step .sw { height: 32px; border-radius: var(--r-stamp); margin-bottom: 10px; border: 1px solid rgba(241,232,213,0.08); }
+  .step .lab { font-family: var(--font-data); font-size: 10.5px; color: var(--canvas-faint); }
+
+  .contrast { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 720px){ .contrast { grid-template-columns: 1fr; } }
+  .cpair { border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; }
+  .cpair .swatch { padding: 22px 18px; font-family: var(--font-display); font-weight: 600; font-size: 20px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .cpair .meta { padding: 12px 16px; background: var(--soil); display: flex; justify-content: space-between; align-items: center; }
+  .cpair .meta .r { font-family: var(--font-data); font-size: 13px; color: var(--canvas); }
+  .cpair .meta .g { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; padding: 3px 8px; border-radius: var(--r-pill); border: 1px solid var(--line-strong); color: var(--canvas-dim); }
+
+  /* type */
+  .spec { display: grid; gap: 22px; }
+  .face { border: 1px solid var(--line); border-radius: var(--r-2); padding: 28px 30px; background: var(--soil); }
+  .face .role { font-family: var(--font-data); font-size: 11px; font-weight: 700; color: var(--biome); letter-spacing: 0.16em; text-transform: uppercase; transition: color var(--dur-set) var(--ease-firm); }
+  .face .fname { font-family: var(--font-data); font-size: 12px; color: var(--canvas-faint); float: right; }
+  .face .big { margin: 16px 0 6px; line-height: 1; }
+  .face .note { font-size: 13.5px; color: var(--canvas-dim); }
+  .d1 { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; font-size: clamp(40px, 8vw, 72px); letter-spacing: 0.01em; }
+  .d2 { font-family: var(--font-ui); font-weight: 400; font-size: clamp(24px, 4.6vw, 38px); }
+  .d3 { font-family: var(--font-data); font-weight: 700; font-size: clamp(19px, 3.6vw, 28px); }
+
+  /* iconography */
+  .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; }
+  @media (max-width: 760px){ .icon-grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 460px){ .icon-grid { grid-template-columns: repeat(3, 1fr); } }
+  .ic-cell { background: var(--soil); padding: 22px 10px 14px; text-align: center; transition: background var(--dur-tap) var(--ease-firm); }
+  .ic-cell:hover { background: var(--stone-1); }
+  .ic-cell svg { width: 26px; height: 26px; color: var(--canvas); }
+  .ic-cell:hover svg { color: var(--blaze); }
+  .ic-cell .nm { font-family: var(--font-data); font-size: 10px; color: var(--canvas-faint); margin-top: 12px; letter-spacing: 0.04em; }
+  .icon-note { margin-top: 22px; display: grid; grid-template-columns: 200px 1fr; gap: 22px; align-items: center; }
+  @media (max-width: 620px){ .icon-note { grid-template-columns: 1fr; } }
+  .icon-note .frame { border: 1px solid var(--line); border-radius: var(--r-2); background: var(--soil); display: grid; place-items: center; padding: 22px; position: relative; }
+  .icon-note .frame svg { width: 92px; height: 92px; color: var(--canvas); }
+  .icon-note .frame .gridlines { position: absolute; inset: 22px; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 11.5px 11.5px; opacity: 0.5; pointer-events: none; }
+  .icon-note p { font-size: 14px; color: var(--canvas-dim); }
+  .icon-note .tok { font-family: var(--font-data); font-size: 11.5px; color: var(--blaze); display: block; margin-top: 8px; }
+
+  /* contour as data */
+  .data-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 26px; align-items: stretch; }
+  @media (max-width: 820px){ .data-grid { grid-template-columns: 1fr; } }
+  .chart { border: 1px solid var(--line); border-radius: var(--r-2); background: var(--soil); padding: 24px; position: relative; }
+  .chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .chart .axis { stroke: var(--line-strong); stroke-width: 1; }
+  .chart .gridline { stroke: var(--line); stroke-width: 1; }
+  .chart .prof { fill: none; stroke: var(--biome); stroke-width: 2.4; transition: stroke var(--dur-set) var(--ease-firm); }
+  .chart .proffill { stroke: none; fill: var(--biome); opacity: 0.12; transition: fill var(--dur-set) var(--ease-firm); }
+  .chart .mk { fill: var(--blaze); }
+  .chart .mklab { font-family: var(--font-data); font-size: 9px; fill: var(--canvas-dim); }
+  .chart .yl { font-family: var(--font-data); font-size: 9px; fill: var(--canvas-faint); }
+  .chart .ttl { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+  .density { border: 1px solid var(--line); border-radius: var(--r-2); background: var(--soil); padding: 24px; }
+  .density .ttl { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
+  .density .row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .density .row:last-child { border-bottom: 0; }
+  .density .row .pat { width: 64px; height: 34px; flex: 0 0 auto; border-radius: var(--r-1); border: 1px solid var(--line); }
+  .density .row .k { font-weight: 500; font-size: 14px; }
+  .density .row .v { font-size: 12.5px; color: var(--canvas-dim); }
+
+  /* motion */
+  .motion-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; }
+  @media (max-width: 760px){ .motion-grid { grid-template-columns: 1fr; } }
+  .curve-box { border: 1px solid var(--line); border-radius: var(--r-2); padding: 26px; background: var(--soil); }
+  .curve-box svg { width: 100%; height: auto; display: block; }
+  .settle { margin-top: 18px; height: 4px; background: var(--line); border-radius: 2px; position: relative; overflow: hidden; }
+  .settle i { position: absolute; top: -4px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--blaze); animation: set 2.8s var(--ease-settle) infinite; }
+  @keyframes set { 0%,10% { left: 0; } 55% { left: calc(100% - 12px); } 92%,100% { left: calc(100% - 12px); } }
+  .motion-tokens { border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; }
+  .mt { display: flex; justify-content: space-between; gap: 14px; padding: 15px 20px; border-bottom: 1px solid var(--line); }
+  .mt:last-child { border-bottom: 0; }
+  .mt .k { font-weight: 500; font-size: 14px; }
+  .mt .k small { display: block; color: var(--canvas-faint); font-weight: 300; font-size: 12.5px; }
+  .mt .v { font-family: var(--font-data); font-size: 12px; color: var(--blaze); text-align: right; }
+
+  /* components */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 760px){ .comp-grid { grid-template-columns: 1fr; } }
+  .comp .stage { background: radial-gradient(100% 100% at 60% 30%, rgba(var(--biome-rgb),0.1), var(--bark) 74%); border-radius: var(--r-1); border: 1px solid var(--line); padding: 18px; }
+  .row-btns { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+  /* patterns / in the field */
+  .pattern-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 26px; align-items: start; }
+  @media (max-width: 880px){ .pattern-grid { grid-template-columns: 1fr; } }
+  .poster { border: 1px solid var(--line-strong); border-radius: var(--r-2); overflow: hidden; background: var(--soil); position: relative; }
+  .poster .ptopo { position: absolute; inset: 0; color: var(--pine); opacity: 0.4; pointer-events: none; }
+  .poster .ptopo svg { width: 100%; height: 100%; } .poster .ptopo path, .poster .ptopo use { fill: none; stroke: currentColor; vector-effect: non-scaling-stroke; }
+  .poster .ptopo .index { stroke-width: 2.2; }
+  .poster .pband { position: relative; background: var(--canvas); color: var(--bark); padding: 14px 20px; }
+  .poster .pband b { font-family: var(--font-display); font-weight: 600; font-size: 26px; text-transform: uppercase; letter-spacing: 0.01em; display: block; line-height: 1; }
+  .poster .pband span { font-family: var(--font-data); font-size: 11px; }
+  .poster .pbody { position: relative; padding: 22px 20px 24px; }
+  .poster .pbody .stat-row { display: flex; gap: 26px; margin-bottom: 20px; }
+  .poster .pbody .stat-row .s .k { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--canvas-faint); }
+  .poster .pbody .stat-row .s .v { font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 1; margin-top: 4px; }
+  .poster .pbody .stat-row .s .v small { font-size: 13px; font-weight: 400; color: var(--canvas-dim); }
+  .poster .pbody .leg { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 13px; color: var(--canvas-dim); }
+  .poster .pbody .leg svg { width: 16px; height: 16px; color: var(--blaze); }
+  .poster .pbody .blaze-stripe { position: absolute; right: 20px; top: -18px; width: 34px; height: 52px; background: var(--blaze); clip-path: polygon(50% 0,100% 28%,100% 100%,0 100%,0 28%); box-shadow: 0 0 20px rgba(255,106,43,0.4); }
+
+  .phone { width: 100%; max-width: 320px; margin: 0 auto; border: 1px solid var(--line-strong); border-radius: 26px; overflow: hidden; background: var(--bark); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+  .phone .pstatus { display: flex; justify-content: space-between; padding: 12px 20px 6px; font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); }
+  .phone .phead { padding: 6px 20px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+  .phone .phead .t { font-family: var(--font-display); font-weight: 600; font-size: 22px; text-transform: uppercase; }
+  .phone .pmap { position: relative; height: 150px; color: var(--pine); background: radial-gradient(120% 100% at 60% 30%, var(--stone-1), var(--bark)); overflow: hidden; }
+  .phone .pmap svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.7; } .phone .pmap path,.phone .pmap use { fill:none; stroke: currentColor; vector-effect: non-scaling-stroke; }
+  .phone .pmap .index { stroke-width: 2; }
+  .phone .pmap .here { position: absolute; left: 56%; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: var(--blaze); border: 2px solid var(--bark); box-shadow: 0 0 0 4px rgba(255,106,43,0.25); transform: translate(-50%,-50%); }
+  .phone .plist { padding: 8px 14px 16px; }
+  .phone .pitem { display: flex; align-items: center; gap: 12px; padding: 11px 8px; border-radius: var(--r-1); }
+  .phone .pitem svg { width: 18px; height: 18px; color: var(--biome); transition: color var(--dur-set) var(--ease-firm); }
+  .phone .pitem .pt { flex: 1; }
+  .phone .pitem .pt b { font-size: 14px; font-weight: 500; display: block; }
+  .phone .pitem .pt small { font-family: var(--font-data); font-size: 11px; color: var(--canvas-faint); }
+  .phone .pitem.sel { background: rgba(255,106,43,0.08); box-shadow: inset 3px 0 0 var(--blaze); }
+  .phone .pcta { margin: 4px 14px 18px; }
+
+  /* accessibility */
+  .a11y-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  @media (max-width: 720px){ .a11y-grid { grid-template-columns: 1fr; } }
+  .a11y { border: 1px solid var(--line); border-radius: var(--r-2); padding: 24px; background: var(--soil); }
+  .a11y .ah { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .a11y .ah svg { width: 22px; height: 22px; color: var(--biome); transition: color var(--dur-set) var(--ease-firm); }
+  .a11y .ah b { font-family: var(--font-display); font-weight: 500; text-transform: uppercase; font-size: 16px; letter-spacing: 0.02em; }
+  .a11y p { font-size: 13.5px; color: var(--canvas-dim); }
+
+  /* do / don't */
+  .dd { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 720px){ .dd { grid-template-columns: 1fr; } }
+  .dd-col { border: 1px solid var(--line); border-radius: var(--r-2); padding: 26px 28px; background: var(--soil); }
+  .dd-col h4 { font-family: var(--font-data); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 18px; }
+  .dd-col.do h4 { color: var(--pine); }
+  .dd-col.dont h4 { color: var(--clay); }
+  .dd-col ul { list-style: none; }
+  .dd-col li { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--canvas-dim); display: flex; gap: 12px; }
+  .dd-col li:last-child { border-bottom: 0; }
+  .dd-col li::before { content: ""; width: 8px; height: 8px; margin-top: 7px; flex: 0 0 auto; transform: rotate(45deg); }
+  .dd-col.do li::before { background: var(--pine); }
+  .dd-col.dont li::before { background: var(--clay); }
+
+  /* production: token tiers + status */
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 760px){ .tiers { grid-template-columns: 1fr; } }
+  .tier { border: 1px solid var(--line); border-radius: var(--r-2); background: var(--soil); padding: 22px; position: relative; }
+  .tier .tn { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--canvas-faint); }
+  .tier h4 { font-family: var(--font-display); font-weight: 500; text-transform: uppercase; font-size: 18px; margin: 6px 0 10px; letter-spacing: 0.01em; }
+  .tier p { font-size: 13px; color: var(--canvas-dim); margin-bottom: 14px; }
+  .tier code { font-family: var(--font-data); font-size: 11.5px; color: var(--blaze); display: block; line-height: 1.95; }
+  .tier .arrow { position: absolute; right: -11px; top: 50%; transform: translateY(-50%); color: var(--canvas-faint); z-index: 2; }
+  @media (max-width: 760px){ .tier .arrow { right: 50%; top: auto; bottom: -18px; transform: translateX(50%) rotate(90deg); } }
+  .status-table { border: 1px solid var(--line); border-radius: var(--r-2); overflow: hidden; }
+  .status-table .sh, .status-table .srow { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; padding: 13px 18px; align-items: center; }
+  .status-table .sh { background: var(--stone-1); font-family: var(--font-data); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--canvas-faint); }
+  .status-table .srow { border-top: 1px solid var(--line); font-size: 14px; }
+  .status-table .srow .nm { font-weight: 500; }
+  .status-table .verc { font-family: var(--font-data); font-size: 12px; color: var(--canvas-dim); }
+  .st-pill { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: var(--r-pill); justify-self: start; }
+  .st-pill.stable { background: rgba(84,144,90,0.18); color: var(--pine-2); border: 1px solid rgba(84,144,90,0.45); }
+  .st-pill.beta   { background: rgba(95,163,192,0.16); color: var(--alp-2); border: 1px solid rgba(95,163,192,0.45); }
+
+  /* reveal on scroll */
+  .doc-reveal { opacity: 0; transform: translateY(14px); }
+  .doc-reveal.is-in { opacity: 1; transform: none; transition: opacity .58s var(--ease-settle), transform .58s var(--ease-settle); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; }
+    .doc-reveal, .doc-reveal.is-in { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .doc-hero .trailpath { stroke-dashoffset: 0 !important; opacity: 0.85 !important; }
+  }
+</style>
+</head>
+<body>
+
+<a class="doc-skip btn secondary" href="#overview">Skip to content</a>
+
+<!-- shared contour shapes -->
+<svg class="hidden-defs" aria-hidden="true">
+  <defs>
+    <path id="ctr"  d="M0,-118 C58,-130 122,-72 112,-12 C132,42 70,112 12,120 C-58,132 -122,72 -110,12 C-132,-52 -70,-114 0,-118 Z"/>
+    <path id="ctr2" d="M0,-100 C70,-110 96,-44 104,8 C112,64 52,104 -6,100 C-72,96 -108,40 -98,-16 C-90,-66 -54,-96 0,-100 Z"/>
+  </defs>
+</svg>
+
+<!-- top bar -->
+<header class="doc-topbar">
+  <a class="doc-brand" href="#overview" aria-label="Cairn home">
+    <svg class="cairn-mark" viewBox="0 0 30 40" fill="currentColor" aria-hidden="true">
+      <ellipse class="top" cx="15" cy="7" rx="6.5" ry="4.5"/>
+      <ellipse cx="15" cy="16" rx="10.5" ry="5"/>
+      <ellipse cx="15" cy="26" rx="12.5" ry="5.5"/>
+      <ellipse cx="15" cy="36" rx="9.5" ry="4"/>
+    </svg>
+    <b>Cairn</b>
+  </a>
+  <span class="doc-ver">v1.0.0</span>
+  <span class="spacer"></span>
+  <div class="doc-biome" role="group" aria-label="Active biome">
+    <span class="lbl">Biome</span>
+    <button type="button" data-biome="pine"   aria-pressed="true">pine</button>
+    <button type="button" data-biome="tundra" aria-pressed="false">tundra</button>
+    <button type="button" data-biome="alpine" aria-pressed="false">alpine</button>
+    <button type="button" data-biome="clay"   aria-pressed="false">clay</button>
+  </div>
+  <button class="doc-theme" id="themeToggle" aria-pressed="false" aria-label="Toggle paper theme">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+    <span class="tl">Paper</span>
+  </button>
+</header>
+<div class="doc-scrollbar" id="scrollbar" aria-hidden="true"></div>
+
+<div class="doc-shell">
+  <!-- sidebar -->
+  <nav class="doc-side" aria-label="Sections">
+    <h4>Start</h4>
+    <a href="#overview" class="is-active">Overview</a>
+    <a href="#install">Getting started</a>
+    <h4>Foundations</h4>
+    <a href="#principles">Principles</a>
+    <a href="#grid">Grid</a>
+    <a href="#color">Color</a>
+    <a href="#type">Typography</a>
+    <a href="#space">Spacing &amp; radius</a>
+    <a href="#elevation">Contour &amp; motion</a>
+    <h4>Components</h4>
+    <a href="#icons">Iconography</a>
+    <a href="#components">Components</a>
+    <a href="#patterns">Patterns</a>
+    <h4>Guidance</h4>
+    <a href="#rules">Do &amp; don't</a>
+    <a href="#a11y">Accessibility</a>
+    <a href="#production">Production</a>
+    <a href="#heritage">Heritage</a>
+  </nav>
+
+  <main class="doc-main">
+
+    <!-- OVERVIEW / HERO -->
+    <section class="doc-section doc-hero" id="overview">
+      <div class="topobg" aria-hidden="true">
+        <svg viewBox="0 0 640 540" preserveAspectRatio="xMidYMid slice">
+          <g stroke-width="1.4">
+            <use href="#ctr" transform="translate(470,210) scale(0.3)"/>
+            <use href="#ctr" transform="translate(470,210) scale(0.6)"/>
+            <use href="#ctr" transform="translate(470,210) scale(0.96)"/>
+            <use href="#ctr" transform="translate(470,210) scale(1.36)"/>
+            <use href="#ctr" transform="translate(470,210) scale(1.82)"/>
+          </g>
+          <path class="trailpath" d="M40,460 C160,400 200,330 300,300 C400,270 440,200 560,160"/>
+        </svg>
+      </div>
+      <div class="row">
+        <div>
+          <span class="eyebrow">Rugged wayfinding · weatherproof</span>
+          <h1>Cair<b>n</b></h1>
+          <p class="lede">A rugged wayfinding interface language for the field. Topographic contours carry the structure, one <strong style="color:var(--canvas)">blaze</strong> color tells you where you are, and the terrain itself is the map. Built to be read in any weather.</p>
+          <p class="lineage">WPA park posters 1933 &rsaquo; USGS topographic survey &rsaquo; Vignelli&rsquo;s Unigrid 1977 &rsaquo; trail blazes &amp; cairns. The functional graphic language of the outdoors, re-tokenized.</p>
+          <div class="cta">
+            <a class="btn primary" href="#install">&#9650; Get started</a>
+            <a class="btn secondary" href="#components">Components</a>
+            <button class="btn ghost" id="copyInstall" type="button">Copy tokens</button>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <aside class="doc-marker" aria-label="Waypoint readout">
+            <div class="mh"><span id="m-biome">Conifer Forest</span><span class="tagdot"></span></div>
+            <div class="place">
+              <div class="nm" id="m-name">Pine Trailhead</div>
+              <div class="sub" id="m-sub">waypoint 01 of 04 &middot; bearing 312&deg; NW</div>
+            </div>
+            <div class="grid2">
+              <div class="stat"><div class="k">Elevation</div><div class="v" id="m-elev">1,240 m</div></div>
+              <div class="stat"><div class="k">Grade</div><div class="v" id="m-grade">+4%</div></div>
+            </div>
+            <div class="ebar"><i id="m-bar" style="width:22%"></i></div>
+            <div class="foot"><span id="m-coord">44.43&deg; N&nbsp;110.59&deg; W</span><span><b id="m-dist">2.1</b> mi</span></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- GETTING STARTED -->
+    <section class="doc-section" id="install">
+      <span class="doc-secno">00 — Adoption</span>
+      <h2>Getting started</h2>
+      <p class="lede">Adopt the system by declaring its tokens. CAIRN is tiered (<code style="font-family:var(--font-data);color:var(--blaze)">--primitive</code> &rarr; semantic &rarr; component) and themeable, so a designer and an engineer read from one source of truth. Set the active biome and everything retints.</p>
+
+      <div class="doc-example" data-static>
+        <div class="doc-demo col">
+          <p style="font-size:14px;margin:0;color:var(--canvas-dim)">1 · Load the three faces. &nbsp; 2 · Declare the token tiers on <code style="font-family:var(--font-data);color:var(--blaze)">:root</code>. &nbsp; 3 · Swap <code style="font-family:var(--font-data);color:var(--blaze)">--biome</code> per section, or <code style="font-family:var(--font-data);color:var(--blaze)">data-theme="paper"</code> on the root, to retint everything.</p>
+        </div>
+        <div class="doc-codewrap">
+          <pre class="doc-code"><code></code></pre>
+          <script type="text/plain" class="doc-snippet">
+&lt;link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&amp;family=Asap:wght@300;500&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"&gt;
+
+&lt;style&gt;
+  :root {
+    --bark: #15120c;          /* base ground   */
+    --canvas: #f1e8d5;        /* primary text  */
+    --biome: var(--pine);     /* swappable     */
+    --blaze: #ff6a2b;         /* one accent    */
+  }
+&lt;/style&gt;
+
+&lt;button class="btn primary"&gt;&#9650; Set waypoint&lt;/button&gt;
+          </script>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--canvas-dim)">Tier 1 primitives are the only place a literal hex or pixel lives; semantic aliases (<code style="font-family:var(--font-data);color:var(--blaze)">--surface</code>, <code style="font-family:var(--font-data);color:var(--blaze)">--accent</code>, <code style="font-family:var(--font-data);color:var(--blaze)">--action</code>) map purpose to a primitive so a theme can swap underneath. See <a href="#production" style="color:var(--blaze)">Production</a> for the full architecture.</p>
+    </section>
+
+    <!-- PRINCIPLES -->
+    <section class="doc-section" id="principles">
+      <span class="doc-secno">01 — Foundations</span>
+      <h2>Six principles</h2>
+      <p class="lede">The outdoors already has a design system, refined over a century. Each principle is lifted from something the outdoors does to keep you oriented, then written as a rule you can hold a design against.</p>
+      <div class="principles">
+        <div class="prin doc-reveal">
+          <svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 19l6-12 4 7 2-3 6 8z"/></svg>
+          <span class="num">01</span><h3>Contours carry information</h3><p class="one">Lines describe the terrain, and their density is the data.</p><p class="body">Topographic contours are the structural material. Tight lines read steep and intense, open lines calm and flat. The background is never decoration, it is a readable map of where weight and depth sit.</p></div>
+        <div class="prin doc-reveal">
+          <svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><path d="M12 3v6l3 2"/></svg>
+          <span class="num">02</span><h3>Blaze the way</h3><p class="one">One high-vis color marks where you are and where to go.</p><p class="body">Blaze orange does a single job, the same job a painted trail blaze does on a tree: &ldquo;you are here&rdquo; and &ldquo;this way.&rdquo; Never spend it on decoration. When it appears, it means act, or look.</p></div>
+        <div class="prin doc-reveal">
+          <svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><polygon points="12,7 14,12 12,11 10,12" fill="currentColor" stroke="none"/><polygon points="12,17 10,12 12,13 14,12" fill="currentColor" stroke="none" opacity="0.4"/></svg>
+          <span class="num">03</span><h3>Color is terrain</h3><p class="one">Each section owns a biome, and the biome owns a hue.</p><p class="body">Move into a new area and the field shifts: pine for forest, lichen for tundra, glacier blue for alpine, clay for desert. You learn the map by feel. Color does the wayfinding, not just the styling.</p></div>
+        <div class="prin doc-reveal">
+          <svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M9 7v13M15 7v13M7 4h10"/></svg>
+          <span class="num">04</span><h3>Stamped, sturdy type</h3><p class="one">Condensed signage faces, set like routed park signs.</p><p class="body">Display type is upright, condensed, uppercase, the voice of a trail marker carved into wood. It holds up small, holds up huge, and reads at a glance from across the trailhead. Legible beats pretty.</p></div>
+        <div class="prin doc-reveal">
+          <svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 16c2-1 3-3 5-3s3 2 5 2 3-3 5-3 3 2 3 2"/><path d="M3 11c2-1 3-3 5-3s3 2 5 2 3-3 5-3"/></svg>
+          <span class="num">05</span><h3>Built to weather</h3><p class="one">High contrast, tactile materials, nothing fragile.</p><p class="body">Warm near-black ground, kraft-canvas text, honest hairlines. The palette is earthy and the contrast is high so it survives glare, dust, and a cracked screen at altitude. Rugged is a usability requirement.</p></div>
+        <div class="prin doc-reveal">
+          <svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+          <span class="num">06</span><h3>Set, do not float</h3><p class="one">Motion is grounded. Things settle into place with weight.</p><p class="body">Where lighter languages drift and shimmer, this one lands. Elements arrive on a firm ease-out, like gear set down on rock. Nothing hovers or bounces. The interface feels solid underfoot.</p></div>
+      </div>
+    </section>
+
+    <!-- GRID -->
+    <section class="doc-section" id="grid">
+      <span class="doc-secno">02 — Foundations</span>
+      <h2>The Unigrid</h2>
+      <p class="lede">Vignelli&rsquo;s 1977 system gave every National Park brochure one skeleton: a black band locks the title, a column grid holds the content, and a baseline keeps the rhythm. CAIRN inherits all three. Structure is a rule, not a suggestion.</p>
+      <div class="grid-demo">
+        <div class="unigrid doc-reveal">
+          <div class="band"><b>Yellowstone</b><span>NORTH RANGE · SHEET 1</span></div>
+          <div class="cols">
+            <div class="c"></div><div class="c"></div><div class="c"></div><div class="c"></div><div class="c"></div><div class="c"></div>
+          </div>
+          <div class="base">
+            <div class="lbl">BASELINE RHYTHM · 12PX</div>
+            <div class="rhythm">
+              <div class="t1">Alpine Ridge Loop</div>
+              <div class="t2">5.4 miles · 2,240 ft gain · exposed above treeline</div>
+              <div class="t2">Trailhead opens 0600 · last ascent 1400</div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-legend">
+          <div class="lg doc-reveal"><div class="k">The band</div><div class="v">A solid canvas bar carries the title in condensed caps. It is the one heavy element, the anchor every layout starts from.<span class="tok">--canvas on title, full-bleed</span></div></div>
+          <div class="lg doc-reveal"><div class="k">Six columns</div><div class="v">A six-column grid scales to one, two, three, or six. Content snaps to columns, gutters stay constant.<span class="tok">grid: repeat(6,1fr) · gutter 12px</span></div></div>
+          <div class="lg doc-reveal"><div class="k">Baseline</div><div class="v">A 12px baseline grid keeps type, rules, and spacing on a shared rhythm so the page reads as engineered.<span class="tok">line-height snaps to 12px</span></div></div>
+          <div class="lg doc-reveal"><div class="k">Margins</div><div class="v">Generous, consistent edge margins give the content room and let the dark ground breathe around it.<span class="tok">--s5 / --s6 page gutters</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLOR -->
+    <section class="doc-section" id="color">
+      <span class="doc-secno">03 — Foundations</span>
+      <h2>Color</h2>
+      <p class="lede">Four biome hues for wayfinding, one blaze for action, all on a warm bark-black ground. Reference the <strong style="color:var(--canvas)">semantic roles</strong> in product code — they retint with the active biome. Click any swatch or ramp step to copy its token.</p>
+
+      <div class="field doc-reveal">
+        <svg viewBox="0 0 1120 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <g stroke-width="1.4">
+            <use href="#ctr" transform="translate(800,110) scale(0.3)"/>
+            <use href="#ctr" transform="translate(800,110) scale(0.6)"/>
+            <use class="index" href="#ctr" transform="translate(800,110) scale(0.96)"/>
+            <use href="#ctr" transform="translate(800,110) scale(1.36)"/>
+            <use href="#ctr" transform="translate(800,110) scale(1.82)"/>
+          </g>
+        </svg>
+        <div class="tags">
+          <span class="tag">--biome #54905a</span>
+          <span class="tag">--blaze #ff6a2b</span>
+          <span class="tag">--bark #15120c</span>
+          <span class="tag">--canvas #f1e8d5</span>
+        </div>
+      </div>
+
+      <h3 class="doc-sub">Semantic roles</h3>
+      <div class="doc-swatches" id="semanticSwatches">
+        <button class="doc-swatch" data-token="--surface"><span class="cap" style="background:var(--surface)"></span><span class="m"><span class="k">surface</span><span class="v">--surface</span></span></button>
+        <button class="doc-swatch" data-token="--surface-raised"><span class="cap" style="background:var(--surface-raised)"></span><span class="m"><span class="k">raised</span><span class="v">--surface-raised</span></span></button>
+        <button class="doc-swatch" data-token="--text"><span class="cap" style="background:var(--text)"></span><span class="m"><span class="k">text</span><span class="v">--text</span></span></button>
+        <button class="doc-swatch" data-token="--text-dim"><span class="cap" style="background:var(--text-dim)"></span><span class="m"><span class="k">text dim</span><span class="v">--text-dim</span></span></button>
+        <button class="doc-swatch" data-token="--accent"><span class="cap" style="background:var(--accent)"></span><span class="m"><span class="k">accent</span><span class="v">--accent</span></span></button>
+        <button class="doc-swatch" data-token="--action"><span class="cap" style="background:var(--action)"></span><span class="m"><span class="k">action</span><span class="v">--action</span></span></button>
+        <button class="doc-swatch" data-token="--action-deep"><span class="cap" style="background:var(--action-deep)"></span><span class="m"><span class="k">action deep</span><span class="v">--action-deep</span></span></button>
+        <button class="doc-swatch" data-token="--border"><span class="cap" style="background:var(--ridge)"></span><span class="m"><span class="k">border</span><span class="v">--border</span></span></button>
+      </div>
+
+      <h3 class="doc-sub">Biome hues</h3>
+      <div class="biome-grid">
+        <div class="biome-card doc-reveal"><div class="ramp5"><span style="background:var(--pine-2)"></span><span style="background:var(--pine-3)"></span><span style="background:var(--pine-4)"></span><span style="background:var(--pine-5)"></span></div><div class="meta"><div class="k">Pine</div><div class="v">#54905a</div><div class="u">forest · default · home</div></div></div>
+        <div class="biome-card doc-reveal"><div class="ramp5"><span style="background:var(--tun-2)"></span><span style="background:var(--tun-3)"></span><span style="background:var(--tun-4)"></span><span style="background:var(--tun-5)"></span></div><div class="meta"><div class="k">Tundra</div><div class="v">#a3ad6c</div><div class="u">meadow · data · calm</div></div></div>
+        <div class="biome-card doc-reveal"><div class="ramp5"><span style="background:var(--alp-2)"></span><span style="background:var(--alp-3)"></span><span style="background:var(--alp-4)"></span><span style="background:var(--alp-5)"></span></div><div class="meta"><div class="k">Alpine</div><div class="v">#5fa3c0</div><div class="u">summit · cold · info</div></div></div>
+        <div class="biome-card doc-reveal"><div class="ramp5"><span style="background:var(--cly-2)"></span><span style="background:var(--cly-3)"></span><span style="background:var(--cly-4)"></span><span style="background:var(--cly-5)"></span></div><div class="meta"><div class="k">Clay</div><div class="v">#c4692f</div><div class="u">desert · caution · warn</div></div></div>
+      </div>
+
+      <h3 class="doc-sub">Biome tint &amp; shade ramps</h3>
+      <div class="doc-rampgrid">
+        <div><p class="rl">--pine-2 … --pine-5</p><div class="doc-ramp" id="pineRamp"></div></div>
+        <div><p class="rl">--tun-2 … --tun-5</p><div class="doc-ramp" id="tunRamp"></div></div>
+        <div><p class="rl">--alp-2 … --alp-5</p><div class="doc-ramp" id="alpRamp"></div></div>
+        <div><p class="rl">--cly-2 … --cly-5</p><div class="doc-ramp" id="clyRamp"></div></div>
+        <div><p class="rl">--blaze · --blaze-deep · --blaze-lite</p><div class="doc-ramp" id="blazeRamp" style="grid-template-columns:repeat(3,1fr)"></div></div>
+      </div>
+
+      <h3 class="doc-sub">Neutral ground</h3>
+      <div class="neutral-ramp doc-reveal">
+        <div class="step"><div class="sw" style="background:#15120c"></div><div class="lab">bark / base</div></div>
+        <div class="step"><div class="sw" style="background:#1c1710"></div><div class="lab">soil / surface</div></div>
+        <div class="step"><div class="sw" style="background:#231d14"></div><div class="lab">stone / raised</div></div>
+        <div class="step"><div class="sw" style="background:#39301f"></div><div class="lab">ridge / edge</div></div>
+        <div class="step"><div class="sw" style="background:#c7b896"></div><div class="lab">canvas-dim</div></div>
+        <div class="step"><div class="sw" style="background:#f1e8d5"></div><div class="lab">canvas / text</div></div>
+      </div>
+
+      <h3 class="doc-sub">Contrast</h3>
+      <div class="contrast">
+        <div class="cpair doc-reveal"><div class="swatch" style="background:#15120c;color:#f1e8d5">Canvas on bark</div><div class="meta"><span class="r">15.2 : 1</span><span class="g">AAA</span></div></div>
+        <div class="cpair doc-reveal"><div class="swatch" style="background:#15120c;color:#c7b896">Dim on bark</div><div class="meta"><span class="r">9.1 : 1</span><span class="g">AAA</span></div></div>
+        <div class="cpair doc-reveal"><div class="swatch" style="background:#15120c;color:#ff6a2b">Blaze on bark</div><div class="meta"><span class="r">6.4 : 1</span><span class="g">AA · UI</span></div></div>
+      </div>
+    </section>
+
+    <!-- TYPE -->
+    <section class="doc-section" id="type">
+      <span class="doc-secno">04 — Foundations</span>
+      <h2>Typography</h2>
+      <p class="lede">A condensed signage face for the carved-sign moments, a sturdy humanist sans for everything you read on the trail, and a typewriter mono for coordinates and field data.</p>
+      <div class="doc-grid three">
+        <div class="face doc-reveal"><span class="fname">Oswald</span><div class="role">Display &middot; 500 / 600</div><div class="big d1">Routed</div><div class="note">Upright, condensed, uppercase. The voice of a trail marker and a park entrance. Holds its nerve from caption to billboard.</div></div>
+        <div class="face doc-reveal"><span class="fname">Asap</span><div class="role">Interface &middot; 300 / 500</div><div class="big d2">Readable</div><div class="note">A sturdy humanist sans with squared-off warmth. The working voice, plain and legible in sun or rain. What you read while you move.</div></div>
+        <div class="face doc-reveal"><span class="fname">Space Mono</span><div class="role">Data &middot; 400 / 700</div><div class="big d3">44.43&deg; N</div><div class="note">Typewriter-flavored mono for coordinates, elevations, grades, and tokens. The precise, stamped, field-log layer.</div></div>
+      </div>
+      <h3 class="doc-sub">Scale</h3>
+      <div id="typeScale"></div>
+    </section>
+
+    <!-- SPACING & RADIUS -->
+    <section class="doc-section" id="space">
+      <span class="doc-secno">05 — Foundations</span>
+      <h2>Spacing &amp; radius</h2>
+      <p class="lede">One four-pixel base unit drives every gap, pad, and radius, so spacing is never guessed. The whole system is a short list of named tokens you compose with.</p>
+      <div class="twocol">
+        <div>
+          <h3 class="doc-sub">Spacing</h3>
+          <div id="spaceScale"></div>
+        </div>
+        <div>
+          <h3 class="doc-sub">Radius</h3>
+          <div class="doc-grid two" style="gap:var(--s3)">
+            <div class="doc-radius-demo" style="border-radius:var(--r-stamp)">--r-stamp · 2px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--r-1)">--r-1 · 4px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--r-2)">--r-2 · 8px</div>
+            <div class="doc-radius-demo" style="border-radius:var(--r-pill)">--r-pill · 999px</div>
+          </div>
+          <h3 class="doc-sub">The whole system</h3>
+          <pre class="tokens"><span class="c">/* core tokens — the whole system */</span>
+<span class="p">--bark</span>:   <span class="v">#15120c</span>;  <span class="c">/* base ground   */</span>
+<span class="p">--canvas</span>: <span class="v">#f1e8d5</span>;  <span class="c">/* primary text  */</span>
+<span class="p">--biome</span>:  <span class="v">var(--pine)</span>; <span class="c">/* swappable     */</span>
+<span class="p">--blaze</span>:  <span class="v">#ff6a2b</span>;  <span class="c">/* one accent    */</span>
+
+<span class="p">--font-display</span>: <span class="v">'Oswald'</span>;
+<span class="p">--font-ui</span>:      <span class="v">'Asap'</span>;
+<span class="p">--font-data</span>:    <span class="v">'Space Mono'</span>;
+
+<span class="p">--r-stamp</span>: <span class="v">2px</span>;  <span class="p">--r-2</span>: <span class="v">8px</span>;
+<span class="p">--ease-settle</span>: <span class="v">cubic-bezier(.22,1,.36,1)</span>;
+<span class="p">--dur-set</span>: <span class="v">440ms</span>;</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTOUR & MOTION -->
+    <section class="doc-section" id="elevation">
+      <span class="doc-secno">06 — Material</span>
+      <h2>Contour &amp; elevation as data</h2>
+      <p class="lede">The contour field is not wallpaper, it is a chart. Elevation profiles, route grades, and density readouts all draw from the same topographic vocabulary, so data and decoration speak one language. And motion is grounded — things settle, never float.</p>
+      <div class="data-grid">
+        <div class="chart doc-reveal">
+          <div class="ttl">Route profile · 7.2 mi</div>
+          <svg viewBox="0 0 320 150" aria-label="Elevation profile">
+            <line class="axis" x1="34" y1="120" x2="312" y2="120"/>
+            <line class="axis" x1="34" y1="12" x2="34" y2="120"/>
+            <line class="gridline" x1="34" y1="90" x2="312" y2="90"/>
+            <line class="gridline" x1="34" y1="60" x2="312" y2="60"/>
+            <line class="gridline" x1="34" y1="30" x2="312" y2="30"/>
+            <text class="yl" x="6" y="123">1.2k</text><text class="yl" x="6" y="63">2.4k</text><text class="yl" x="6" y="33">3.5k</text>
+            <path class="proffill" d="M34,104 L110,108 L150,62 L226,20 L290,78 L312,84 L312,120 L34,120 Z"/>
+            <path class="prof" d="M34,104 L110,108 L150,62 L226,20 L290,78 L312,84"/>
+            <g><circle class="mk" cx="34" cy="104" r="3.5"/><circle class="mk" cx="150" cy="62" r="3.5"/><circle class="mk" cx="226" cy="20" r="4.5"/><circle class="mk" cx="290" cy="78" r="3.5"/></g>
+            <text class="mklab" x="216" y="13">summit 3,480m</text>
+          </svg>
+        </div>
+        <div class="density doc-reveal">
+          <div class="ttl">Contour density = grade</div>
+          <div class="row"><span class="pat" style="background:repeating-linear-gradient(90deg,var(--pine) 0 1px,transparent 1px 16px)"></span><div><div class="k">Gentle</div><div class="v">Wide spacing · 0–6% grade</div></div></div>
+          <div class="row"><span class="pat" style="background:repeating-linear-gradient(90deg,var(--tundra) 0 1px,transparent 1px 9px)"></span><div><div class="k">Moderate</div><div class="v">Closer lines · 6–12% grade</div></div></div>
+          <div class="row"><span class="pat" style="background:repeating-linear-gradient(90deg,var(--alpine) 0 1px,transparent 1px 5px)"></span><div><div class="k">Steep</div><div class="v">Tight lines · 12–20% grade</div></div></div>
+          <div class="row"><span class="pat" style="background:repeating-linear-gradient(90deg,var(--clay) 0 1.5px,transparent 1.5px 3px)"></span><div><div class="k">Cliff</div><div class="v">Lines merge · 20%+ · caution</div></div></div>
+        </div>
+      </div>
+
+      <h3 class="doc-sub">Motion</h3>
+      <p style="color:var(--canvas-dim);font-size:15px;max-width:640px;margin-bottom:18px">One grounded curve does most of the work: a confident departure that decelerates into a firm landing, the feeling of setting a pack down on rock. No bounce, no float, no shimmer. Things settle.</p>
+      <div class="motion-grid">
+        <div class="curve-box doc-reveal">
+          <svg viewBox="0 0 300 170" aria-label="Easing curve">
+            <line x1="20" y1="150" x2="280" y2="150" stroke="rgba(241,232,213,0.18)" stroke-width="1"/>
+            <line x1="20" y1="20"  x2="20"  y2="150" stroke="rgba(241,232,213,0.18)" stroke-width="1"/>
+            <path d="M20 150 C 68 6, 120 22, 280 22" fill="none" stroke="#ff6a2b" stroke-width="2.4"/>
+            <circle cx="20" cy="150" r="3.5" fill="#ff6a2b"/>
+            <circle cx="280" cy="22" r="3.5" fill="#ff6a2b"/>
+          </svg>
+          <div style="font-family:var(--font-data);font-size:11.5px;color:var(--canvas-faint);margin-top:14px;letter-spacing:.02em">--ease-settle: cubic-bezier(0.22, 1, 0.36, 1)</div>
+          <div class="settle" aria-hidden="true"><i></i></div>
+        </div>
+        <div class="motion-tokens doc-reveal">
+          <div class="mt"><div class="k">Settle in<small>element arrives</small></div><div class="v">440ms<br>ease-settle</div></div>
+          <div class="mt"><div class="k">Biome shift<small>terrain recolor</small></div><div class="v">440ms<br>ease-firm</div></div>
+          <div class="mt"><div class="k">Tap<small>select / hover</small></div><div class="v">150ms<br>ease-firm</div></div>
+          <div class="mt"><div class="k">Trail draw<small>route reveal</small></div><div class="v">2600ms<br>ease-settle</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ICONOGRAPHY -->
+    <section class="doc-section" id="icons">
+      <span class="doc-secno">07 — Components</span>
+      <h2>Iconography</h2>
+      <p class="lede">One coherent line set, drawn on a 24px grid with a 1.6px stroke and rounded joins. Sturdy and legible at small sizes, matching the weight of the UI type. Outdoor-literal, never cute.</p>
+      <div class="icon-grid doc-reveal">
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 19l6-12 4 7 2-3 6 8z"/></svg><div class="nm">peak</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 19l9-13 9 13z"/><path d="M12 6v13"/></svg><div class="nm">tent</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><polygon points="12,7 14.5,12 12,11 9.5,12" fill="currentColor" stroke="none"/></svg><div class="nm">compass</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3c3 4 5 7 5 10a5 5 0 01-10 0c0-3 2-6 5-10z"/></svg><div class="nm">water</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l4 6h-3l4 6h-4v6h-2v-6H7l4-6H8z"/></svg><div class="nm">pine</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 12V4M9 4h6"/><rect x="8" y="12" width="8" height="6" rx="1"/></svg><div class="nm">marker</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg><div class="nm">sun</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 20c0-3 2-4 2-7s-2-4 0-7"/><path d="M17 20c0-3-2-4-2-7s2-4 0-7"/><circle cx="9" cy="4" r="1.3" fill="currentColor"/><circle cx="15" cy="6" r="1.3" fill="currentColor"/></svg><div class="nm">trail</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M9 4l6 2 6-2v14l-6 2-6-2-6 2V6z"/><path d="M9 4v14M15 6v14"/></svg><div class="nm">map</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 21s-6-4-6-10a6 6 0 0112 0c0 6-6 10-6 10z"/><circle cx="12" cy="10" r="2.2"/></svg><div class="nm">pin</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 21c4-2 6-5 6-9l-6-9-6 9c0 4 2 7 6 9z"/></svg><div class="nm">flame</div></div>
+        <div class="ic-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 7V5a4 4 0 018 0v2"/><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M9 11v5M15 11v5"/></svg><div class="nm">pack</div></div>
+      </div>
+      <div class="icon-note">
+        <div class="frame doc-reveal"><div class="gridlines"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 19l6-12 4 7 2-3 6 8z"/></svg>
+        </div>
+        <div class="doc-reveal">
+          <p>Every glyph is built on the same 24px grid with a 2px keyline margin, so weights and optical sizes stay consistent across the set. Strokes never go thinner than the UI type, because thin lines vanish in glare.</p>
+          <span class="tok">grid 24 · stroke 1.6 · join round · margin 2</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPONENTS -->
+    <section class="doc-section" id="components">
+      <span class="doc-secno">08 — Components</span>
+      <h2>Components</h2>
+      <p class="lede">A rugged kit built from contours, blaze, and stamped type. Every part is shown with its real states, because a system is only as honest as its hover, focus, and disabled. Each example is live, with a copyable snippet.</p>
+
+      <div class="group-band"><span class="bar">Actions</span><span class="line"></span></div>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="btn primary"&gt;&#9650; Set waypoint&lt;/button&gt;
+&lt;button class="btn secondary"&gt;Reroute&lt;/button&gt;
+&lt;button class="btn ghost"&gt;Skip&lt;/button&gt;
+&lt;button class="btn primary" disabled&gt;Locked&lt;/button&gt;
+        </script></div>
+      </div>
+
+      <div class="group-band"><span class="bar">Field input</span><span class="line"></span></div>
+      <div class="doc-example">
+        <div class="doc-demo col" style="max-width:460px"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="field-input"&gt;
+  &lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"&gt;&lt;circle cx="11" cy="11" r="7"/&gt;&lt;path d="M21 21l-4-4"/&gt;&lt;/svg&gt;
+  &lt;input type="text" placeholder="Search trails, peaks, coords…"&gt;
+&lt;/div&gt;
+
+&lt;div class="field-input" style="border-color:var(--blaze)"&gt;
+  &lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"&gt;&lt;path d="M12 21s-6-4-6-10a6 6 0 0112 0c0 6-6 10-6 10z"/&gt;&lt;/svg&gt;
+  &lt;input type="text" value="44.43° N  110.59° W"&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+
+      <div class="group-band"><span class="bar">Waypoint list</span><span class="line"></span></div>
+      <div class="doc-example">
+        <div class="doc-demo col" style="max-width:320px"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="crow on"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"&gt;&lt;path d="M12 21s-6-4-6-10a6 6 0 0112 0c0 6-6 10-6 10z"/&gt;&lt;circle cx="12" cy="10" r="2.2"/&gt;&lt;/svg&gt; Pine Trailhead&lt;/div&gt;
+&lt;div class="crow"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"&gt;&lt;path d="M3 19l6-12 4 7 2-3 6 8z"/&gt;&lt;/svg&gt; Alpine Ridge&lt;/div&gt;
+&lt;div class="crow"&gt;&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"&gt;&lt;path d="M4 20l8-14 8 14z"/&gt;&lt;path d="M9 14h6"/&gt;&lt;/svg&gt; Canyon Rim&lt;/div&gt;
+        </script></div>
+      </div>
+
+      <div class="group-band"><span class="bar">Choices · status · alert</span><span class="line"></span></div>
+      <div class="doc-example">
+        <div class="doc-demo col"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="seg"&gt;&lt;button aria-pressed="true"&gt;mi&lt;/button&gt;&lt;button aria-pressed="false"&gt;km&lt;/button&gt;&lt;button aria-pressed="false"&gt;ft&lt;/button&gt;&lt;/div&gt;
+&lt;span class="toggle" aria-pressed="true" role="button" tabindex="0"&gt;&lt;/span&gt;
+
+&lt;span class="badge open"&gt;● Trail open&lt;/span&gt;
+&lt;span class="badge caution"&gt;▲ Ice above 3km&lt;/span&gt;
+&lt;span class="badge closed"&gt;— Rim closed&lt;/span&gt;
+&lt;span class="meter"&gt;&lt;i&gt;&lt;/i&gt;&lt;/span&gt;
+
+&lt;div class="alert"&gt;
+  &lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"&gt;&lt;path d="M12 3l9 16H3z"/&gt;&lt;path d="M12 9v5M12 17v.5"/&gt;&lt;/svg&gt;
+  &lt;div&gt;&lt;div class="at"&gt;Exposed ridge ahead&lt;/div&gt;&lt;div class="ab"&gt;High wind above treeline after 1400. Turn back if the blaze fades.&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- PATTERNS -->
+    <section class="doc-section" id="patterns">
+      <span class="doc-secno">09 — Patterns</span>
+      <h2>The system, assembled</h2>
+      <p class="lede">Tokens earn their keep only in real layouts. Here the whole language comes together twice: a printed trailhead sign and a mobile trail screen, both built from nothing but the parts above.</p>
+      <div class="pattern-grid">
+        <!-- trailhead sign -->
+        <div class="poster doc-reveal">
+          <div class="ptopo" aria-hidden="true"><svg viewBox="0 0 400 460" preserveAspectRatio="xMidYMid slice">
+            <g stroke-width="1.4">
+              <use href="#ctr" transform="translate(300,330) scale(0.4)"/>
+              <use href="#ctr" transform="translate(300,330) scale(0.8)"/>
+              <use class="index" href="#ctr" transform="translate(300,330) scale(1.25)" stroke-width="2.2"/>
+              <use href="#ctr" transform="translate(300,330) scale(1.75)"/>
+            </g>
+          </svg></div>
+          <div class="pband"><b>Alpine Ridge Loop</b><span>YELLOWSTONE · NORTH RANGE · NPS 14</span></div>
+          <div class="pbody">
+            <div class="blaze-stripe" aria-hidden="true"></div>
+            <div class="stat-row">
+              <div class="s"><div class="k">Distance</div><div class="v">5.4<small> mi</small></div></div>
+              <div class="s"><div class="k">Gain</div><div class="v">2,240<small> ft</small></div></div>
+              <div class="s"><div class="k">Time</div><div class="v">4–6<small> hr</small></div></div>
+            </div>
+            <div class="leg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 19l6-12 4 7 2-3 6 8z"/></svg> Exposed above treeline · class 2 scramble</div>
+            <div class="leg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c3 4 5 7 5 10a5 5 0 01-10 0c0-3 2-6 5-10z"/></svg> Last reliable water at mile 2.1</div>
+            <div class="leg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Trailhead 0600 · last ascent 1400</div>
+          </div>
+        </div>
+
+        <!-- mobile app -->
+        <div class="phone doc-reveal">
+          <div class="pstatus"><span>9:41</span><span>▲ 1,240 m · ↑ pine</span></div>
+          <div class="phead"><span class="t">Today&rsquo;s Route</span><span class="badge open" style="font-size:10px">● open</span></div>
+          <div class="pmap" aria-hidden="true">
+            <svg viewBox="0 0 360 150" preserveAspectRatio="xMidYMid slice">
+              <g stroke-width="1.3">
+                <use href="#ctr" transform="translate(230,80) scale(0.22)"/>
+                <use href="#ctr" transform="translate(230,80) scale(0.46)"/>
+                <use class="index" href="#ctr" transform="translate(230,80) scale(0.74)" stroke-width="2"/>
+                <use href="#ctr" transform="translate(230,80) scale(1.06)"/>
+              </g>
+              <path d="M30,128 C100,100 120,70 200,64 C250,60 280,44 330,34" fill="none" stroke="var(--blaze)" stroke-width="2.4" stroke-dasharray="5 6"/>
+            </svg>
+            <span class="here"></span>
+          </div>
+          <div class="plist">
+            <div class="pitem sel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-6-4-6-10a6 6 0 0112 0c0 6-6 10-6 10z"/><circle cx="12" cy="10" r="2.2"/></svg><div class="pt"><b>Pine Trailhead</b><small>1,240 m · you are here</small></div></div>
+            <div class="pitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 19l6-12 4 7 2-3 6 8z"/></svg><div class="pt"><b>Alpine Ridge</b><small>3,480 m · +14% grade</small></div></div>
+            <div class="pitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20l8-14 8 14z"/><path d="M9 14h6"/></svg><div class="pt"><b>Canyon Rim</b><small>1,980 m · 7.2 mi total</small></div></div>
+          </div>
+          <div class="pcta"><button class="btn primary" style="width:100%;justify-content:center">&#9654; Start navigation</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DO / DON'T -->
+    <section class="doc-section" id="rules">
+      <span class="doc-secno">10 — Guidance</span>
+      <h2>Do, and do not</h2>
+      <p class="lede">The discipline that keeps the language legible. Spend the blaze on one job, keep the terrain map honest, and let motion settle.</p>
+      <div class="dd">
+        <div class="dd-col do doc-reveal"><h4>Do</h4><ul>
+          <li>Let topographic contours carry structure, and read their density as data.</li>
+          <li>Spend the blaze on one job: position and action, never decoration.</li>
+          <li>Recolor the whole field by biome so color does the wayfinding.</li>
+          <li>Anchor every layout to the band and the six-column grid.</li>
+          <li>Set display type condensed, upright, and uppercase, like a routed sign.</li>
+          <li>Keep contrast high and let motion settle with weight.</li>
+        </ul></div>
+        <div class="dd-col dont doc-reveal"><h4>Do not</h4><ul>
+          <li>Treat contours as wallpaper, flat texture loses the information.</li>
+          <li>Scatter blaze orange around, a second &ldquo;you are here&rdquo; means none.</li>
+          <li>Mix biome hues inside one section, it breaks the terrain map.</li>
+          <li>Float content off the grid, the structure is the legibility.</li>
+          <li>Reach for delicate, low-contrast, hairline-thin type that fails in glare.</li>
+          <li>Add float, bounce, or shimmer, it breaks the grounded feel.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- ACCESSIBILITY -->
+    <section class="doc-section" id="a11y">
+      <span class="doc-secno">11 — Discipline</span>
+      <h2>Legible in any condition</h2>
+      <p class="lede">Rugged and accessible are the same goal here. A design that survives glare, gloves, and altitude is a design that survives low vision, motor limits, and a small screen. Built to weather means built for everyone.</p>
+      <div class="doc-grid two">
+        <div class="a11y doc-reveal"><div class="ah"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 000 18"/></svg><b>Contrast</b></div><p>Body text holds 9:1 or better on the dark ground, and the blaze clears AA for UI. Nothing critical relies on color alone, every biome pairs with a label and an icon.</p></div>
+        <div class="a11y doc-reveal"><div class="ah"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="16" r="2"/></svg><b>Targets</b></div><p>Tap targets meet 44px minimums so they work with gloves or a cold thumb. Focus is always visible with a blaze ring, and the order follows the trail.</p></div>
+        <div class="a11y doc-reveal"><div class="ah"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12c3-1 6-1 9 0s6 1 9 0"/><path d="M3 7c3-1 6-1 9 0s6 1 9 0"/><path d="M3 17c3-1 6-1 9 0s6 1 9 0"/></svg><b>Motion</b></div><p>Every animation is decorative and respects <code style="font-family:var(--font-data);font-size:12px;color:var(--blaze)">prefers-reduced-motion</code>. The trail draws once, nothing loops in the reader&rsquo;s face, nothing conveys meaning by movement alone.</p></div>
+        <div class="a11y doc-reveal"><div class="ah"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l4 6h-3l4 6h-4v6h-2v-6H7l4-6H8z"/></svg><b>Legibility</b></div><p>No hairline type, no low-contrast gray-on-gray. Minimum 1.6px strokes and a 14px floor on interface text, because anything thinner disappears in sun or on a scratched screen.</p></div>
+      </div>
+    </section>
+
+    <!-- PRODUCTION -->
+    <section class="doc-section" id="production">
+      <span class="doc-secno">12 — Production</span>
+      <h2>Ready for the field</h2>
+      <p class="lede">A language is only mature when teams can ship it. CAIRN ships as tiered tokens, themeable surfaces, and components with an honest status, so a designer and an engineer read from one source of truth.</p>
+
+      <div class="group-band"><span class="bar">Token architecture</span><span class="line"></span></div>
+      <div class="tiers">
+        <div class="tier doc-reveal"><div class="tn">Tier 1</div><h4>Primitive</h4><p>Raw, context-free values. The only place a literal hex or pixel is allowed to live.</p><code>--bark: #15120c<br>--pine: #54905a<br>--blaze: #ff6a2b<br>--s4: 16px</code>
+          <svg class="arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <div class="tier doc-reveal"><div class="tn">Tier 2</div><h4>Semantic</h4><p>Intent, not appearance. Maps a purpose to a primitive so a theme can swap underneath it.</p><code>--surface: var(--soil)<br>--text: var(--canvas)<br>--accent: var(--biome)<br>--action: var(--blaze)</code>
+          <svg class="arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <div class="tier doc-reveal"><div class="tn">Tier 3</div><h4>Component</h4><p>What a part actually consumes. Reads tier 2, never a raw value, so nothing drifts.</p><code>--btn-bg: var(--action)<br>--card-pad: var(--s5)<br>--card-line: var(--border)</code></div>
+      </div>
+
+      <div class="group-band"><span class="bar">Implementation</span><span class="line"></span></div>
+      <div class="twocol" style="margin-bottom:30px">
+        <pre class="tokens"><span class="c">&lt;!-- primary action --&gt;</span>
+<span class="p">&lt;button</span> class=<span class="v">"btn primary"</span><span class="p">&gt;</span>
+  &#9650; Set waypoint
+<span class="p">&lt;/button&gt;</span>
+
+<span class="c">/* the component reads semantic tokens */</span>
+<span class="p">.btn.primary</span> {
+  background: <span class="v">var(--action)</span>;
+  color:      <span class="v">var(--bark)</span>;
+  box-shadow: <span class="v">0 2px 0 var(--action-deep)</span>;
+}</pre>
+        <pre class="tokens"><span class="c">/* theme is one attribute on the root */</span>
+<span class="p">&lt;html</span> data-theme=<span class="v">"paper"</span><span class="p">&gt;</span>
+
+<span class="c">/* every surface inverts — no rewrites */</span>
+<span class="p">html[data-theme="paper"]</span> {
+  <span class="p">--bark</span>:   <span class="v">#efe6cf</span>;
+  <span class="p">--canvas</span>: <span class="v">#2a2417</span>;
+}
+
+<span class="c">// try it live — the toggle, top right &#8599;</span></pre>
+      </div>
+
+      <div class="group-band"><span class="bar">Component status</span><span class="line"></span></div>
+      <div class="status-table doc-reveal">
+        <div class="sh"><span>Component</span><span>Status</span><span>Since</span></div>
+        <div class="srow"><span class="nm">Buttons &amp; actions</span><span class="st-pill stable">Stable</span><span class="verc">v1.0</span></div>
+        <div class="srow"><span class="nm">Waypoint list &amp; marker</span><span class="st-pill stable">Stable</span><span class="verc">v1.0</span></div>
+        <div class="srow"><span class="nm">Topographic field</span><span class="st-pill stable">Stable</span><span class="verc">v1.0</span></div>
+        <div class="srow"><span class="nm">Unigrid &amp; band</span><span class="st-pill stable">Stable</span><span class="verc">v1.0</span></div>
+        <div class="srow"><span class="nm">Elevation chart</span><span class="st-pill beta">Beta</span><span class="verc">v0.9</span></div>
+        <div class="srow"><span class="nm">Paper theme</span><span class="st-pill beta">Beta</span><span class="verc">v0.9</span></div>
+      </div>
+    </section>
+
+    <!-- HERITAGE -->
+    <section class="doc-section" id="heritage">
+      <span class="doc-secno">13 — Heritage</span>
+      <h2>Heritage</h2>
+      <p class="lede">The outdoors already has a design system, refined over a century. CAIRN gathers that lineage — function first and weatherproof — and makes it buildable for a screen. Credited plainly.</p>
+      <div class="doc-timeline">
+        <div class="doc-node"><div class="y">1933</div><div class="n">WPA Park Posters</div><div class="d">Bold, flat, woodcut landscapes in earthy ink. The first deliberate visual identity for the American outdoors, cut by Depression-era artists.</div></div>
+        <div class="doc-node"><div class="y">1940s</div><div class="n">USGS Topographic</div><div class="d">Contour lines turn terrain into information. Brown contours on cream, density equals steepness. Pure function.</div></div>
+        <div class="doc-node"><div class="y">1977</div><div class="n">Unigrid System</div><div class="d">Massimo Vignelli&rsquo;s grid unifies every National Park brochure. Bands, black bars, one structure. Content over decoration.</div></div>
+        <div class="doc-node"><div class="y">Now</div><div class="n">Cairn</div><div class="d">Contours, blazes, and biome color, re-tokenized into an interface you navigate by terrain.</div></div>
+      </div>
+
+      <div class="doc-foot">
+        A study in the open-air graphic tradition, <strong style="color:var(--canvas-dim)">descended from the functional graphic language of the outdoors</strong>: WPA park posters (1933), USGS topographic survey, Massimo Vignelli&rsquo;s National Park Unigrid system (1977), and the trail blazes &amp; stacked-stone cairns that are the most rugged wayfinding ever made.<br>
+        Stack: Oswald · Asap · Space Mono · tiered CSS-variable tokens. Spirit: rugged, wayfinding, built to weather, function first.<br>
+        CAIRN v1.0.0 &ldquo;Field&rdquo; · MIT · dark + paper themes · WCAG AA · reduced-motion. Maintained as a living system.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="doc-toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(s, c){ return (c||document).querySelector(s); }
+  function $all(s, c){ return Array.prototype.slice.call((c||document).querySelectorAll(s)); }
+
+  /* mark ready -> hero reveal + trail draw */
+  window.addEventListener('load', function () {
+    requestAnimationFrame(function () { document.body.classList.add('ready'); });
+  });
+
+  /* toast */
+  var toasts = $('#toasts');
+  function toast(html){
+    if (!toasts) return;
+    var t = document.createElement('div'); t.className = 'doc-toast'; t.innerHTML = html;
+    toasts.appendChild(t); requestAnimationFrame(function(){ t.classList.add('show'); });
+    setTimeout(function(){ t.classList.remove('show'); setTimeout(function(){ t.remove(); }, 300); }, 2400);
+  }
+  function copy(text, label){
+    var done = function(){ toast('Copied <b>' + (label || 'snippet') + '</b>'); };
+    if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done, function(){ fallback(text); done(); }); }
+    else { fallback(text); done(); }
+  }
+  function fallback(text){
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch(e){} ta.remove();
+  }
+
+  /* snippets are stored HTML-escaped; decode for the live demo injection */
+  function decode(s){ var d = document.createElement('textarea'); d.innerHTML = s; return d.value; }
+  function dedent(s){
+    s = s.replace(/^\n+/, '').replace(/\s+$/, '');
+    var lines = s.split('\n');
+    var indent = lines.reduce(function(min, l){ if (!l.trim()) return min; var m = l.match(/^\s*/)[0].length; return Math.min(min, m); }, Infinity);
+    if (!isFinite(indent)) indent = 0;
+    return lines.map(function(l){ return l.slice(indent); }).join('\n');
+  }
+
+  /* render each example: snippet -> code block (+copy) and, unless [data-static], a live demo */
+  $all('.doc-example').forEach(function(ex){
+    var src = $('.doc-snippet', ex); if (!src) return;
+    var decoded = decode(dedent(src.textContent));
+    var codeEl = $('.doc-code code', ex);
+    if (codeEl) codeEl.textContent = decoded;      // textContent re-escapes for safe display
+    var demo = $('.doc-demo', ex);
+    if (demo && !demo.children.length && !ex.hasAttribute('data-static')) {
+      try { demo.innerHTML = decoded; wireDemo(demo); } catch(e){}
+    }
+    var wrap = $('.doc-codewrap', ex);
+    if (wrap){
+      var btn = document.createElement('button');
+      btn.className = 'btn ghost doc-copy';
+      btn.type = 'button'; btn.textContent = 'copy';
+      btn.addEventListener('click', function(){ copy(decoded, 'code'); });
+      wrap.appendChild(btn);
+    }
+  });
+
+  /* wire interactive demos injected from snippets (seg + toggle) */
+  function wireDemo(scope){
+    $all('.seg', scope).forEach(function(seg){
+      var all = $all('button', seg);
+      all.forEach(function(b){ b.addEventListener('click', function(){
+        all.forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+        b.setAttribute('aria-pressed','true');
+      }); });
+    });
+    $all('.toggle', scope).forEach(function(tg){
+      function flip(){ tg.setAttribute('aria-pressed', tg.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); }
+      tg.addEventListener('click', flip);
+      tg.addEventListener('keydown', function(e){ if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); flip(); } });
+    });
+  }
+
+  /* biome tint/shade ramps + blaze ramp (click any step to copy its token) */
+  var pine = [['2','#80b27f'],['3','#54905a'],['4','#356039'],['5','#21401f']];
+  var tun  = [['2','#c6cf95'],['3','#a3ad6c'],['4','#76814a'],['5','#4c552f']];
+  var alp  = [['2','#93c6dc'],['3','#5fa3c0'],['4','#3a728c'],['5','#234856']];
+  var cly  = [['2','#e2965f'],['3','#c4692f'],['4','#8d451c'],['5','#592b12']];
+  var blaze= [['','#ff6a2b','--blaze'],['-deep','#c14617','--blaze-deep'],['-lite','#ff9c6f','--blaze-lite']];
+  function buildRamp(el, items, prefix){
+    if(!el) return;
+    items.forEach(function(p){
+      var token = prefix + p[0];
+      var s = document.createElement('button'); s.className='s'; s.style.background = p[1];
+      s.innerHTML = '<span>'+p[1]+'</span>'; s.title = token + ' · ' + p[1];
+      s.addEventListener('click', function(){ copy('var('+token+')', token); });
+      el.appendChild(s);
+    });
+  }
+  function buildBlaze(el, items){
+    if(!el) return;
+    items.forEach(function(p){
+      var s = document.createElement('button'); s.className='s'; s.style.background = p[1];
+      s.innerHTML = '<span>'+p[1]+'</span>'; s.title = p[2] + ' · ' + p[1];
+      s.addEventListener('click', function(){ copy('var('+p[2]+')', p[2]); });
+      el.appendChild(s);
+    });
+  }
+  buildRamp($('#pineRamp'), pine, '--pine-');
+  buildRamp($('#tunRamp'),  tun,  '--tun-');
+  buildRamp($('#alpRamp'),  alp,  '--alp-');
+  buildRamp($('#clyRamp'),  cly,  '--cly-');
+  buildBlaze($('#blazeRamp'), blaze);
+
+  /* semantic swatches copy */
+  $all('#semanticSwatches .doc-swatch').forEach(function(b){
+    b.addEventListener('click', function(){ var t=b.getAttribute('data-token'); copy('var('+t+')', t); });
+  });
+
+  /* type scale */
+  var typeRows = [
+    ['display / 72 · 600','Cairn','var(--font-display)',600,'42px','uppercase'],
+    ['h2 / 50 · 500','Six principles','var(--font-display)',500,'34px','uppercase'],
+    ['h3 / 19 · 500','Blaze the way','var(--font-display)',500,'24px','uppercase'],
+    ['body / 16 · 300','Contours carry the structure, density is the data','var(--font-ui)',300,'17px','none'],
+    ['label / 14 · 500','alpine ridge loop','var(--font-ui)',500,'15px','none'],
+    ['data / 12 · 400','elev 3,480 m · grade +14%','var(--font-data)',400,'13px','none']
+  ];
+  var ts = $('#typeScale');
+  if (ts) typeRows.forEach(function(r){
+    var row = document.createElement('div'); row.className='doc-scale-row';
+    row.innerHTML = '<span class="tk">'+r[0]+'</span><span style="font-family:'+r[2]+';font-weight:'+r[3]+';font-size:'+r[4]+';text-transform:'+r[5]+';color:var(--canvas)"></span>';
+    row.lastChild.textContent = r[1];
+    ts.appendChild(row);
+  });
+
+  /* spacing scale */
+  var spaces = [['1','4','hairline gaps'],['2','8','inline gaps'],['3','12','baseline unit'],['4','16','component pad'],['5','24','card pad'],['6','32','block gap'],['7','48','section inset'],['8','64','section gap']];
+  var sc = $('#spaceScale');
+  if (sc) spaces.forEach(function(p){
+    var row = document.createElement('div'); row.className='doc-space-row';
+    row.innerHTML = '<span class="tk">--s'+p[0]+'</span><span class="bar" style="width:'+p[1]+'px"></span><span class="px">'+p[1]+'px · '+p[2]+'</span>';
+    sc.appendChild(row);
+  });
+
+  /* BIOME toggle — Cairn's analog of Nebula's now/2001 toggle.
+     Drives --biome + --biome-rgb on :root, updating every contour, eyebrow,
+     chart, and accent live; also syncs the hero marker readout. */
+  var root = document.documentElement;
+  var biomeBtns = $all('.doc-biome [data-biome]');
+  var biomeRgb = { pine: '84,144,90', tundra: '163,173,108', alpine: '95,163,192', clay: '196,105,47' };
+  var paperRgb = { pine: '63,122,70', tundra: '126,136,69', alpine: '61,127,156', clay: '176,83,31' };
+  var markerData = {
+    pine:   { terrain:'Conifer Forest', name:'Pine Trailhead', sub:'waypoint 01 of 04 · bearing 312° NW', elev:'1,240 m', grade:'+4%', coord:'44.43° N&nbsp;110.59° W', dist:'2.1', pct:22 },
+    tundra: { terrain:'Subalpine Meadow', name:'Lichen Tundra', sub:'waypoint 02 of 04 · bearing 334° NNW', elev:'2,610 m', grade:'+9%', coord:'44.46° N&nbsp;110.62° W', dist:'3.8', pct:52 },
+    alpine: { terrain:'Exposed Granite', name:'Alpine Ridge', sub:'waypoint 03 of 04 · bearing 2° N', elev:'3,480 m', grade:'+14%', coord:'44.49° N&nbsp;110.64° W', dist:'5.4', pct:92 },
+    clay:   { terrain:'High Desert', name:'Canyon Rim', sub:'waypoint 04 of 04 · bearing 45° NE', elev:'1,980 m', grade:'-6%', coord:'44.51° N&nbsp;110.67° W', dist:'7.2', pct:40 }
+  };
+  var mEls = {
+    biome: $('#m-biome'), name: $('#m-name'), sub: $('#m-sub'),
+    elev: $('#m-elev'), grade: $('#m-grade'), coord: $('#m-coord'),
+    dist: $('#m-dist'), bar: $('#m-bar')
+  };
+  function setBiome(name){
+    root.style.setProperty('--biome', 'var(--' + name + ')');
+    var paper = root.getAttribute('data-theme') === 'paper';
+    root.style.setProperty('--biome-rgb', (paper ? paperRgb : biomeRgb)[name]);
+    biomeBtns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-biome') === name)); });
+    var d = markerData[name]; if (!d) return;
+    if (mEls.biome) mEls.biome.textContent = d.terrain;
+    if (mEls.name)  mEls.name.textContent  = d.name;
+    if (mEls.sub)   mEls.sub.textContent   = d.sub;
+    if (mEls.elev)  mEls.elev.textContent  = d.elev;
+    if (mEls.grade) mEls.grade.textContent = d.grade;
+    if (mEls.coord) mEls.coord.innerHTML   = d.coord;
+    if (mEls.dist)  mEls.dist.textContent  = d.dist;
+    if (mEls.bar)   mEls.bar.style.width   = d.pct + '%';
+  }
+  biomeBtns.forEach(function(b){ b.addEventListener('click', function(){ setBiome(b.getAttribute('data-biome')); }); });
+
+  /* copy install / tokens */
+  var ci = $('#copyInstall');
+  if (ci) ci.addEventListener('click', function(){
+    copy(':root { --bark:#15120c; --canvas:#f1e8d5; --biome:var(--pine); --blaze:#ff6a2b; }', 'tokens');
+  });
+
+  /* paper theme toggle (persisted), re-syncs --biome-rgb */
+  var themeBtn = $('#themeToggle');
+  try { if (localStorage.getItem('cairn-theme') === 'paper') root.setAttribute('data-theme', 'paper'); } catch (e) {}
+  function activeBiome(){
+    var on = $('.doc-biome [data-biome][aria-pressed="true"]');
+    return on ? on.getAttribute('data-biome') : 'pine';
+  }
+  function syncTheme(){
+    var paper = root.getAttribute('data-theme') === 'paper';
+    var lbl = themeBtn.querySelector('.tl');
+    if (lbl) lbl.textContent = paper ? 'Dark' : 'Paper';
+    themeBtn.setAttribute('aria-pressed', paper ? 'true' : 'false');
+    var name = activeBiome();
+    root.style.setProperty('--biome-rgb', (paper ? paperRgb : biomeRgb)[name]);
+  }
+  syncTheme();
+  if (themeBtn) themeBtn.addEventListener('click', function(){
+    var paper = root.getAttribute('data-theme') === 'paper';
+    if (paper) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', 'paper');
+    try { localStorage.setItem('cairn-theme', paper ? 'dark' : 'paper'); } catch (e) {}
+    syncTheme();
+  });
+
+  /* scroll progress bar */
+  var bar = $('#scrollbar');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var pct = max > 0 ? (h.scrollTop || document.body.scrollTop) / max : 0;
+    if (bar) bar.style.width = (pct * 100) + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* reveal on scroll */
+  var reveals = $all('.doc-reveal');
+  if (!reduce && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('is-in'); io.unobserve(e.target); } }); }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+    reveals.forEach(function(s){ io.observe(s); });
+  } else { reveals.forEach(function(s){ s.classList.add('is-in'); }); }
+
+  /* scrollspy for sidebar */
+  var links = $all('.doc-side a');
+  var byId = {}; links.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window){
+    var spy = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (e.isIntersecting){
+          links.forEach(function(a){ a.classList.remove('is-active'); });
+          var a = byId[e.target.id]; if (a) a.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-64px 0px -70% 0px', threshold: 0 });
+    $all('.doc-section').forEach(function(s){ if (s.id) spy.observe(s); });
+  }
+
+  /* dev-facing credit */
+  try {
+    console.log('%cCAIRN v1.0.0 "Field"', 'color:#ff6a2b;font-size:18px;font-weight:700');
+    console.log('%cA rugged wayfinding design language. Tokens: --bark/--canvas/--biome/--blaze.\nLineage: WPA park posters (1933) · USGS topographic survey · Vignelli National Park Unigrid (1977) · trail blazes & cairns.\nOswald · Asap · Space Mono · MIT.',
+      'color:#c7b896;font-family:monospace;font-size:12px;line-height:1.6');
+  } catch(e){}
+})();
+</script>
+</body>
+</html>

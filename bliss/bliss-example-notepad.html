@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notepad — built with Bliss</title>
+<link rel="stylesheet" href="bliss.css">
+<style>
+  /* app-specific glue only — everything else comes from bliss.css */
+  body { margin: 0; min-height: 100vh; }
+  .app { max-width: 780px; margin: 0 auto; padding: 28px 16px; }
+  .app__hint { font-size: 12px; color: var(--bl-ink-dim); margin: 0 0 14px; }
+  .pad-win { height: 70vh; min-height: 420px; }
+  #pad { flex: 1; border: 0; border-radius: 0; box-shadow: none; font-family: var(--bl-font-mono); font-size: 13px; resize: none; }
+  #pad:focus-visible { outline: none; box-shadow: none; }
+</style>
+</head>
+<body class="bl-root" data-bl-theme="blue">
+  <div class="app">
+    <p class="app__hint">A tiny app built entirely from <strong>bliss.css</strong> + <strong>bliss.js</strong> — a window, a working menu bar, a status bar, dialogs and toasts. Try the menus, or close the window.</p>
+
+    <div class="bl-window pad-win">
+      <div class="bl-titlebar">
+        <svg class="bl-titlebar__icon" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="1" fill="#fff" stroke="#fff"/><path d="M9 8h6M9 12h6M9 16h4" stroke="#2a72e0" stroke-width="1.4"/></svg>
+        <span class="bl-titlebar__title" id="winTitle">Untitled — Notepad</span>
+        <div class="bl-winbtns">
+          <span class="bl-winbtn" id="btnMin" aria-label="Minimize">_</span>
+          <span class="bl-winbtn" id="btnMax" aria-label="Maximize">▢</span>
+          <span class="bl-winbtn bl-winbtn--close" id="btnClose" aria-label="Close">×</span>
+        </div>
+      </div>
+
+      <div class="bl-menubar">
+        <span class="bl-menubar__item" data-bl-menu="#m-file">File</span>
+        <span class="bl-menubar__item" data-bl-menu="#m-edit">Edit</span>
+        <span class="bl-menubar__item" data-bl-menu="#m-format">Format</span>
+        <span class="bl-menubar__item" data-bl-menu="#m-help">Help</span>
+      </div>
+
+      <textarea id="pad" class="bl-textarea" spellcheck="false" placeholder="Type something…">BLISS — design system demo
+
+This whole window is built from the Bliss kit:
+  • .bl-window + .bl-titlebar     the chrome
+  • .bl-menubar + .bl-menu        the menus
+  • .bl-textarea                  this editor
+  • .bl-statusbar                 the footer
+  • Bliss.toast() / dialogs       the glue
+
+Pick a different Luna scheme from the Format menu.</textarea>
+
+      <div class="bl-statusbar">
+        <span class="bl-statusbar__panel bl-grow" id="stPos">Ln 1, Col 1</span>
+        <span class="bl-statusbar__panel" id="stWords">0 words</span>
+        <span class="bl-statusbar__panel">Bliss · Luna</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- dropdown menus (referenced by the menu bar) -->
+  <div class="bl-menu" id="m-file" hidden>
+    <div class="bl-menu__item" data-act="new">New<span class="bl-kbd">Ctrl+N</span></div>
+    <div class="bl-menu__item" data-act="open">Open…<span class="bl-kbd">Ctrl+O</span></div>
+    <div class="bl-menu__item" data-act="save">Save<span class="bl-kbd">Ctrl+S</span></div>
+    <div class="bl-menu__sep"></div>
+    <div class="bl-menu__item" data-act="exit">Exit</div>
+  </div>
+  <div class="bl-menu" id="m-edit" hidden>
+    <div class="bl-menu__item" data-act="undo">Undo<span class="bl-kbd">Ctrl+Z</span></div>
+    <div class="bl-menu__sep"></div>
+    <div class="bl-menu__item" data-act="cut">Cut</div>
+    <div class="bl-menu__item" data-act="copy">Copy</div>
+    <div class="bl-menu__item" data-act="paste">Paste</div>
+    <div class="bl-menu__sep"></div>
+    <div class="bl-menu__item" data-act="selectall">Select All</div>
+  </div>
+  <div class="bl-menu" id="m-format" hidden>
+    <div class="bl-menu__item" data-act="wrap" id="wrapItem">Word Wrap ✓</div>
+    <div class="bl-menu__sep"></div>
+    <div class="bl-menu__item" data-act="theme-blue">Scheme: Blue</div>
+    <div class="bl-menu__item" data-act="theme-olive">Scheme: Olive Green</div>
+    <div class="bl-menu__item" data-act="theme-silver">Scheme: Silver</div>
+  </div>
+  <div class="bl-menu" id="m-help" hidden>
+    <div class="bl-menu__item" data-act="about">About Notepad</div>
+  </div>
+
+  <!-- About dialog -->
+  <div class="bl-overlay" id="about">
+    <div class="bl-dialog" style="width:380px">
+      <div class="bl-titlebar"><svg class="bl-titlebar__icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#cfe0f5" stroke="#fff"/></svg><span class="bl-titlebar__title">About Notepad</span><div class="bl-winbtns"><span class="bl-winbtn bl-winbtn--close" data-bl-close>×</span></div></div>
+      <div class="bl-dialog__body">
+        <p style="font-family:var(--bl-font-title);font-weight:700;margin:0 0 6px">Notepad</p>
+        <p style="margin:0 0 6px">A demo app built with the <strong>Bliss</strong> design system — a homage to the Windows XP "Luna" visual style.</p>
+        <p style="margin:0;color:var(--bl-ink-dim)">Not affiliated with Microsoft.</p>
+      </div>
+      <div class="bl-dialog__footer"><button class="bl-btn bl-btn--default" data-bl-close>OK</button></div>
+    </div>
+  </div>
+
+  <!-- Exit confirm dialog -->
+  <div class="bl-overlay" id="confirmExit">
+    <div class="bl-dialog" style="width:360px">
+      <div class="bl-titlebar"><span class="bl-titlebar__title">Notepad</span><div class="bl-winbtns"><span class="bl-winbtn bl-winbtn--close" data-bl-close>×</span></div></div>
+      <div class="bl-dialog__body">Do you want to save changes before exiting?</div>
+      <div class="bl-dialog__footer">
+        <button class="bl-btn bl-btn--default" id="exitSave">Save</button>
+        <button class="bl-btn" id="exitDiscard">Don't Save</button>
+        <button class="bl-btn" data-bl-close>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="bliss.js"></script>
+  <script>
+    var pad = document.getElementById('pad');
+    var stPos = document.getElementById('stPos');
+    var stWords = document.getElementById('stWords');
+
+    function refresh() {
+      var v = pad.value;
+      var words = (v.trim().match(/\S+/g) || []).length;
+      stWords.textContent = words + (words === 1 ? ' word' : ' words');
+      var upto = v.slice(0, pad.selectionStart);
+      var lines = upto.split('\n');
+      stPos.textContent = 'Ln ' + lines.length + ', Col ' + (lines[lines.length - 1].length + 1);
+    }
+    pad.addEventListener('input', refresh);
+    pad.addEventListener('keyup', refresh);
+    pad.addEventListener('click', refresh);
+    refresh();
+
+    // menu actions (the kit auto-closes the menu after a click)
+    document.querySelectorAll('.bl-menu__item[data-act]').forEach(function (item) {
+      item.addEventListener('click', function () {
+        var a = item.getAttribute('data-act');
+        if (a === 'new') { pad.value = ''; refresh(); Bliss.toast('New document'); }
+        else if (a === 'open') { Bliss.toast({ title: 'Open', body: 'No file system in a demo — but this is where the dialog would go.' }); }
+        else if (a === 'save') { Bliss.toast({ title: 'Saved', body: 'Untitled.txt' }); }
+        else if (a === 'exit') { Bliss.openDialog('#confirmExit'); }
+        else if (a === 'selectall') { pad.focus(); pad.select(); }
+        else if (a === 'cut' || a === 'copy' || a === 'paste' || a === 'undo') { try { document.execCommand(a); } catch (e) {} pad.focus(); }
+        else if (a === 'wrap') { var on = pad.style.whiteSpace !== 'pre'; pad.style.whiteSpace = on ? 'pre' : 'pre-wrap'; document.getElementById('wrapItem').textContent = 'Word Wrap' + (on ? '' : ' ✓'); }
+        else if (a.indexOf('theme-') === 0) { var t = a.slice(6); Bliss.setTheme(t, document.body); Bliss.toast('Scheme: ' + t.charAt(0).toUpperCase() + t.slice(1)); }
+        else if (a === 'about') { Bliss.openDialog('#about'); }
+      });
+    });
+
+    // window buttons (standalone window — wire to friendly demo behavior)
+    document.getElementById('btnClose').addEventListener('click', function () { Bliss.openDialog('#confirmExit'); });
+    document.getElementById('btnMin').addEventListener('click', function () { Bliss.toast('Minimize (no taskbar in this demo)'); });
+    document.getElementById('btnMax').addEventListener('click', function () { document.querySelector('.pad-win').classList.toggle('is-max'); });
+    document.getElementById('exitSave').addEventListener('click', function () { Bliss.closeDialog('#confirmExit'); Bliss.toast('Saved · goodbye'); });
+    document.getElementById('exitDiscard').addEventListener('click', function () { Bliss.closeDialog('#confirmExit'); Bliss.toast('Closed without saving'); });
+
+    // keyboard shortcuts
+    document.addEventListener('keydown', function (e) {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      var k = e.key.toLowerCase();
+      if (k === 's') { e.preventDefault(); Bliss.toast({ title: 'Saved', body: 'Untitled.txt' }); }
+      else if (k === 'n') { e.preventDefault(); pad.value = ''; refresh(); Bliss.toast('New document'); }
+    });
+  </script>
+</body>
+</html>
