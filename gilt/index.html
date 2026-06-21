@@ -4,227 +4,314 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GILT — Design Language</title>
-<meta name="description" content="GILT: an Art Deco / machine-age design language — gilded geometry, jewel lacquer, and mirror symmetry from the 1925 Paris Exposition to the Chrysler Building.">
+<meta name="description" content="GILT: an Art Deco / machine-age design language — gilded geometry, jewel lacquer, mirror symmetry, and a full component kit, from the 1925 Paris Exposition to the Chrysler Building. Paper & Lacquer themes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Jost:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* Neutrals */
-    --paper:#F4EBD6;        /* warm ivory card stock */
-    --ink:#16130D;          /* near-black, warm */
-    --ink-soft:#433B2A;
+    /* ===== brand constants (fixed across themes) ===== */
+    --ivory:#F4EBD6;
+    --gold:#C5A24E; --brass:#A8862F; --bronze:#86652F; --champagne:#E7D3A1;
+    --emerald:#13654E; --sapphire:#1F457E; --ruby:#9E2533; --amethyst:#553A6B; --onyx:#1C1A17;
+    --eaudenil:#9FBE9C; --rose:#C98B8B; --slate:#6E8295; --pearl:#E8E0CF;
 
-    /* Metals — the gilding */
-    --gold:#C5A24E;
-    --brass:#A8862F;
-    --bronze:#86652F;
-    --champagne:#E7D3A1;
+    /* the gilded surface — machine-age metal sheen */
+    --gild:linear-gradient(115deg,#F2E4BA 0%,#E7D3A1 13%,#C5A24E 38%,#8C6B2C 50%,#C5A24E 62%,#E7D3A1 87%,#F2E4BA 100%);
 
-    /* Jewels — the lacquer */
-    --emerald:#13654E;
-    --sapphire:#1F457E;
-    --ruby:#9E2533;
-    --amethyst:#553A6B;
-    --onyx:#1C1A17;
-
-    /* Powders — the boudoir */
-    --eaudenil:#9FBE9C;
-    --rose:#C98B8B;
-    --slate:#6E8295;
-    --pearl:#E8E0CF;
-
-    /* The gilded surface (machine-age metal sheen) */
-    --gild:linear-gradient(135deg,#E7D3A1 0%,#C5A24E 42%,#8C6B2C 52%,#C5A24E 60%,#E7D3A1 100%);
-
-    /* Treatment tokens */
-    --rule:1px solid var(--gold);
-    --frame:2px solid var(--ink);
-    --inlay:inset 0 0 0 1px var(--paper), inset 0 0 0 3px var(--gold);
-    --radius:2px;
-
-    /* fonts (named for chrome remapping) */
     --font-display:'Poiret One',sans-serif;
     --font-body:'Jost',system-ui,sans-serif;
     --font-accent:'Pinyon Script',cursive;
+    --radius:2px;
+
+    /* spacing scale (real tokens) */
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+    --space-5:24px; --space-6:32px; --space-7:48px; --space-8:64px;
+
+    /* ===== themeable semantics — Paper (default) ===== */
+    --bg:#F4EBD6;
+    --surface:#FBF6E7;
+    --surface-2:#F0E5CA;
+    --text:#16130D;
+    --text-soft:#4A4030;
+    --edge:#16130D;
+    --wordmark-stroke:1.5px;
+    --topbar:rgba(246,239,221,0.86);
+
+    /* derived treatment — auto-adapts through the vars above */
+    --rule:1px solid var(--gold);
+    --frame:2px solid var(--edge);
+    --inlay:inset 0 0 0 1px var(--surface), inset 0 0 0 3px var(--gold);
+
+    /* chamfer corner size for deco panels */
+    --chamf:14px;
+  }
+  [data-theme="lacquer"]{
+    --bg:#13110C;
+    --surface:#1E1B14;
+    --surface-2:#272117;
+    --text:#EEE4C9;
+    --text-soft:#B9A77C;
+    --edge:#C5A24E;
+    --wordmark-stroke:0px;
+    --topbar:rgba(20,17,12,0.82);
   }
 
-  /* ============ docs chrome — Nebula structure, skinned in Gilt deco ============ */
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
   body{
     margin:0;
-    background-color:var(--paper);
+    background-color:var(--bg);
     background-image:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='26' viewBox='0 0 44 26'%3E%3Cpath d='M0 20 L22 6 L44 20' fill='none' stroke='%23C5A24E' stroke-width='1.4' opacity='0.10'/%3E%3C/svg%3E");
-    color:var(--ink);
+    color:var(--text);
     font-family:var(--font-body);
-    font-weight:400;
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
+    transition:background-color .4s ease, color .4s ease;
   }
   @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
 
   code,.mono{ font-family:'Jost',ui-monospace,monospace; font-size:.88em; letter-spacing:.02em; color:var(--bronze); }
+  ::selection{ background:var(--gold); color:#16130D; }
 
   .doc-skip{ position:fixed; left:-999px; top:8px; z-index:200; }
   .doc-skip:focus{ left:8px; }
-
-  /* deco buttons */
-  .doc-btn{
-    display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-    font-family:var(--font-body); font-weight:600; font-size:.8rem; letter-spacing:.16em;
-    text-transform:uppercase; text-decoration:none;
-    border:var(--frame); border-radius:var(--radius); padding:9px 18px;
-    background:var(--paper); color:var(--ink);
-    transition:transform .14s ease, box-shadow .14s ease;
-  }
-  .doc-btn:hover{ transform:translateY(-2px); box-shadow:0 6px 0 -2px var(--gold); }
-  .doc-btn:active{ transform:translateY(0); }
-  .doc-btn--primary{ background:var(--gild); border-color:var(--ink); }
-  .doc-btn--ghost{ background:transparent; box-shadow:var(--inlay); }
-  .doc-btn--sm{ font-size:.7rem; padding:5px 12px; letter-spacing:.12em; }
   :focus-visible{ outline:2px solid var(--bronze); outline-offset:2px; }
 
-  /* top bar */
+  /* ============ buttons (component + chrome) ============ */
+  .gilt-btn{
+    display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+    font-family:var(--font-body); font-weight:600; font-size:.76rem; letter-spacing:.18em;
+    text-transform:uppercase; text-decoration:none; white-space:nowrap;
+    border:2px solid var(--edge); border-radius:var(--radius); padding:10px 20px;
+    background:var(--surface); color:var(--text);
+    transition:transform .14s ease, box-shadow .14s ease, background-position .5s ease;
+  }
+  .gilt-btn:hover{ transform:translateY(-2px); box-shadow:0 6px 0 -2px var(--gold); }
+  .gilt-btn:active{ transform:translateY(0); box-shadow:none; }
+  .gilt-btn--primary{ background:var(--gild); background-size:220% 100%; background-position:0 0; color:#16130D; border-color:var(--edge); }
+  .gilt-btn--primary:hover{ background-position:100% 0; box-shadow:0 6px 0 -2px var(--bronze); }
+  .gilt-btn--solid{ background:var(--emerald); color:var(--champagne); border-color:var(--edge); }
+  .gilt-btn--ghost{ background:transparent; box-shadow:var(--inlay); }
+  .gilt-btn--sm{ padding:6px 13px; font-size:.66rem; letter-spacing:.14em; }
+
+  /* ============ top bar ============ */
   .doc-topbar{
     position:sticky; top:0; z-index:50;
-    display:flex; align-items:center; gap:18px;
-    height:58px; padding:0 24px;
-    background:linear-gradient(180deg, rgba(244,235,214,0.96), rgba(244,235,214,0.82));
-    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
-    border-bottom:2px solid var(--ink); box-shadow:inset 0 -3px 0 -1px var(--gold);
+    display:flex; align-items:center; gap:16px;
+    height:60px; padding:0 22px;
+    background:var(--topbar);
+    -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+    border-bottom:2px solid var(--edge); box-shadow:inset 0 -4px 0 -1px var(--gold);
+    transition:background .4s ease, border-color .4s ease;
   }
   .doc-brand{ display:inline-flex; align-items:center; gap:11px; flex:0 0 auto; text-decoration:none; }
-  .doc-brand svg{ width:24px; height:24px; }
+  .doc-brand svg{ width:26px; height:26px; }
   .doc-brand b{
-    font-family:var(--font-display); font-weight:400; font-size:18px; letter-spacing:.18em; text-transform:uppercase;
+    font-family:var(--font-display); font-weight:400; font-size:19px; letter-spacing:.2em; text-transform:uppercase;
     color:transparent; background:var(--gild); -webkit-background-clip:text; background-clip:text;
-    -webkit-text-stroke:.6px var(--ink);
+    -webkit-text-stroke:.5px var(--edge);
   }
-  .doc-ver{ font-family:var(--font-body); font-weight:500; font-size:11px; letter-spacing:.12em; color:var(--ink-soft); border:1px solid var(--gold); padding:2px 9px; border-radius:var(--radius); }
+  .doc-ver{ font-family:var(--font-body); font-weight:500; font-size:11px; letter-spacing:.12em; color:var(--text-soft); border:1px solid var(--gold); padding:2px 9px; border-radius:var(--radius); }
   .doc-topbar .spacer{ flex:1; }
-  .doc-topbar .tag{ font-family:var(--font-accent); font-size:22px; color:var(--bronze); line-height:1; }
-  @media (max-width:560px){ .doc-topbar .tag{ display:none; } }
 
-  /* shell: sidebar + content */
-  .doc-shell{ display:grid; grid-template-columns:248px minmax(0,1fr); gap:0; max-width:1320px; margin:0 auto; }
+  /* theme toggle (Paper / Lacquer) */
+  .theme-toggle{ display:inline-flex; border:2px solid var(--edge); border-radius:var(--radius); overflow:hidden; box-shadow:var(--inlay); }
+  .theme-toggle .tgl{
+    font-family:var(--font-body); font-weight:600; font-size:.64rem; letter-spacing:.16em; text-transform:uppercase;
+    cursor:pointer; border:0; background:transparent; color:var(--text-soft); padding:7px 13px;
+  }
+  .theme-toggle .tgl + .tgl{ border-left:1px solid var(--gold); }
+  .theme-toggle .tgl.is-active{ background:var(--gild); color:#16130D; }
+
+  /* ============ shell: sidebar + content ============ */
+  .doc-shell{ display:grid; grid-template-columns:250px minmax(0,1fr); gap:0; max-width:1320px; margin:0 auto; }
   .doc-side{
-    position:sticky; top:58px; align-self:start; height:calc(100vh - 58px);
-    overflow-y:auto; padding:34px 16px 60px 26px;
-    border-right:2px solid var(--ink);
+    position:sticky; top:60px; align-self:start; height:calc(100vh - 60px);
+    overflow-y:auto; padding:34px 16px 60px 26px; border-right:2px solid var(--edge);
   }
   .doc-side h4{ font-family:var(--font-body); font-weight:600; font-size:10.5px; letter-spacing:.26em; text-transform:uppercase; color:var(--bronze); margin:24px 0 9px; padding-bottom:5px; border-bottom:var(--rule); }
   .doc-side h4:first-child{ margin-top:0; }
-  .doc-side a{ display:block; font-size:13.5px; letter-spacing:.04em; color:var(--ink-soft); text-decoration:none; padding:5px 10px; border-radius:var(--radius); border-left:2px solid transparent; }
-  .doc-side a:hover{ color:var(--ink); background:rgba(197,162,78,0.14); }
-  .doc-side a.is-active{ color:var(--ink); border-left-color:var(--gold); background:rgba(197,162,78,0.18); }
+  .doc-side a{ display:block; font-size:13.5px; letter-spacing:.04em; color:var(--text-soft); text-decoration:none; padding:5px 10px; border-radius:var(--radius); border-left:2px solid transparent; }
+  .doc-side a:hover{ color:var(--text); background:color-mix(in srgb,var(--gold) 16%, transparent); }
+  .doc-side a.is-active{ color:var(--text); border-left-color:var(--gold); background:color-mix(in srgb,var(--gold) 22%, transparent); }
 
-  .doc-main{ padding:40px clamp(20px,4vw,64px) 110px; min-width:0; }
+  .doc-main{ padding:0 clamp(20px,4vw,64px) 110px; min-width:0; }
   @media (max-width:900px){
     .doc-shell{ grid-template-columns:1fr; }
-    .doc-side{ position:static; height:auto; border-right:0; border-bottom:2px solid var(--ink); display:flex; gap:4px; flex-wrap:wrap; padding:12px 24px; }
+    .doc-side{ position:static; height:auto; border-right:0; border-bottom:2px solid var(--edge); display:flex; gap:4px; flex-wrap:wrap; padding:12px 22px; }
     .doc-side h4{ display:none; }
     .doc-side a{ border-left:0; }
   }
 
-  .doc-section{ padding-top:48px; scroll-margin-top:72px; }
-  .doc-section:first-child{ padding-top:24px; }
+  .doc-section{ padding-top:40px; scroll-margin-top:78px; }
   .eyebrow{
     font-family:var(--font-body); font-weight:600; letter-spacing:.42em; text-transform:uppercase;
-    font-size:.68rem; display:inline-block; color:var(--ink);
+    font-size:.68rem; display:inline-block; color:var(--text);
     padding:6px 0 5px; border-top:var(--rule); border-bottom:var(--rule);
   }
-  .doc-section > h2{ font-family:var(--font-display); font-weight:400; font-size:clamp(1.9rem,4.6vw,2.8rem); margin:14px 0 10px; line-height:1; letter-spacing:.06em; text-transform:uppercase; }
-  .doc-section > .lede{ color:var(--ink-soft); font-size:1.08rem; font-weight:300; max-width:60ch; margin:0 0 30px; }
-  .doc-sub{ font-family:var(--font-display); font-weight:400; font-size:1.4rem; letter-spacing:.06em; text-transform:uppercase; margin:40px 0 16px; }
-  .small{ font-size:.86rem; color:var(--ink-soft); font-weight:300; }
+  .doc-section > h2{ font-family:var(--font-display); font-weight:400; font-size:clamp(2rem,4.8vw,3rem); margin:14px 0 10px; line-height:1; letter-spacing:.06em; text-transform:uppercase; }
+  .doc-section > .lede{ color:var(--text-soft); font-size:1.1rem; font-weight:300; max-width:62ch; margin:0 0 30px; }
+  .doc-sub{ font-family:var(--font-display); font-weight:400; font-size:1.4rem; letter-spacing:.06em; text-transform:uppercase; margin:38px 0 8px; }
+  .small{ font-size:.86rem; color:var(--text-soft); font-weight:300; }
 
-  /* hero */
-  .doc-hero{ position:relative; padding:54px 0 40px; overflow:hidden; }
-  .doc-hero .row{ display:grid; grid-template-columns:1.2fr 0.8fr; gap:34px; align-items:center; }
-  @media (max-width:760px){ .doc-hero .row{ grid-template-columns:1fr; } .doc-hero .crest{ display:none; } }
-  .doc-hero .ribbon{ display:flex; height:7px; max-width:300px; margin:26px 0 22px; border:1px solid var(--ink); }
-  .doc-hero .ribbon span{ flex:1; }
-  .doc-hero h1{
-    font-family:var(--font-display); font-weight:400; font-size:clamp(3.4rem,11vw,7rem); line-height:.9; margin:12px 0 4px;
-    letter-spacing:.06em; text-transform:uppercase;
-    color:transparent; background:var(--gild); -webkit-background-clip:text; background-clip:text; -webkit-text-stroke:1.5px var(--ink);
+  /* engraved section divider */
+  .deco-divider{ display:flex; align-items:center; justify-content:center; gap:18px; margin:64px 0 8px; }
+  .deco-divider::before,.deco-divider::after{ content:""; width:min(32%,300px); height:5px; border-top:1px solid var(--gold); border-bottom:1px solid var(--gold); }
+  .deco-divider i{ width:13px; height:13px; transform:rotate(45deg); background:var(--gild); border:1px solid var(--edge); flex:0 0 auto; }
+
+  /* ============ HERO ============ */
+  .doc-hero{ position:relative; padding:0; margin-top:18px; overflow:hidden;
+    border:2px solid var(--edge); box-shadow:var(--inlay); background:var(--surface);
+    clip-path:polygon(26px 0,calc(100% - 26px) 0,100% 26px,100% calc(100% - 26px),calc(100% - 26px) 100%,26px 100%,0 calc(100% - 26px),0 26px); }
+  .hero-inner{ position:relative; z-index:3; text-align:center; padding:64px 24px 0; }
+  .hero-rays{
+    position:absolute; z-index:1; left:50%; top:38%; width:860px; height:860px; transform:translate(-50%,-50%);
+    pointer-events:none; opacity:.42;
+    background:repeating-conic-gradient(from 0deg, color-mix(in srgb,var(--gold) 60%, transparent) 0deg .55deg, transparent .55deg 9deg);
+    -webkit-mask:radial-gradient(circle, #000 0, #000 30%, transparent 66%);
+            mask:radial-gradient(circle, #000 0, #000 30%, transparent 66%);
   }
-  .doc-hero h1 .sub{ display:block; font-family:var(--font-accent); -webkit-text-stroke:0; color:var(--bronze); background:none; font-size:clamp(1.7rem,5vw,2.8rem); letter-spacing:0; text-transform:none; margin-top:6px; }
-  .doc-hero p{ color:var(--ink-soft); font-size:1.1rem; font-weight:300; max-width:52ch; margin:22px 0 26px; }
-  .doc-hero .cta{ display:flex; gap:12px; flex-wrap:wrap; }
-  .doc-hero .crest{ display:grid; place-items:center; }
-  .doc-hero .crest .frame{ border:var(--frame); box-shadow:var(--inlay); padding:26px; background:var(--paper); }
-  .float{ position:absolute; pointer-events:none; opacity:.85; }
-  .f1{ top:24px; left:2%; } .f2{ top:14px; right:30%; } .f3{ bottom:18px; left:18%; } .f4{ bottom:30px; right:4%; }
+  @media (prefers-reduced-motion: no-preference){ .hero-rays{ animation:spin 90s linear infinite; } }
+  @keyframes spin{ to{ transform:translate(-50%,-50%) rotate(360deg); } }
+
+  .hero-eyebrow{ position:relative; z-index:3; }
+  .hero h1{
+    font-family:var(--font-display); font-weight:400; font-size:clamp(4rem,15vw,10rem); line-height:.86; margin:20px 0 0;
+    letter-spacing:.06em; text-transform:uppercase;
+    color:transparent; background:var(--gild); background-size:220% 100%;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-stroke:var(--wordmark-stroke) var(--edge);
+  }
+  @media (prefers-reduced-motion: no-preference){ .hero h1{ animation:sheen 7s linear infinite; } }
+  @keyframes sheen{ to{ background-position:220% 0; } }
+  .hero .sub{ display:block; font-family:var(--font-accent); -webkit-text-stroke:0; color:var(--bronze); background:none; font-size:clamp(1.9rem,5.5vw,3.4rem); letter-spacing:0; text-transform:none; margin-top:2px; }
+  .hero .lede{ color:var(--text-soft); font-size:1.12rem; font-weight:300; max-width:48ch; margin:22px auto 26px; }
+  .hero .lede strong{ color:var(--text); font-weight:500; }
+  .hero .cta{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  .hero-skyline{ position:relative; z-index:2; display:block; width:100%; height:auto; margin-top:30px; }
+  .hero-skyline svg{ display:block; width:100%; height:auto; }
+  /* drifting corner ornaments */
+  .float{ position:absolute; z-index:2; pointer-events:none; opacity:.8; }
+  .f1{ top:18px; left:18px; } .f2{ top:18px; right:18px; transform:scaleX(-1); }
   @media (prefers-reduced-motion: no-preference){
     .f1{ animation:drift 9s ease-in-out infinite; }
-    .f4{ animation:drift 11s ease-in-out infinite; }
+    .f2{ animation:driftMirror 9s ease-in-out infinite; }
   }
-  @keyframes drift{ 50%{ transform:translateY(-12px); } }
+  @keyframes drift{ 50%{ transform:translateY(-10px); } }
+  @keyframes driftMirror{ 0%,100%{ transform:scaleX(-1) translateY(0); } 50%{ transform:scaleX(-1) translateY(-10px); } }
   @media (max-width:560px){ .float{ display:none; } }
 
-  /* example: live demo + code */
-  .doc-example{ border:var(--frame); box-shadow:var(--inlay); border-radius:var(--radius); overflow:hidden; margin:16px 0 28px; background:var(--paper); }
-  .doc-demo{ padding:30px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:center; }
+  /* ============ example: live demo + code ============ */
+  .doc-example{ border:var(--frame); box-shadow:var(--inlay); border-radius:var(--radius); overflow:hidden; margin:16px 0 28px; background:var(--surface); }
+  .doc-demo{ padding:34px 30px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:center;
+    background-image:radial-gradient(120% 130% at 50% 0%, color-mix(in srgb,var(--gold) 8%, transparent), transparent 62%); }
   .doc-demo.col{ flex-direction:column; align-items:stretch; }
   .doc-codewrap{ position:relative; border-top:2px solid var(--gold); }
-  .doc-code{ margin:0; padding:18px 18px; overflow-x:auto; background:var(--onyx); }
+  .doc-code{ margin:0; padding:18px; overflow-x:auto; background:var(--onyx); }
   .doc-code code{ font-family:'Jost',ui-monospace,monospace; font-size:12.5px; line-height:1.7; color:#E8E0CF; white-space:pre; }
   .doc-copy{ position:absolute; top:8px; right:8px; }
 
-  /* token grids — swatches */
+  /* ============ color swatches ============ */
   .doc-swatches{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px; }
   .doc-swatch{
     text-align:left; cursor:pointer; border:var(--frame); box-shadow:var(--inlay); border-radius:var(--radius); overflow:hidden;
-    background:var(--paper); font:inherit; color:var(--ink); padding:0;
+    background:var(--surface); font:inherit; color:var(--text); padding:0;
     transition:transform .14s ease, box-shadow .14s ease;
   }
   .doc-swatch:hover,.doc-swatch:focus-visible{ transform:translateY(-3px); box-shadow:var(--inlay),0 8px 0 -2px var(--gold); outline:none; }
   .doc-swatch:active{ transform:translateY(0); }
-  .doc-swatch .cap{ display:block; height:60px; border-bottom:var(--frame); }
+  .doc-swatch .cap{ display:block; height:62px; border-bottom:var(--frame); }
   .doc-swatch .m{ display:block; padding:9px 12px 11px; }
   .doc-swatch .m .k{ display:block; font-size:.9rem; font-weight:500; letter-spacing:.06em; text-transform:uppercase; }
-  .doc-swatch .m .v{ display:block; font-family:'Jost',ui-monospace,monospace; font-size:.8rem; letter-spacing:.04em; color:var(--ink-soft); margin-top:2px; }
+  .doc-swatch .m .v{ display:block; font-family:'Jost',ui-monospace,monospace; font-size:.8rem; letter-spacing:.04em; color:var(--text-soft); margin-top:2px; }
 
   .fam-label{ font-family:var(--font-body); font-weight:500; font-size:1.05rem; letter-spacing:.16em; text-transform:uppercase; margin:34px 0 16px; display:flex; align-items:center; gap:12px; }
-  .fam-label::before{ content:""; width:14px; height:14px; transform:rotate(45deg); border:1px solid var(--ink); display:inline-block; }
+  .fam-label::before{ content:""; width:14px; height:14px; transform:rotate(45deg); border:1px solid var(--edge); display:inline-block; }
   .fam-metal::before{ background:var(--gold); }
   .fam-jewel::before{ background:var(--emerald); }
   .fam-powder::before{ background:var(--eaudenil); }
 
+  /* ============ scales ============ */
   .doc-scale-row{ display:flex; align-items:baseline; gap:20px; padding:14px 0; border-bottom:var(--rule); }
   .doc-scale-row .tk{ font-family:'Jost',ui-monospace,monospace; font-size:11.5px; color:var(--bronze); width:140px; flex:0 0 auto; }
-
   .doc-space-row{ display:flex; align-items:center; gap:16px; padding:9px 0; }
   .doc-space-row .tk{ font-family:'Jost',ui-monospace,monospace; font-size:11.5px; color:var(--bronze); width:120px; flex:0 0 auto; }
-  .doc-space-row .bar{ height:14px; background:var(--gild); border:1px solid var(--ink); border-radius:1px; }
+  .doc-space-row .bar{ height:14px; background:var(--gild); border:1px solid var(--edge); border-radius:1px; }
 
   .doc-grid{ display:grid; gap:16px; }
   .doc-grid.two{ grid-template-columns:1fr 1fr; }
   .doc-grid.three{ grid-template-columns:repeat(3,1fr); }
   @media (max-width:720px){ .doc-grid.two,.doc-grid.three{ grid-template-columns:1fr; } }
 
-  .doc-card{ border:var(--frame); box-shadow:var(--inlay); background:var(--paper); padding:22px 22px 20px; }
+  .doc-card{ border:var(--frame); box-shadow:var(--inlay); background:var(--surface); padding:22px 22px 20px; }
   .doc-card h3{ font-family:var(--font-display); font-weight:400; font-size:1.1rem; letter-spacing:.08em; text-transform:uppercase; margin:0 0 8px; }
-  .doc-card p{ margin:0; font-size:.95rem; color:var(--ink-soft); font-weight:300; }
+  .doc-card p{ margin:0; font-size:.95rem; color:var(--text-soft); font-weight:300; }
   .doc-card .role{ font-size:.7rem; font-weight:600; letter-spacing:.32em; text-transform:uppercase; color:var(--bronze); border-bottom:var(--rule); display:inline-block; padding-bottom:3px; }
-  .doc-card .face{ font-size:.86rem; color:var(--ink-soft); margin:10px 0 12px; font-weight:300; }
+  .doc-card .face{ font-size:.86rem; color:var(--text-soft); margin:10px 0 12px; font-weight:300; }
   .samp-display{ font-family:var(--font-display); font-weight:400; font-size:clamp(1.8rem,5vw,2.6rem); line-height:1; letter-spacing:.08em; text-transform:uppercase; }
   .samp-body{ font-family:var(--font-body); font-weight:300; font-size:1.1rem; line-height:1.5; }
   .samp-accent{ font-family:var(--font-accent); font-size:clamp(2rem,5.5vw,2.8rem); color:var(--bronze); line-height:1.1; }
 
   /* frame & inlay demos */
-  .doc-frame-demo{ height:96px; border:var(--frame); box-shadow:var(--inlay); background:var(--paper); display:grid; place-items:end center; padding-bottom:8px; font-family:'Jost',ui-monospace,monospace; font-size:11px; color:var(--bronze); }
-  .doc-radius-demo{ height:90px; border:var(--frame); box-shadow:var(--inlay); background:var(--paper); display:grid; place-items:end center; padding-bottom:8px; font-family:'Jost',ui-monospace,monospace; font-size:11px; color:var(--bronze); }
+  .doc-frame-demo{ height:96px; border:var(--frame); box-shadow:var(--inlay); background:var(--surface); display:grid; place-items:end center; padding-bottom:8px; font-family:'Jost',ui-monospace,monospace; font-size:11px; color:var(--bronze); }
+  .doc-radius-demo{ height:88px; border:var(--frame); box-shadow:var(--inlay); background:var(--surface); display:grid; place-items:end center; padding-bottom:8px; font-family:'Jost',ui-monospace,monospace; font-size:11px; color:var(--bronze); }
+  .doc-chamfer-demo{ height:96px; border:var(--frame); box-shadow:var(--inlay); background:var(--surface); display:grid; place-items:center; font-family:'Jost',ui-monospace,monospace; font-size:11px; color:var(--bronze);
+    clip-path:polygon(var(--chamf) 0,calc(100% - var(--chamf)) 0,100% var(--chamf),100% calc(100% - var(--chamf)),calc(100% - var(--chamf)) 100%,var(--chamf) 100%,0 calc(100% - var(--chamf)),0 var(--chamf)); }
 
-  /* principles */
+  /* ============ component library (.gilt-*) ============ */
+  .gilt-panel{ position:relative; background:var(--surface); border:2px solid var(--edge); box-shadow:var(--inlay); padding:20px 22px 18px; max-width:340px;
+    clip-path:polygon(var(--chamf) 0,calc(100% - var(--chamf)) 0,100% var(--chamf),100% calc(100% - var(--chamf)),calc(100% - var(--chamf)) 100%,var(--chamf) 100%,0 calc(100% - var(--chamf)),0 var(--chamf)); }
+  .gilt-panel__title{ font-family:var(--font-display); font-weight:400; font-size:1.15rem; letter-spacing:.1em; text-transform:uppercase; padding-bottom:10px; margin-bottom:12px; border-bottom:var(--rule); display:flex; align-items:center; gap:9px; }
+  .gilt-panel__title::before{ content:""; width:9px; height:9px; transform:rotate(45deg); background:var(--gild); border:1px solid var(--edge); }
+  .gilt-panel__body{ margin:0 0 16px; font-size:.95rem; font-weight:300; color:var(--text-soft); }
+  .gilt-panel__foot{ display:flex; gap:10px; }
+
+  .gilt-field{ display:block; max-width:380px; }
+  .gilt-field .lbl{ display:block; font-family:var(--font-body); font-weight:600; font-size:.66rem; letter-spacing:.24em; text-transform:uppercase; color:var(--text-soft); margin-bottom:7px; }
+  .gilt-input,.gilt-select{ width:100%; font-family:var(--font-body); font-size:1rem; color:var(--text); background:transparent; border:0; border-bottom:2px solid var(--gold); padding:8px 2px; outline:none; transition:border-color .2s, box-shadow .2s; }
+  .gilt-input::placeholder{ color:var(--text-soft); opacity:.6; }
+  .gilt-input:focus,.gilt-select:focus{ border-bottom-color:var(--bronze); box-shadow:0 2px 0 0 var(--gold); }
+  .gilt-help{ display:block; font-size:.78rem; color:var(--text-soft); margin-top:7px; font-weight:300; }
+
+  .gilt-badge{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-body); font-weight:600; font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--champagne); background:var(--emerald); border:1px solid var(--edge); padding:5px 11px; }
+  .gilt-badge--ruby{ background:var(--ruby); }
+  .gilt-badge--sapphire{ background:var(--sapphire); }
+  .gilt-badge--amethyst{ background:var(--amethyst); }
+  .gilt-badge--gold{ background:var(--gild); color:#16130D; }
+  .gilt-tag{ display:inline-flex; align-items:center; font-family:'Jost',ui-monospace,monospace; font-size:.74rem; letter-spacing:.08em; color:var(--text-soft); border:1px solid var(--gold); padding:4px 10px; }
+
+  .gilt-tabs{ display:flex; flex-wrap:wrap; border-bottom:2px solid var(--edge); }
+  .gilt-tab{ font-family:var(--font-display); letter-spacing:.12em; text-transform:uppercase; font-size:.98rem; padding:11px 20px; background:none; border:0; color:var(--text-soft); cursor:pointer; position:relative; }
+  .gilt-tab:hover{ color:var(--text); }
+  .gilt-tab.is-active{ color:var(--text); }
+  .gilt-tab.is-active::after{ content:""; position:absolute; left:0; right:0; bottom:-2px; height:3px; background:var(--gild); }
+
+  .gilt-table{ width:100%; border-collapse:collapse; font-family:var(--font-body); }
+  .gilt-table th{ font-weight:600; font-size:.64rem; letter-spacing:.2em; text-transform:uppercase; color:var(--bronze); text-align:left; padding:11px 14px; border-bottom:2px solid var(--gold); }
+  .gilt-table th:last-child,.gilt-table td:last-child{ text-align:right; }
+  .gilt-table td{ padding:12px 14px; border-bottom:1px solid color-mix(in srgb,var(--gold) 38%, transparent); font-size:.96rem; color:var(--text); }
+  .gilt-table tbody tr:last-child td{ border-bottom:0; }
+  .gilt-table tbody tr:hover td{ background:color-mix(in srgb,var(--gold) 9%, transparent); }
+
+  .gilt-marquee{ position:relative; width:100%; text-align:center; border:2px solid var(--edge); box-shadow:var(--inlay); background:var(--surface); padding:26px 64px; overflow:hidden; }
+  .gilt-marquee::before,.gilt-marquee::after{ content:""; position:absolute; top:50%; width:42px; height:42px; transform:translateY(-50%);
+    background:repeating-conic-gradient(from 0deg, var(--gold) 0deg 1deg, transparent 1deg 15deg);
+    -webkit-mask:radial-gradient(circle,#000 0,#000 42%,transparent 66%); mask:radial-gradient(circle,#000 0,#000 42%,transparent 66%); opacity:.7; }
+  .gilt-marquee::before{ left:14px; } .gilt-marquee::after{ right:14px; }
+  .gilt-marquee__kicker{ font-family:var(--font-body); font-weight:600; font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:var(--bronze); }
+  .gilt-marquee__title{ font-family:var(--font-display); font-weight:400; font-size:clamp(1.8rem,5vw,2.6rem); letter-spacing:.1em; text-transform:uppercase; margin:6px 0 2px;
+    color:transparent; background:var(--gild); -webkit-background-clip:text; background-clip:text; -webkit-text-stroke:.6px var(--edge); }
+  [data-theme="lacquer"] .gilt-marquee__title{ -webkit-text-stroke-width:0; }
+  .gilt-marquee__sub{ font-family:var(--font-accent); font-size:1.7rem; color:var(--bronze); }
+
+  /* ============ principles ============ */
   .rules{ list-style:none; padding:0; margin:0; display:grid; gap:16px; }
-  .rules li{ background:var(--paper); border:var(--frame); box-shadow:var(--inlay); padding:16px 20px 16px 22px; position:relative; }
+  .rules li{ background:var(--surface); border:var(--frame); box-shadow:var(--inlay); padding:16px 20px 16px 24px; position:relative; }
   .rules li::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--gold); }
   .rules li b{ font-family:var(--font-display); font-weight:400; font-size:1.12rem; letter-spacing:.08em; text-transform:uppercase; display:block; margin-bottom:3px; }
-  .rules li span{ font-size:.95rem; color:var(--ink-soft); font-weight:300; }
+  .rules li span{ font-size:.95rem; color:var(--text-soft); font-weight:300; }
   .rules li:nth-child(6n+1)::before{ background:var(--gold); }
   .rules li:nth-child(6n+2)::before{ background:var(--emerald); }
   .rules li:nth-child(6n+3)::before{ background:var(--sapphire); }
@@ -232,31 +319,31 @@
   .rules li:nth-child(6n+5)::before{ background:var(--amethyst); }
   .rules li:nth-child(6n+6)::before{ background:var(--bronze); }
 
-  /* heritage timeline */
+  /* ============ heritage timeline ============ */
   .doc-timeline{ display:grid; grid-template-columns:repeat(4,1fr); }
   @media (max-width:760px){ .doc-timeline{ grid-template-columns:1fr 1fr; gap:26px 0; } }
   .doc-node{ position:relative; padding:26px 20px 0 0; }
   .doc-node::before{ content:""; position:absolute; top:9px; left:0; right:0; height:1px; background:var(--gold); }
-  .doc-node::after{ content:""; position:absolute; top:3px; left:0; width:13px; height:13px; transform:rotate(45deg); background:var(--gold); border:1px solid var(--ink); }
+  .doc-node::after{ content:""; position:absolute; top:3px; left:0; width:13px; height:13px; transform:rotate(45deg); background:var(--gild); border:1px solid var(--edge); }
   .doc-node .y{ font-family:'Jost',ui-monospace,monospace; font-size:12px; color:var(--bronze); }
   .doc-node .n{ font-family:var(--font-display); font-weight:400; letter-spacing:.06em; text-transform:uppercase; font-size:1rem; margin:8px 0 7px; }
-  .doc-node .d{ font-size:13px; color:var(--ink-soft); font-weight:300; }
+  .doc-node .d{ font-size:13px; color:var(--text-soft); font-weight:300; }
 
-  .doc-foot{ margin-top:64px; padding-top:24px; border-top:var(--rule); font-size:.85rem; color:var(--ink-soft); font-weight:300; line-height:1.9; text-align:center; }
+  .doc-foot{ margin-top:60px; padding-top:24px; border-top:var(--rule); font-size:.85rem; color:var(--text-soft); font-weight:300; line-height:1.9; text-align:center; }
   .doc-foot em{ color:var(--bronze); }
 
-  /* toast */
+  /* ============ toast ============ */
   .doc-toasts{ position:fixed; left:0; right:0; bottom:24px; z-index:90; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }
   .doc-toast{ pointer-events:auto; background:var(--onyx); color:var(--pearl); border:1px solid var(--gold); box-shadow:var(--inlay); border-radius:var(--radius); padding:10px 16px; font-size:13px; letter-spacing:.04em; opacity:0; transform:translateY(10px); transition:opacity .26s, transform .26s; }
   .doc-toast.show{ opacity:1; transform:none; }
   .doc-toast b{ color:var(--champagne); }
 
-  @media (max-width:560px){ .doc-main{ padding:32px 16px 80px; } }
+  @media (max-width:560px){ .doc-main{ padding:0 16px 80px; } .hero-inner{ padding-top:44px; } }
 </style>
 </head>
 <body>
 
-<a class="doc-skip doc-btn doc-btn--sm" href="#overview">Skip to content</a>
+<a class="doc-skip gilt-btn gilt-btn--sm" href="#overview">Skip to content</a>
 
 <!-- top bar -->
 <header class="doc-topbar">
@@ -267,9 +354,12 @@
     </g></svg>
     <b>Gilt</b>
   </a>
-  <span class="doc-ver">v1.0.0</span>
+  <span class="doc-ver">v1.1.0</span>
   <span class="spacer"></span>
-  <span class="tag">the machine age, gilded</span>
+  <div class="theme-toggle" role="group" aria-label="Surface theme">
+    <button class="tgl is-active" type="button" data-theme-set="paper">Paper</button>
+    <button class="tgl" type="button" data-theme-set="lacquer">Lacquer</button>
+  </div>
 </header>
 
 <div class="doc-shell">
@@ -284,6 +374,11 @@
     <a href="#space">Spacing &amp; radius</a>
     <a href="#elevation">Frame &amp; inlay</a>
     <h4>Components</h4>
+    <a href="#buttons">Buttons</a>
+    <a href="#panels">Panels &amp; cards</a>
+    <a href="#forms">Forms</a>
+    <a href="#data">Data &amp; status</a>
+    <a href="#marquee">Marquee</a>
     <a href="#motifs">Motifs</a>
     <h4>Guidance</h4>
     <a href="#principles">Principles</a>
@@ -295,98 +390,90 @@
 
     <!-- OVERVIEW / HERO -->
     <section class="doc-section doc-hero" id="overview">
-      <div class="row">
-        <div>
-          <span class="eyebrow">Art Deco · machine-age design language</span>
-          <div class="ribbon" aria-hidden="true">
-            <span style="background:var(--emerald)"></span>
-            <span style="background:var(--gold)"></span>
-            <span style="background:var(--onyx)"></span>
-            <span style="background:var(--gold)"></span>
-            <span style="background:var(--sapphire)"></span>
-          </div>
-          <h1>Gilt<span class="sub">the machine age, gilded</span></h1>
-          <p>The 1925 Paris look gone vertical. Mirror symmetry, jewel lacquer, and thin gold linework cut into <strong style="color:var(--ink)">geometry that means business</strong> — tokens, motifs, and type you can drop into a project.</p>
-          <div class="cta">
-            <a class="doc-btn doc-btn--primary" href="#install">Get started</a>
-            <a class="doc-btn doc-btn--ghost" href="#motifs">Motifs</a>
-            <button class="doc-btn doc-btn--ghost" id="copyInstall" type="button">Copy tokens</button>
-          </div>
-        </div>
-        <div class="crest" aria-hidden="true">
-          <div class="frame">
-            <svg width="170" height="170" viewBox="0 0 170 170">
-              <g fill="none" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round">
-                <rect x="14" y="14" width="142" height="142"/>
-                <path d="M14 44 L44 14"/><path d="M126 14 L156 44"/><path d="M156 126 L126 156"/><path d="M44 156 L14 126"/>
-              </g>
-              <g stroke="var(--gold)" stroke-width="3" stroke-linecap="round">
-                <line x1="85" y1="150" x2="85" y2="44"/><line x1="85" y1="150" x2="46" y2="56"/><line x1="85" y1="150" x2="124" y2="56"/>
-                <line x1="85" y1="150" x2="30" y2="84"/><line x1="85" y1="150" x2="140" y2="84"/>
-              </g>
-            </svg>
-          </div>
+      <svg class="float f1" width="62" height="62" viewBox="0 0 78 78" aria-hidden="true">
+        <g stroke="var(--gold)" stroke-width="2.4" stroke-linecap="round">
+          <line x1="10" y1="68" x2="68" y2="10"/><line x1="10" y1="68" x2="10" y2="20"/><line x1="10" y1="68" x2="58" y2="68"/>
+          <line x1="10" y1="68" x2="34" y2="20"/><line x1="10" y1="68" x2="58" y2="44"/>
+        </g>
+      </svg>
+      <svg class="float f2" width="62" height="62" viewBox="0 0 78 78" aria-hidden="true">
+        <g stroke="var(--gold)" stroke-width="2.4" stroke-linecap="round">
+          <line x1="10" y1="68" x2="68" y2="10"/><line x1="10" y1="68" x2="10" y2="20"/><line x1="10" y1="68" x2="58" y2="68"/>
+          <line x1="10" y1="68" x2="34" y2="20"/><line x1="10" y1="68" x2="58" y2="44"/>
+        </g>
+      </svg>
+      <div class="hero-rays" aria-hidden="true"></div>
+
+      <div class="hero-inner">
+        <span class="eyebrow hero-eyebrow">Art Deco · machine-age design language</span>
+        <h1>Gilt<span class="sub">the machine age, gilded</span></h1>
+        <p class="lede">The 1925 Paris look gone vertical. Mirror symmetry, jewel lacquer, and thin gold linework cut into <strong>geometry that means business</strong> — tokens, a component kit, and seven motifs you can ship.</p>
+        <div class="cta">
+          <a class="gilt-btn gilt-btn--primary" href="#install">Get started</a>
+          <a class="gilt-btn gilt-btn--ghost" href="#buttons">Components</a>
+          <button class="gilt-btn gilt-btn--ghost" id="copyInstall" type="button">Copy tokens</button>
         </div>
       </div>
 
-      <!-- floating deco motifs (reduced-motion aware) -->
-      <svg class="float f1" width="64" height="64" viewBox="0 0 78 78" aria-hidden="true">
-        <g stroke="var(--gold)" stroke-width="2.4" stroke-linecap="round">
-          <line x1="39" y1="70" x2="39" y2="14"/><line x1="39" y1="70" x2="14" y2="22"/><line x1="39" y1="70" x2="64" y2="22"/>
-          <line x1="39" y1="70" x2="6" y2="40"/><line x1="39" y1="70" x2="72" y2="40"/>
-        </g>
-      </svg>
-      <svg class="float f4" width="74" height="48" viewBox="0 0 86 56" aria-hidden="true">
-        <g fill="none" stroke="var(--ruby)" stroke-width="3" stroke-linecap="round">
-          <path d="M8 50 A35 35 0 0 1 78 50"/><path d="M20 50 A23 23 0 0 1 66 50"/><path d="M32 50 A11 11 0 0 1 54 50"/>
-        </g>
-      </svg>
+      <!-- symmetric machine-age skyline -->
+      <div class="hero-skyline" aria-hidden="true">
+        <svg viewBox="0 0 1000 150" preserveAspectRatio="xMidYMax meet">
+          <g fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" opacity="0.85">
+            <!-- left short tower -->
+            <rect x="70" y="104" width="90" height="46"/><rect x="86" y="88" width="58" height="62"/>
+            <!-- left medium tower -->
+            <rect x="232" y="78" width="84" height="72"/><rect x="248" y="58" width="52" height="92"/><line x1="274" y1="42" x2="274" y2="58"/>
+            <!-- central tall tower (Chrysler-ish setbacks) -->
+            <rect x="436" y="92" width="128" height="58"/><rect x="456" y="66" width="88" height="84"/><rect x="474" y="40" width="52" height="110"/>
+            <path d="M474 40 L500 8 L526 40 Z"/><line x1="500" y1="8" x2="500" y2="-4"/>
+            <!-- right medium tower -->
+            <rect x="684" y="78" width="84" height="72"/><rect x="700" y="58" width="52" height="92"/><line x1="726" y1="42" x2="726" y2="58"/>
+            <!-- right short tower -->
+            <rect x="840" y="104" width="90" height="46"/><rect x="856" y="88" width="58" height="62"/>
+            <!-- ground rule -->
+            <line x1="0" y1="150" x2="1000" y2="150" stroke-width="3"/>
+          </g>
+        </svg>
+      </div>
     </section>
 
-    <!-- ORIGIN moved into HERITAGE; GETTING STARTED -->
+    <!-- GETTING STARTED -->
     <section class="doc-section" id="install">
       <span class="eyebrow">Getting started</span>
       <h2>Using it</h2>
-      <p class="lede">Drop these custom properties into a stylesheet and you have the whole system: the three palette families plus the gilded surface, rules, and inlay treatment. Everything else is geometry and symmetry.</p>
+      <p class="lede">Drop these custom properties into a stylesheet and you have the whole system: the brand palette, the gilded surface, and the rule / frame / inlay treatment. Add <code class="mono">data-theme="lacquer"</code> on <code class="mono">&lt;html&gt;</code> to switch the ivory invitation for black-lacquer-and-gold — try it from the top bar.</p>
 
       <div class="doc-example" data-static>
         <div class="doc-demo col">
-          <p class="small" style="margin:0">1 · Paste the <code class="mono">:root</code> tokens. &nbsp; 2 · Build forms with <code class="mono">--frame</code> + <code class="mono">--inlay</code>, never drop shadows. &nbsp; 3 · Gild the edges with <code class="mono">--rule</code> and concentrate jewel color into one focal point.</p>
+          <p class="small" style="margin:0">1 · Paste the <code class="mono">:root</code> tokens. &nbsp; 2 · Build with <code class="mono">--frame</code> + <code class="mono">--inlay</code>, never drop shadows. &nbsp; 3 · Gild the edges with <code class="mono">--rule</code> and concentrate jewel color into one focal point. &nbsp; 4 · Flip to Lacquer by setting <code class="mono">data-theme</code>.</p>
         </div>
         <div class="doc-codewrap">
           <pre class="doc-code"><code></code></pre>
           <script type="text/plain" class="doc-snippet">
 :root{
-  /* Neutrals */
-  --paper:#F4EBD6;
-  --ink:#16130D;
-  --ink-soft:#433B2A;
+  /* Neutrals (Paper theme) */
+  --bg:#F4EBD6;  --surface:#FBF6E7;  --text:#16130D;  --text-soft:#4A4030;  --edge:#16130D;
 
   /* Metals — the gilding */
-  --gold:#C5A24E;
-  --brass:#A8862F;
-  --bronze:#86652F;
-  --champagne:#E7D3A1;
+  --gold:#C5A24E;  --brass:#A8862F;  --bronze:#86652F;  --champagne:#E7D3A1;
 
   /* Jewels — the lacquer */
-  --emerald:#13654E;
-  --sapphire:#1F457E;
-  --ruby:#9E2533;
-  --amethyst:#553A6B;
-  --onyx:#1C1A17;
+  --emerald:#13654E;  --sapphire:#1F457E;  --ruby:#9E2533;  --amethyst:#553A6B;  --onyx:#1C1A17;
 
   /* Powders — the boudoir */
-  --eaudenil:#9FBE9C;
-  --rose:#C98B8B;
-  --slate:#6E8295;
-  --pearl:#E8E0CF;
+  --eaudenil:#9FBE9C;  --rose:#C98B8B;  --slate:#6E8295;  --pearl:#E8E0CF;
 
   /* Treatment */
-  --gild:linear-gradient(135deg,#E7D3A1,#C5A24E 42%,#8C6B2C 52%,#C5A24E 60%,#E7D3A1);
+  --gild:linear-gradient(115deg,#F2E4BA,#E7D3A1 13%,#C5A24E 38%,#8C6B2C 50%,#C5A24E 62%,#E7D3A1 87%,#F2E4BA);
   --rule:1px solid var(--gold);
-  --frame:2px solid var(--ink);
-  --inlay:inset 0 0 0 1px var(--paper), inset 0 0 0 3px var(--gold);
+  --frame:2px solid var(--edge);
+  --inlay:inset 0 0 0 1px var(--surface), inset 0 0 0 3px var(--gold);
   --radius:2px;
+}
+
+/* the black-lacquer-and-gold variant */
+[data-theme="lacquer"]{
+  --bg:#13110C;  --surface:#1E1B14;  --text:#EEE4C9;  --text-soft:#B9A77C;  --edge:#C5A24E;
 }
           </script>
         </div>
@@ -394,6 +481,8 @@
 
       <p class="small">Pair it with <em>Memphis</em> for the same decade's opposite instinct. Every hex and rule here is a starting point, not a mandate.</p>
     </section>
+
+    <div class="deco-divider" aria-hidden="true"><i></i></div>
 
     <!-- COLOR -->
     <section class="doc-section" id="color">
@@ -455,20 +544,20 @@
             <div class="doc-radius-demo" style="border-radius:4px">4px · crisp</div>
             <div class="doc-radius-demo" style="border-radius:6px">6px · max</div>
           </div>
-          <p class="small" style="margin-top:14px">Deco corners are chamfered, not rounded — keep radius minimal and let <code class="mono">--frame</code> do the shaping.</p>
+          <p class="small" style="margin-top:14px">Deco corners are <em>chamfered</em>, not rounded — keep radius minimal and let the frame do the shaping.</p>
         </div>
       </div>
     </section>
 
-    <!-- FRAME & INLAY (replaces Nebula elevation) -->
+    <!-- FRAME & INLAY -->
     <section class="doc-section" id="elevation">
       <span class="eyebrow">Surface</span>
       <h2>Frame &amp; inlay</h2>
-      <p class="lede">Gilt is flat. There are no drop shadows and no glow — depth comes from a thin gold hairline recessed just inside a black frame, so panels read as lacquer inlaid with metal.</p>
+      <p class="lede">Gilt is flat. There are no drop shadows and no glow — depth comes from a thin gold hairline recessed just inside a black frame, and from chamfered corners cut off the rectangle, so panels read as lacquer inlaid with metal.</p>
       <div class="doc-grid three">
         <div class="doc-frame-demo" style="box-shadow:none">--rule (1px gold)</div>
         <div class="doc-frame-demo">--frame + --inlay</div>
-        <div class="doc-frame-demo" style="box-shadow:var(--inlay),0 8px 0 -2px var(--gold)">lift on hover</div>
+        <div class="doc-chamfer-demo">chamfered corners</div>
       </div>
       <div class="doc-example" data-static style="margin-top:24px">
         <div class="doc-demo col"></div>
@@ -477,13 +566,145 @@
           <script type="text/plain" class="doc-snippet">
 /* the signature flat-deco treatment — no shadows, no glow */
 --rule:1px solid var(--gold);                /* gilded hairline */
---frame:2px solid var(--ink);                /* near-black border */
---inlay:inset 0 0 0 1px var(--paper),        /* paper gap … */
+--frame:2px solid var(--edge);               /* near-black border (gold in Lacquer) */
+--inlay:inset 0 0 0 1px var(--surface),      /* paper gap … */
         inset 0 0 0 3px var(--gold);         /* … then recessed gold */
 
-.panel{ border:var(--frame); box-shadow:var(--inlay); }
+.panel{
+  border:var(--frame); box-shadow:var(--inlay);
+  /* chamfer all four corners */
+  clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),
+                    calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);
+}
           </script>
         </div>
+      </div>
+    </section>
+
+    <div class="deco-divider" aria-hidden="true"><i></i></div>
+
+    <!-- BUTTONS -->
+    <section class="doc-section" id="buttons">
+      <span class="eyebrow">Components</span>
+      <h2>Buttons</h2>
+      <p class="lede">The press-it set. The primary carries the gilded sheen; jewels fill a solid; ghost is pure inlay. All lift on a hard gold step, never a blur.</p>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;button class="gilt-btn gilt-btn--primary"&gt;Reserve&lt;/button&gt;
+&lt;button class="gilt-btn gilt-btn--solid"&gt;Confirm&lt;/button&gt;
+&lt;button class="gilt-btn"&gt;Details&lt;/button&gt;
+&lt;button class="gilt-btn gilt-btn--ghost"&gt;Dismiss&lt;/button&gt;
+&lt;button class="gilt-btn gilt-btn--sm gilt-btn--primary"&gt;Small&lt;/button&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- PANELS -->
+    <section class="doc-section" id="panels">
+      <span class="eyebrow">Components</span>
+      <h2>Panels &amp; cards</h2>
+      <p class="lede">The structural workhorse: a black frame, a recessed gold hairline, chamfered corners, and a fluted-lozenge title. One panel dignifies anything.</p>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="gilt-panel"&gt;
+  &lt;div class="gilt-panel__title"&gt;Stateroom A&lt;/div&gt;
+  &lt;p class="gilt-panel__body"&gt;Chamfered corners, a black frame, and a gold hairline recessed
+  just inside — lacquer inlaid with metal. No shadow does the lifting.&lt;/p&gt;
+  &lt;div class="gilt-panel__foot"&gt;
+    &lt;button class="gilt-btn gilt-btn--sm gilt-btn--primary"&gt;Open&lt;/button&gt;
+    &lt;button class="gilt-btn gilt-btn--sm gilt-btn--ghost"&gt;Cancel&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- FORMS -->
+    <section class="doc-section" id="forms">
+      <span class="eyebrow">Components</span>
+      <h2>Forms</h2>
+      <p class="lede">Engraved-stationery inputs: a tracked uppercase label and a single gold underline that thickens and lifts on focus. No boxes — the line is the field.</p>
+      <div class="doc-example">
+        <div class="doc-demo col" style="max-width:420px;margin:0 auto"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;label class="gilt-field"&gt;
+  &lt;span class="lbl"&gt;Guest name&lt;/span&gt;
+  &lt;input class="gilt-input" placeholder="Mr. Jay Gatsby"&gt;
+  &lt;span class="gilt-help"&gt;As it should appear, engraved, on the invitation.&lt;/span&gt;
+&lt;/label&gt;
+
+&lt;label class="gilt-field" style="margin-top:18px"&gt;
+  &lt;span class="lbl"&gt;Table&lt;/span&gt;
+  &lt;select class="gilt-select"&gt;
+    &lt;option&gt;Saloon&lt;/option&gt;&lt;option&gt;Promenade&lt;/option&gt;&lt;option&gt;Ballroom&lt;/option&gt;
+  &lt;/select&gt;
+&lt;/label&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- DATA & STATUS -->
+    <section class="doc-section" id="data">
+      <span class="eyebrow">Components</span>
+      <h2>Data &amp; status</h2>
+      <p class="lede">A jewel badge labels state; an outlined tag holds a number; the ledger table is set like an engraved manifest — uppercase headers under a gold rule, hairlines between rows.</p>
+
+      <h3 class="doc-sub">Badges &amp; tags</h3>
+      <div class="doc-example">
+        <div class="doc-demo"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;span class="gilt-badge"&gt;confirmed&lt;/span&gt;
+&lt;span class="gilt-badge gilt-badge--ruby"&gt;waitlist&lt;/span&gt;
+&lt;span class="gilt-badge gilt-badge--sapphire"&gt;at sea&lt;/span&gt;
+&lt;span class="gilt-badge gilt-badge--gold"&gt;first class&lt;/span&gt;
+&lt;span class="gilt-tag"&gt;deck 1925&lt;/span&gt;
+        </script></div>
+      </div>
+
+      <h3 class="doc-sub">Tabs</h3>
+      <div class="doc-example">
+        <div class="doc-demo col"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="gilt-tabs"&gt;
+  &lt;button class="gilt-tab is-active"&gt;Saloon&lt;/button&gt;
+  &lt;button class="gilt-tab"&gt;Promenade&lt;/button&gt;
+  &lt;button class="gilt-tab"&gt;Ballroom&lt;/button&gt;
+&lt;/div&gt;
+        </script></div>
+      </div>
+
+      <h3 class="doc-sub">Ledger table</h3>
+      <div class="doc-example">
+        <div class="doc-demo col" style="align-items:stretch"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;table class="gilt-table"&gt;
+  &lt;thead&gt;&lt;tr&gt;&lt;th&gt;Deck&lt;/th&gt;&lt;th&gt;Class&lt;/th&gt;&lt;th&gt;Fare&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;&lt;td&gt;Sun&lt;/td&gt;&lt;td&gt;First&lt;/td&gt;&lt;td&gt;&pound;210&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Promenade&lt;/td&gt;&lt;td&gt;First&lt;/td&gt;&lt;td&gt;&pound;165&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Main&lt;/td&gt;&lt;td&gt;Second&lt;/td&gt;&lt;td&gt;&pound;90&lt;/td&gt;&lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+        </script></div>
+      </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <section class="doc-section" id="marquee">
+      <span class="eyebrow">Components</span>
+      <h2>Marquee</h2>
+      <p class="lede">The theater banner — a sunburst at each end, a gilded headline, and an engraved-script sub. Reserve it for one earned, ceremonial moment: a launch, a feature, a welcome.</p>
+      <div class="doc-example">
+        <div class="doc-demo col" style="align-items:stretch"></div>
+        <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
+&lt;div class="gilt-marquee"&gt;
+  &lt;span class="gilt-marquee__kicker"&gt;Tonight only&lt;/span&gt;
+  &lt;div class="gilt-marquee__title"&gt;The Gilded Hour&lt;/div&gt;
+  &lt;div class="gilt-marquee__sub"&gt;doors at eight&lt;/div&gt;
+&lt;/div&gt;
+        </script></div>
       </div>
     </section>
 
@@ -493,9 +714,8 @@
       <h2>The mark set</h2>
       <p class="lede">Seven recurring forms. Mirror them, stack them, and let symmetry carry the composition. Geometry stands in for nature — a sun becomes rays, a flower becomes a fan. Each demo's SVG is copy-ready.</p>
 
-      <!-- Sunburst -->
       <h3 class="doc-sub">Sunburst</h3>
-      <p class="small" style="margin:-8px 0 8px">The rising-sun fan of rays. The signature motif — use it for headers, corners, and grand entrances.</p>
+      <p class="small" style="margin:-2px 0 8px">The rising-sun fan of rays. The signature motif — use it for headers, corners, and grand entrances.</p>
       <div class="doc-example">
         <div class="doc-demo"></div>
         <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
@@ -506,9 +726,8 @@
         </script></div>
       </div>
 
-      <!-- Chevron -->
       <h3 class="doc-sub">Chevron</h3>
-      <p class="small" style="margin:-8px 0 8px">Stacked arrowheads. Adds upward momentum and machine-age speed without breaking symmetry.</p>
+      <p class="small" style="margin:-2px 0 8px">Stacked arrowheads. Adds upward momentum and machine-age speed without breaking symmetry.</p>
       <div class="doc-example">
         <div class="doc-demo"></div>
         <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
@@ -518,9 +737,8 @@
         </script></div>
       </div>
 
-      <!-- Ziggurat -->
       <h3 class="doc-sub">Ziggurat</h3>
-      <p class="small" style="margin:-8px 0 8px">The stepped skyscraper setback. Build hierarchy by stacking tiers, widest at the base.</p>
+      <p class="small" style="margin:-2px 0 8px">The stepped skyscraper setback. Build hierarchy by stacking tiers, widest at the base.</p>
       <div class="doc-example">
         <div class="doc-demo"></div>
         <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
@@ -530,9 +748,8 @@
         </script></div>
       </div>
 
-      <!-- The fan -->
       <h3 class="doc-sub">The fan</h3>
-      <p class="small" style="margin:-8px 0 8px">The peacock / shell fan. A stylized bloom of nested arcs ribbed by straight lines.</p>
+      <p class="small" style="margin:-2px 0 8px">The peacock / shell fan. A stylized bloom of nested arcs ribbed by straight lines.</p>
       <div class="doc-example">
         <div class="doc-demo"></div>
         <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
@@ -543,9 +760,8 @@
         </script></div>
       </div>
 
-      <!-- Fluting -->
       <h3 class="doc-sub">Fluting</h3>
-      <p class="small" style="margin:-8px 0 8px">Parallel vertical lines, like a fluted column. Use as texture, a divider, or a ribbed backdrop.</p>
+      <p class="small" style="margin:-2px 0 8px">Parallel vertical lines, like a fluted column. Use as texture, a divider, or a ribbed backdrop.</p>
       <div class="doc-example">
         <div class="doc-demo"></div>
         <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
@@ -556,9 +772,8 @@
         </script></div>
       </div>
 
-      <!-- Fountain -->
       <h3 class="doc-sub">Fountain</h3>
-      <p class="small" style="margin:-8px 0 8px">The cascade — arcs springing from a single point. The era's favorite way to draw water and light.</p>
+      <p class="small" style="margin:-2px 0 8px">The cascade — arcs springing from a single point. The era's favorite way to draw water and light.</p>
       <div class="doc-example">
         <div class="doc-demo"></div>
         <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
@@ -570,9 +785,8 @@
         </script></div>
       </div>
 
-      <!-- Inlaid frame -->
       <h3 class="doc-sub">Inlaid frame</h3>
-      <p class="small" style="margin:-8px 0 8px">A bordered panel with chamfered corners and a centered lozenge. The deco way to dignify anything.</p>
+      <p class="small" style="margin:-2px 0 8px">A bordered panel with chamfered corners and a centered lozenge. The deco way to dignify anything.</p>
       <div class="doc-example">
         <div class="doc-demo"></div>
         <div class="doc-codewrap"><pre class="doc-code"><code></code></pre><script type="text/plain" class="doc-snippet">
@@ -585,6 +799,8 @@
       </div>
     </section>
 
+    <div class="deco-divider" aria-hidden="true"><i></i></div>
+
     <!-- PRINCIPLES -->
     <section class="doc-section" id="principles">
       <span class="eyebrow">Principles</span>
@@ -596,7 +812,7 @@
         <li><b>Step and stack</b><span>Build hierarchy vertically with setbacks and tiers — ziggurat rhythm, widest at the base, tapering to a point.</span></li>
         <li><b>Geometry over nature</b><span>Stylize the organic into rays, fans, and chevrons. A sun is a burst of lines; a flower is a folded fan.</span></li>
         <li><b>Restraint, then opulence</b><span>Keep most of the page calm and empty, then concentrate the jewel color and gilding into one ornamental focal point.</span></li>
-        <li><b>Inlay, don't shadow</b><span>Skip the drop shadow. Recess a gold hairline just inside a black frame so panels read as lacquer inlaid with metal.</span></li>
+        <li><b>Inlay, don't shadow</b><span>Skip the drop shadow. Recess a gold hairline just inside a black frame, and chamfer the corners, so panels read as lacquer inlaid with metal.</span></li>
       </ul>
     </section>
 
@@ -604,15 +820,15 @@
     <section class="doc-section" id="a11y">
       <span class="eyebrow">Accessibility</span>
       <h2>Accessibility</h2>
-      <p class="lede">A flat, high-contrast deco system has real advantages — and a few honest obligations.</p>
+      <p class="lede">A flat, high-contrast deco system has real advantages — and a few honest obligations. Both themes are tuned to clear WCAG AA for body text.</p>
       <div class="doc-grid two">
         <div class="doc-card">
           <h3>Built in</h3>
-          <p>Near-black <code class="mono">--ink</code> on warm <code class="mono">--paper</code> clears WCAG AA comfortably at body sizes · a <code class="mono">:focus-visible</code> ring sits on every swatch and button · the drifting hero motifs are decorative (<code class="mono">aria-hidden</code>) and freeze under <code class="mono">prefers-reduced-motion</code>.</p>
+          <p>Near-black <code class="mono">--text</code> on warm <code class="mono">--bg</code> (and champagne-on-onyx in Lacquer) clears AA comfortably · a <code class="mono">:focus-visible</code> ring sits on every swatch, tab, and button · the drifting ornaments and rotating sunburst are decorative (<code class="mono">aria-hidden</code>) and freeze under <code class="mono">prefers-reduced-motion</code> · the theme toggle is real buttons.</p>
         </div>
         <div class="doc-card">
           <h3>Your part</h3>
-          <p>Gold is luminous but light — reserve <code class="mono">--gold</code> for hairlines and edges, never body text on paper · set prose in <code class="mono">--ink</code> / <code class="mono">--ink-soft</code> · when you fill a panel with a jewel lacquer, switch text to <code class="mono">--paper</code> or <code class="mono">--champagne</code> and re-check contrast.</p>
+          <p>Gold is luminous but light — reserve <code class="mono">--gold</code> for hairlines and edges, never body text on paper · set prose in <code class="mono">--text</code> / <code class="mono">--text-soft</code> · when you fill a panel with a jewel lacquer, switch text to <code class="mono">--champagne</code> or <code class="mono">--paper</code> and re-check contrast · don't rely on a badge's color alone — keep the word.</p>
         </div>
       </div>
     </section>
@@ -626,12 +842,12 @@
         <div class="doc-node"><div class="y">1925</div><div class="n">Paris Exposition</div><div class="d">The Arts Décoratifs fair names the style: modern luxury, machine-made. Lacquer, chrome, exotic wood, and gold leaf, organized by ruler and compass.</div></div>
         <div class="doc-node"><div class="y">1930</div><div class="n">Machine age</div><div class="d">It climbs the skyline — the Chrysler Building's steel sunburst, Rockefeller Center, the liner <em>Normandie</em>, Hollywood movie palaces, Cassandre's posters, and Gatsby's parties.</div></div>
         <div class="doc-node"><div class="y">1937</div><div class="n">Streamline Moderne</div><div class="d">Geometry rounds into aerodynamic speed lines and horizontal banding — optimistic, expensive-looking, and unmistakably modern.</div></div>
-        <div class="doc-node"><div class="y">Now</div><div class="n">Gilt</div><div class="d">That gilded geometry re-tokenized into a system you can ship with — three palettes, seven motifs, one inlay treatment.</div></div>
+        <div class="doc-node"><div class="y">Now</div><div class="n">Gilt</div><div class="d">That gilded geometry re-tokenized into a system you can ship — two themes, three palettes, a component kit, seven motifs, one inlay treatment.</div></div>
       </div>
 
       <div class="doc-foot">
         A design study evoking the 1925 Art Deco era — every hex and rule is a starting point. Pair it with <em>Memphis</em> for the same decade's opposite instinct.<br>
-        GILT v1.0.0 · Poiret One · Jost · Pinyon Script · gilded geometry, jewel lacquer, mirror symmetry.
+        GILT v1.1.0 · Poiret One · Jost · Pinyon Script · gilded geometry, jewel lacquer, mirror symmetry · Paper &amp; Lacquer themes.
       </div>
     </section>
 
@@ -687,11 +903,19 @@
     var wrap = $('.doc-codewrap', ex);
     if (wrap){
       var btn = document.createElement('button');
-      btn.className = 'doc-btn doc-btn--sm doc-copy';
+      btn.className = 'gilt-btn gilt-btn--sm doc-copy';
       btn.type = 'button'; btn.textContent = 'copy';
       btn.addEventListener('click', function(){ copy(decoded, 'code'); });
       wrap.appendChild(btn);
     }
+  });
+
+  /* delegated tab switching (works for injected demos) */
+  document.addEventListener('click', function(e){
+    var tab = e.target && e.target.closest ? e.target.closest('.gilt-tab') : null;
+    if (!tab || !tab.parentNode) return;
+    $all('.gilt-tab', tab.parentNode).forEach(function(t){ t.classList.remove('is-active'); });
+    tab.classList.add('is-active');
   });
 
   /* palette data, grouped to match the three .doc-swatches[data-group] containers */
@@ -706,8 +930,7 @@
     g.forEach(function(row){
       var name = row[0], hex = row[1], token = row[2];
       var btn = document.createElement('button');
-      btn.className = 'doc-swatch';
-      btn.type = 'button';
+      btn.className = 'doc-swatch'; btn.type = 'button';
       btn.setAttribute('data-token', token);
       btn.setAttribute('aria-label', 'Copy ' + name + ' ' + hex);
       btn.innerHTML =
@@ -721,12 +944,12 @@
 
   /* type scale */
   var typeRows = [
-    ['display','Gilt','var(--font-display)',400,'42px','.06em','uppercase','var(--ink)'],
-    ['heading','Where it comes from','var(--font-display)',400,'32px','.06em','uppercase','var(--ink)'],
+    ['display','Gilt','var(--font-display)',400,'42px','.06em','uppercase','var(--text)'],
+    ['heading','Where it comes from','var(--font-display)',400,'32px','.06em','uppercase','var(--text)'],
     ['accent','cordially invited','var(--font-accent)',400,'34px','0','none','var(--bronze)'],
-    ['lede','The 1925 Paris look gone vertical','var(--font-body)',300,'18px','.01em','none','var(--ink-soft)'],
-    ['body','Set the working text in a calm geometric sans','var(--font-body)',400,'16px','.01em','none','var(--ink)'],
-    ['caption','Powders · the boudoir','var(--font-body)',500,'13px','.16em','uppercase','var(--ink-soft)'],
+    ['lede','The 1925 Paris look gone vertical','var(--font-body)',300,'18px','.01em','none','var(--text-soft)'],
+    ['body','Set the working text in a calm geometric sans','var(--font-body)',400,'16px','.01em','none','var(--text)'],
+    ['caption','Powders · the boudoir','var(--font-body)',500,'13px','.16em','uppercase','var(--text-soft)'],
     ['mono','--gold: #C5A24E','Jost, ui-monospace, monospace',400,'12px','.04em','none','var(--bronze)']
   ];
   var ts = $('#typeScale');
@@ -737,7 +960,7 @@
     ts.appendChild(row);
   });
 
-  /* spacing scale — a small deco scale */
+  /* spacing scale */
   var spaces = [['1','4'],['2','8'],['3','12'],['4','16'],['5','24'],['6','32'],['7','48'],['8','64']];
   var sc = $('#spaceScale');
   if (sc) spaces.forEach(function(p){
@@ -752,11 +975,19 @@
   var ci = $('#copyInstall');
   if (ci) ci.addEventListener('click', function(){ copy(installText, 'gilt tokens'); });
 
-  /* reveal on scroll */
-  $all('.doc-section').forEach(function(s){ /* visible by default; reveal is purely additive */ });
+  /* theme toggle — Paper / Lacquer */
+  var tgls = $all('.theme-toggle .tgl');
+  function setTheme(name){
+    document.documentElement.setAttribute('data-theme', name);
+    tgls.forEach(function(b){ b.classList.toggle('is-active', b.getAttribute('data-theme-set') === name); });
+  }
+  tgls.forEach(function(b){ b.addEventListener('click', function(){ setTheme(b.getAttribute('data-theme-set')); }); });
+  document.documentElement.setAttribute('data-theme', 'paper');
+
+  /* reveal on scroll (purely additive) */
   if (!reduce && 'IntersectionObserver' in window){
     $all('.doc-section').forEach(function(s){ s.style.opacity='0'; s.style.transform='translateY(14px)'; s.style.transition='opacity .5s ease, transform .5s ease'; });
-    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='none'; io.unobserve(e.target); } }); }, { threshold: 0.06 });
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='none'; io.unobserve(e.target); } }); }, { threshold: 0.05 });
     $all('.doc-section').forEach(function(s){ io.observe(s); });
   }
 
@@ -777,9 +1008,9 @@
 
   /* dev-facing credit */
   try {
-    console.log('%cGILT v1.0.0', 'color:#86652F;font-family:serif;font-size:18px;font-weight:700');
-    console.log('%cAn Art Deco / machine-age design language. Tokens: --gold, --emerald, --inlay …\n1925 Paris Exposition → Chrysler Building → Streamline Moderne → Now.',
-      'color:#433B2A;font-family:monospace;font-size:12px;line-height:1.6');
+    console.log('%cGILT v1.1.0', 'color:#86652F;font-family:serif;font-size:18px;font-weight:700');
+    console.log('%cAn Art Deco / machine-age design language. Tokens: --gold, --emerald, --inlay …\nPaper & Lacquer themes · component kit · 1925 Paris → Chrysler Building → Streamline Moderne → Now.',
+      'color:#8C6B2C;font-family:monospace;font-size:12px;line-height:1.6');
   } catch(e){}
 })();
 </script>
